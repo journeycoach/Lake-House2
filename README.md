@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Lakehouse
 
-## Getting Started
+Private family site for the Paine lakehouse: who is up, the shared calendar,
+family notes, the fix-it list, checklists, maintenance schedules, and the house
+guide. Rebuilt from the original prototype so the family owns the code, the
+data, and the domain.
 
-First, run the development server:
+## Run it
 
-```bash
+```
+npm install
+npm run seed     # creates data/lakehouse.db and loads the family content
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open the printed localhost URL and sign in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Every account starts with the password `lakehouse` until it is changed on the
+Admin page. Admins can add people, reset passwords, and see sign-in activity.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it is put together
 
-## Learn More
+- Next.js (App Router) with server actions. No client state library.
+- SQLite via Drizzle at `data/lakehouse.db`. The schema ports to Postgres when
+  the site moves to hosting.
+- Sign-in is email + password with a signed session cookie. `src/proxy.ts`
+  guards every route.
+- Email lives in `src/lib/mail.ts`. Without a `RESEND_API_KEY` in `.env.local`,
+  messages are logged to the outbox (visible on Admin) instead of sent.
+  `GET /api/reminders` (with `Authorization: Bearer CRON_SECRET`) queues
+  check-in and checkout reminders; point a scheduler at it in production.
 
-To learn more about Next.js, take a look at the following resources:
+## Environment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.local` (not committed):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `AUTH_SECRET` - required, any long random string
+- `RESEND_API_KEY` - optional, enables real email
+- `MAIL_FROM` - optional, the from address for reminders
+- `CRON_SECRET` - optional, protects the reminders endpoint
 
-## Deploy on Vercel
+## Design rules
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Two typefaces (Fraunces for display, Geist for body). One corner radius (8px).
+Spacing on a 4/8/16/24/32/48 scale. Color is semantic: rust means action or
+attention, sage means ready, amber means due soon, and each household keeps one
+muted calendar color everywhere. Tokens live in `src/app/globals.css`.
