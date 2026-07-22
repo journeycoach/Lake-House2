@@ -173,12 +173,14 @@ export function StayListItem({
   dateBadge,
   meta,
   color,
+  canEdit = true,
 }: {
   stay: EditableStay;
   households: Household[];
   dateBadge: string;
   meta: string;
   color: string;
+  canEdit?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -241,20 +243,24 @@ export function StayListItem({
             >
               Add to calendar
             </a>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="text-sm font-medium text-water hover:text-deep-2"
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(true)}
-              className="text-sm font-medium text-ink-faint hover:text-rust"
-            >
-              Remove
-            </button>
+            {canEdit ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="text-sm font-medium text-water hover:text-deep-2"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="text-sm font-medium text-ink-faint hover:text-rust"
+                >
+                  Remove
+                </button>
+              </>
+            ) : null}
           </>
         )}
       </div>

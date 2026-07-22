@@ -3,10 +3,11 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { getCurrentUser, requireUser } from "@/lib/auth";
+import { getEffectiveUser, requireEditor } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 
 export async function addNote(formData: FormData) {
-  const user = await requireUser();
+  const user = await requireEditor();
   const body = String(formData.get("body") ?? "").trim();
   const tag = String(formData.get("tag") ?? "house update");
   if (!body) return;
@@ -22,14 +23,14 @@ export async function addNote(formData: FormData) {
 }
 
 export async function removeNote(formData: FormData) {
-  const user = await getCurrentUser();
-  if (!user) return;
+  const user = await getEffectiveUser();
+  if (!user || !canEdit(user.effectiveRole)) return;
   const id = Number(formData.get("id"));
   const note = await db.query.notes.findFirst({
     where: eq(schema.notes.id, id),
   });
   if (!note) return;
-  if (note.authorId !== user.id && user.role !== "admin") return;
+  if (note.authorId !== user.id && user.effectiveRole !== "admin") return;
   await db.delete(schema.notes).where(eq(schema.notes.id, id));
   revalidatePath("/notes");
   revalidatePath("/");

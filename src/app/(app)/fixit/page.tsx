@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 import { openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { reportIssue, setFixitStatus, removeFixit } from "./actions";
@@ -8,6 +10,8 @@ import { reportIssue, setFixitStatus, removeFixit } from "./actions";
 export const metadata: Metadata = { title: "Fix-it list · The Lakehouse" };
 
 export default async function FixitPage() {
+  const user = await requireUser();
+  const editor = canEdit(user.effectiveRole);
   const open = await openFixit();
   const done = await db
     .select()
@@ -28,15 +32,22 @@ export default async function FixitPage() {
               key={f.id}
               className="flex items-center gap-4 border-t border-sand-line py-4 first:border-0"
             >
-              <form action={setFixitStatus} className="shrink-0">
-                <input type="hidden" name="id" value={f.id} />
-                <input type="hidden" name="status" value="done" />
-                <button
-                  type="submit"
-                  aria-label={`Mark "${f.title}" done`}
-                  className="h-5 w-5 rounded-[4px] border border-sand-line hover:border-water"
+              {editor ? (
+                <form action={setFixitStatus} className="shrink-0">
+                  <input type="hidden" name="id" value={f.id} />
+                  <input type="hidden" name="status" value="done" />
+                  <button
+                    type="submit"
+                    aria-label={`Mark "${f.title}" done`}
+                    className="h-5 w-5 rounded-[4px] border border-sand-line hover:border-water"
+                  />
+                </form>
+              ) : (
+                <span
+                  aria-hidden
+                  className="h-5 w-5 shrink-0 rounded-[4px] border border-sand-line"
                 />
-              </form>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{f.title}</p>
                 {f.details ? (
@@ -60,7 +71,7 @@ export default async function FixitPage() {
         </ul>
       </section>
 
-      <section className="card mt-6 p-6">
+      <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
         <p className="section-label">Report an issue</p>
         <h2 className="font-display text-2xl mt-1 mb-4">What needs fixing</h2>
         <form action={reportIssue} className="space-y-4">
@@ -118,25 +129,29 @@ export default async function FixitPage() {
                 <p className="flex-1 text-sm text-ink-faint line-through">
                   {f.title}
                 </p>
-                <form action={setFixitStatus}>
-                  <input type="hidden" name="id" value={f.id} />
-                  <input type="hidden" name="status" value="open" />
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-water hover:text-deep-2"
-                  >
-                    Reopen
-                  </button>
-                </form>
-                <form action={removeFixit}>
-                  <input type="hidden" name="id" value={f.id} />
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-ink-faint hover:text-rust"
-                  >
-                    Remove
-                  </button>
-                </form>
+                {!editor ? null : (
+                  <>
+                    <form action={setFixitStatus}>
+                      <input type="hidden" name="id" value={f.id} />
+                      <input type="hidden" name="status" value="open" />
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-water hover:text-deep-2"
+                      >
+                        Reopen
+                      </button>
+                    </form>
+                    <form action={removeFixit}>
+                      <input type="hidden" name="id" value={f.id} />
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-ink-faint hover:text-rust"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </>
+                )}
               </li>
             ))}
           </ul>

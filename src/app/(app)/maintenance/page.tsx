@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { requireUser } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { maintenanceItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
@@ -7,6 +9,8 @@ import { addSchedule, updateDue, removeSchedule } from "./actions";
 export const metadata: Metadata = { title: "Maintenance · The Lakehouse" };
 
 export default async function MaintenancePage() {
+  const user = await requireUser();
+  const editor = canEdit(user.effectiveRole);
   const items = await maintenanceItems();
   const today = todayISO();
   const soon = addDays(today, 14);
@@ -15,7 +19,7 @@ export default async function MaintenancePage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Maintenance" />
 
-      <section className="card p-6">
+      <section className={`card p-6 ${editor ? "" : "hidden"}`}>
         <p className="section-label">Preventive care</p>
         <h2 className="font-display text-2xl mt-1 mb-4">
           Keep recurring work from being forgotten
@@ -77,15 +81,17 @@ export default async function MaintenancePage() {
                 >
                   {overdue ? "Overdue" : dueSoon ? "Due soon" : "Upcoming"}
                 </span>
-                <form action={removeSchedule}>
-                  <input type="hidden" name="id" value={m.id} />
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-ink-faint hover:text-rust"
-                  >
-                    Remove
-                  </button>
-                </form>
+                {editor ? (
+                  <form action={removeSchedule}>
+                    <input type="hidden" name="id" value={m.id} />
+                    <button
+                      type="submit"
+                      className="text-xs font-medium text-ink-faint hover:text-rust"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                ) : null}
               </div>
               <h3 className="font-display text-xl mt-3">
                 {m.nextDue ? fmtDay(m.nextDue) : "No date"}
@@ -104,7 +110,7 @@ export default async function MaintenancePage() {
               </p>
               <form
                 action={updateDue}
-                className="mt-3 flex items-center gap-2 border-t border-sand-line pt-3"
+                className={`mt-3 items-center gap-2 border-t border-sand-line pt-3 ${editor ? "flex" : "hidden"}`}
               >
                 <input type="hidden" name="id" value={m.id} />
                 <input

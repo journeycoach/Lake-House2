@@ -7,6 +7,8 @@ import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
 import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
 import { getFeedToken } from "@/lib/feed-token";
+import { requireUser } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
 import { YearGrid } from "@/components/year-grid";
 import { CopyField } from "@/components/copy-field";
@@ -26,6 +28,8 @@ export default async function CalendarPage({
 }: {
   searchParams: Promise<{ m?: string; y?: string; view?: string }>;
 }) {
+  const user = await requireUser();
+  const editor = canEdit(user.effectiveRole);
   const params = await searchParams;
   const view = params.view === "year" ? "year" : "month";
   const today = todayISO();
@@ -141,6 +145,7 @@ export default async function CalendarPage({
               color={householdVar(s.color)}
               dateBadge={fmtDay(s.start)}
               meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
+              canEdit={editor}
             />
           ))}
           {upcoming.length === 0 ? (
@@ -152,11 +157,13 @@ export default async function CalendarPage({
       </section>
 
       {/* Plan a stay */}
-      <section id="plan" className="card mt-6 p-6 scroll-mt-6">
-        <p className="section-label">Plan a stay</p>
-        <h2 className="font-display text-2xl mt-1 mb-4">Put it on the calendar</h2>
-        <StayForm households={households} />
-      </section>
+      {editor ? (
+        <section id="plan" className="card mt-6 p-6 scroll-mt-6">
+          <p className="section-label">Plan a stay</p>
+          <h2 className="font-display text-2xl mt-1 mb-4">Put it on the calendar</h2>
+          <StayForm households={households} />
+        </section>
+      ) : null}
 
       {/* Subscribe */}
       <section className="card mt-6 p-6">

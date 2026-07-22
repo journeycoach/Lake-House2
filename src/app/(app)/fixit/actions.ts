@@ -3,10 +3,10 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 
 export async function reportIssue(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
   await db.insert(schema.fixit).values({
@@ -23,7 +23,7 @@ export async function reportIssue(formData: FormData) {
 }
 
 export async function setFixitStatus(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   const status = String(formData.get("status")) === "done" ? "done" : "open";
   if (!id) return;
@@ -33,7 +33,7 @@ export async function setFixitStatus(formData: FormData) {
 }
 
 export async function removeFixit(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
   await db.delete(schema.fixit).where(eq(schema.fixit.id, id));

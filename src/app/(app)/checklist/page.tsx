@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { requireUser } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { addItem, toggleItem, removeItem, moveItem } from "./actions";
@@ -6,6 +8,8 @@ import { addItem, toggleItem, removeItem, moveItem } from "./actions";
 export const metadata: Metadata = { title: "Checklist · The Lakehouse" };
 
 export default async function ChecklistPage() {
+  const user = await requireUser();
+  const editor = canEdit(user.effectiveRole);
   const items = await checklistItems();
 
   return (
@@ -19,7 +23,10 @@ export default async function ChecklistPage() {
           Everyone can add items, check them off, and change their order.
         </p>
 
-        <form action={addItem} className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <form
+          action={addItem}
+          className={`mt-4 flex-col gap-3 sm:flex-row ${editor ? "flex" : "hidden"}`}
+        >
           <input
             name="title"
             required
@@ -42,15 +49,32 @@ export default async function ChecklistPage() {
               key={item.id}
               className="flex items-center gap-3 border-t border-sand-line py-3 first:border-0"
             >
-              <form action={toggleItem} className="shrink-0">
-                <input type="hidden" name="id" value={item.id} />
-                <button
-                  type="submit"
-                  aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
-                  className={`flex h-5 w-5 items-center justify-center rounded-[4px] border ${
+              {editor ? (
+                <form action={toggleItem} className="shrink-0">
+                  <input type="hidden" name="id" value={item.id} />
+                  <button
+                    type="submit"
+                    aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
+                    className={`flex h-5 w-5 items-center justify-center rounded-[4px] border ${
+                      item.done
+                        ? "border-sage bg-sage text-white"
+                        : "border-sand-line hover:border-water"
+                    }`}
+                  >
+                    {item.done ? (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1.5 5.5L4 8l4.5-6" />
+                      </svg>
+                    ) : null}
+                  </button>
+                </form>
+              ) : (
+                <span
+                  aria-hidden
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
                     item.done
                       ? "border-sage bg-sage text-white"
-                      : "border-sand-line hover:border-water"
+                      : "border-sand-line"
                   }`}
                 >
                   {item.done ? (
@@ -58,8 +82,8 @@ export default async function ChecklistPage() {
                       <path d="M1.5 5.5L4 8l4.5-6" />
                     </svg>
                   ) : null}
-                </button>
-              </form>
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <p
                   className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
@@ -71,7 +95,9 @@ export default async function ChecklistPage() {
                 ) : null}
                 <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div
+                className={`shrink-0 items-center gap-2 ${editor ? "flex" : "hidden"}`}
+              >
                 <form action={moveItem}>
                   <input type="hidden" name="id" value={item.id} />
                   <input type="hidden" name="dir" value="up" />

@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { fmtDay, fmtLong, fmtRange, parseISO, todayISO } from "@/lib/dates";
 import { householdVar } from "@/lib/colors";
+import { canEdit } from "@/lib/roles";
 import {
   allStays,
   checklistItems,
@@ -50,9 +51,11 @@ export default async function HomePage() {
             Good morning, {user.name}
           </h1>
         </div>
-        <Link href="/calendar#plan" className="btn btn-primary">
-          Plan a stay
-        </Link>
+        {canEdit(user.effectiveRole) ? (
+          <Link href="/calendar#plan" className="btn btn-primary">
+            Plan a stay
+          </Link>
+        ) : null}
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
@@ -191,7 +194,7 @@ export default async function HomePage() {
               href="/fixit"
               className="text-sm font-medium text-water hover:text-deep-2"
             >
-              Report an issue
+              {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}
             </Link>
           </div>
           <ul className="mt-4 space-y-3">
@@ -226,7 +229,7 @@ export default async function HomePage() {
               href="/checklist"
               className="text-sm font-medium text-water hover:text-deep-2"
             >
-              Add or edit
+              {canEdit(user.effectiveRole) ? "Add or edit" : "See the list"}
             </Link>
           </div>
           <ul className="mt-4 space-y-2">

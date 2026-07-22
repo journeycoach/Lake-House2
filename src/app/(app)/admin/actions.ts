@@ -10,12 +10,17 @@ function refresh() {
   revalidatePath("/admin");
 }
 
+function readRole(value: unknown): string {
+  const v = String(value);
+  return v === "admin" || v === "household" || v === "family" ? v : "family";
+}
+
 export async function addUser(formData: FormData) {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const role = String(formData.get("role")) === "admin" ? "admin" : "member";
+  const role = readRole(formData.get("role"));
   const householdId = Number(formData.get("householdId") || 0) || null;
   if (!name || !email || password.length < 8) return;
   const existing = await db.query.users.findFirst({
@@ -48,7 +53,7 @@ export async function resetPassword(formData: FormData) {
 export async function setRole(formData: FormData) {
   const admin = await requireAdmin();
   const id = Number(formData.get("id"));
-  const role = String(formData.get("role")) === "admin" ? "admin" : "member";
+  const role = readRole(formData.get("role"));
   if (!id || id === admin.id) return; // no self-demotion lockouts
   await db.update(schema.users).set({ role }).where(eq(schema.users.id, id));
   refresh();

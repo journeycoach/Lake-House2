@@ -5,8 +5,10 @@ import { saveSection } from "./actions";
 
 export function SectionCard({
   section,
+  canEdit = true,
 }: {
   section: { id: number; position: number; title: string; body: string };
+  canEdit?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -46,13 +48,15 @@ export function SectionCard({
         <p className="font-display text-2xl text-amber">
           {String(section.position).padStart(2, "0")}
         </p>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="text-xs font-medium text-water hover:text-deep-2"
-        >
-          Edit
-        </button>
+        {canEdit ? (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-xs font-medium text-water hover:text-deep-2"
+          >
+            Edit
+          </button>
+        ) : null}
       </div>
       <h3 className="mt-2 font-semibold">{section.title}</h3>
       <p className="mt-1 whitespace-pre-line text-sm text-ink-soft">

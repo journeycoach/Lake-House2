@@ -3,6 +3,7 @@ import { asc, desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
+import { ROLES, roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
 import {
   addUser,
@@ -61,21 +62,23 @@ export default async function AdminPage() {
                 </p>
                 <p className="truncate text-sm text-ink-soft">{u.email}</p>
               </div>
-              <span className="chip chip-whenever">{u.role}</span>
               {u.id !== admin.id ? (
                 <div className="flex items-center gap-3">
-                  <form action={setRole}>
+                  <form action={setRole} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={u.id} />
-                    <input
-                      type="hidden"
+                    <select
                       name="role"
-                      value={u.role === "admin" ? "member" : "admin"}
-                    />
-                    <button
-                      type="submit"
-                      className="text-xs font-medium text-water hover:text-deep-2"
+                      defaultValue={u.role}
+                      className="field w-44 py-2 text-sm"
                     >
-                      Make {u.role === "admin" ? "member" : "admin"}
+                      {ROLES.map((r) => (
+                        <option key={r.value} value={r.value}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn btn-quiet py-2">
+                      Set
                     </button>
                   </form>
                   <form action={removeUser}>
@@ -88,7 +91,9 @@ export default async function AdminPage() {
                     </button>
                   </form>
                 </div>
-              ) : null}
+              ) : (
+                <span className="chip chip-whenever">{roleLabel(u.role)}</span>
+              )}
               <form action={resetPassword} className="flex w-full items-center gap-2 sm:w-auto">
                 <input type="hidden" name="id" value={u.id} />
                 <input
@@ -119,9 +124,12 @@ export default async function AdminPage() {
               placeholder="Starting password (8+)"
               className="field"
             />
-            <select name="role" className="field" defaultValue="member">
-              <option value="member">Family member</option>
-              <option value="admin">Admin</option>
+            <select name="role" className="field" defaultValue="family">
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
             </select>
             <select name="householdId" className="field" defaultValue="">
               <option value="">No household</option>

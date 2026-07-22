@@ -3,7 +3,7 @@
 import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import { fmtRange } from "@/lib/dates";
 
 export type StayFormState = { error?: string; conflict?: string };
@@ -37,7 +37,7 @@ export async function createStay(
   _prev: StayFormState,
   formData: FormData
 ): Promise<StayFormState> {
-  const user = await requireUser();
+  const user = await requireEditor();
   const stay = readStay(formData);
   if (!stay.label) return { error: "Give the stay a name." };
   if (!stay.start || !stay.end || stay.end < stay.start)
@@ -65,7 +65,7 @@ export async function updateStay(
   _prev: StayFormState,
   formData: FormData
 ): Promise<StayFormState> {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   const stay = readStay(formData);
   if (!id) return { error: "Missing stay." };
@@ -88,7 +88,7 @@ export async function updateStay(
 }
 
 export async function deleteStay(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   if (id) {
     await db.delete(schema.stays).where(eq(schema.stays.id, id));

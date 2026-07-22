@@ -23,7 +23,7 @@ export const users = sqliteTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: text("role").notNull().default("member"), // admin | member
+  role: text("role").notNull().default("family"), // admin | household | family
   householdId: integer("household_id").references(() => households.id),
   createdAt: text("created_at").notNull(),
 });

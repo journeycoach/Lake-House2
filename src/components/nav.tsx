@@ -69,10 +69,12 @@ export function Sidebar({
   user,
   status,
   signOutSlot,
+  previewSlot,
 }: {
   user: NavUser;
   status: string;
   signOutSlot: React.ReactNode;
+  previewSlot?: React.ReactNode;
 }) {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-deep p-6 sticky top-0 h-screen">
@@ -84,6 +86,7 @@ export function Sidebar({
         <p className="text-sm text-white/80">
           House is {status.toLowerCase()}
         </p>
+        {previewSlot}
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold text-white">{user.name}</p>
           {signOutSlot}
@@ -97,10 +100,12 @@ export function MobileHeader({
   user,
   status,
   signOutSlot,
+  previewSlot,
 }: {
   user: NavUser;
   status: string;
   signOutSlot: React.ReactNode;
+  previewSlot?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -141,11 +146,14 @@ export function MobileHeader({
       {open ? (
         <div className="border-t border-white/15 p-4 pb-6 space-y-4">
           <NavLinks user={user} onNavigate={() => setOpen(false)} />
-          <div className="border-t border-white/15 pt-4 flex items-center justify-between">
-            <p className="text-sm text-white/80">
-              {user.name} · house is {status.toLowerCase()}
-            </p>
-            {signOutSlot}
+          <div className="border-t border-white/15 pt-4 space-y-3">
+            {previewSlot}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-white/80">
+                {user.name} · house is {status.toLowerCase()}
+              </p>
+              {signOutSlot}
+            </div>
           </div>
         </div>
       ) : null}

@@ -3,7 +3,7 @@
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 
 function refresh() {
   revalidatePath("/checklist");
@@ -11,7 +11,7 @@ function refresh() {
 }
 
 export async function addItem(formData: FormData) {
-  const user = await requireUser();
+  const user = await requireEditor();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
   const rows = await db.select().from(schema.checklist);
@@ -27,7 +27,7 @@ export async function addItem(formData: FormData) {
 }
 
 export async function toggleItem(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   const item = await db.query.checklist.findFirst({
     where: eq(schema.checklist.id, id),
@@ -41,7 +41,7 @@ export async function toggleItem(formData: FormData) {
 }
 
 export async function removeItem(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
   await db.delete(schema.checklist).where(eq(schema.checklist.id, id));
@@ -49,7 +49,7 @@ export async function removeItem(formData: FormData) {
 }
 
 export async function moveItem(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   const dir = String(formData.get("dir")) === "up" ? -1 : 1;
   const rows = await db

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
+import { canEdit } from "@/lib/roles";
 import { latestNotes } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { addNote, removeNote } from "./actions";
@@ -10,13 +11,14 @@ const TAGS = ["local tip", "house update", "for the next visit"];
 
 export default async function NotesPage() {
   const user = await requireUser();
+  const editor = canEdit(user.effectiveRole);
   const notes = await latestNotes();
 
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Family notes" />
 
-      <section className="card p-6">
+      <section className={`card p-6 ${editor ? "" : "hidden"}`}>
         <p className="section-label">Share a note</p>
         <h2 className="font-display text-2xl mt-1 mb-4">FYI everyone</h2>
         <form action={addNote} className="space-y-4">
@@ -60,7 +62,7 @@ export default async function NotesPage() {
             <p className="mt-2 flex-1 text-sm">{n.body}</p>
             <div className="mt-4 flex items-center justify-between border-t border-sand-line pt-3">
               <p className="text-xs text-ink-faint">{n.authorName}</p>
-              {n.authorId === user.id || user.role === "admin" ? (
+              {editor && (n.authorId === user.id || user.effectiveRole === "admin") ? (
                 <form action={removeNote}>
                   <input type="hidden" name="id" value={n.id} />
                   <button

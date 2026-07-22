@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db, schema } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/session";
+import type { Role } from "@/lib/roles";
 
 export type SignInState = { error?: string };
 
@@ -38,7 +39,7 @@ export async function signIn(
   await createSession({
     uid: user.id,
     name: user.name,
-    role: user.role as "admin" | "member",
+    role: user.role as Role,
   });
   redirect("/");
 }

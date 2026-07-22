@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import type { Role } from "./roles";
 import { cookies } from "next/headers";
 
 const COOKIE = "lh_session";
@@ -13,7 +14,7 @@ function secret() {
 export type SessionPayload = {
   uid: number;
   name: string;
-  role: "admin" | "member";
+  role: Role;
 };
 
 export async function createSession(payload: SessionPayload) {
@@ -41,7 +42,7 @@ export async function readSession(): Promise<SessionPayload | null> {
     return {
       uid: payload.uid as number,
       name: payload.name as string,
-      role: payload.role as "admin" | "member",
+      role: payload.role as Role,
     };
   } catch {
     return null;

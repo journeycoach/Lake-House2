@@ -3,10 +3,10 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 
 export async function addSchedule(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const task = String(formData.get("task") ?? "").trim();
   if (!task) return;
   await db.insert(schema.maintenance).values({
@@ -21,7 +21,7 @@ export async function addSchedule(formData: FormData) {
 }
 
 export async function updateDue(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   const nextDue = String(formData.get("nextDue") ?? "");
   if (!id || !nextDue) return;
@@ -33,7 +33,7 @@ export async function updateDue(formData: FormData) {
 }
 
 export async function removeSchedule(formData: FormData) {
-  await requireUser();
+  await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
   await db.delete(schema.maintenance).where(eq(schema.maintenance.id, id));
