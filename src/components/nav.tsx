@@ -10,10 +10,10 @@ const LINKS: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/", label: "Home" },
   { href: "/calendar", label: "Calendar" },
   { href: "/notes", label: "Family notes" },
-  { href: "/fixit", label: "Fix-it list" },
+  { href: "/upkeep", label: "Upkeep" },
   { href: "/checklist", label: "Checklist" },
-  { href: "/maintenance", label: "Maintenance" },
   { href: "/guide", label: "House guide" },
+  { href: "/activity", label: "Activity", adminOnly: true },
   { href: "/admin", label: "Admin", adminOnly: true },
 ];
 

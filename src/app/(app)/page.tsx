@@ -182,7 +182,7 @@ export default async function HomePage() {
             <div>
               <p className="section-label">Fix-it list</p>
               <Link
-                href="/fixit"
+                href="/upkeep"
                 className="font-display text-2xl hover:text-water transition-colors"
               >
                 {fixes.length === 0
@@ -191,7 +191,7 @@ export default async function HomePage() {
               </Link>
             </div>
             <Link
-              href="/fixit"
+              href="/upkeep"
               className="text-sm font-medium text-water hover:text-deep-2"
             >
               {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}

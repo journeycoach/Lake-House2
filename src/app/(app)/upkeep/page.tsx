@@ -3,13 +3,17 @@ import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
-import { openFixit } from "@/lib/queries";
+import { addDays, fmtDay, todayISO } from "@/lib/dates";
+import { maintenanceItems, openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { reportIssue, setFixitStatus, removeFixit } from "./actions";
+import { reportIssue, setFixitStatus, removeFixit } from "./fixit-actions";
+import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
 
-export const metadata: Metadata = { title: "Fix-it list · The Lakehouse" };
+export const metadata: Metadata = { title: "Upkeep · The Lakehouse" };
 
-export default async function FixitPage() {
+/* One page for taking care of the house: what is broken now, then the
+   recurring work that keeps things from breaking. */
+export default async function UpkeepPage() {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const open = await openFixit();
@@ -18,13 +22,17 @@ export default async function FixitPage() {
     .from(schema.fixit)
     .where(eq(schema.fixit.status, "done"))
     .orderBy(desc(schema.fixit.id));
+  const items = await maintenanceItems();
+  const today = todayISO();
+  const soon = addDays(today, 14);
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Fix-it list" />
+      <PageHeader title="Upkeep" />
 
+      {/* Fix-it list */}
       <section className="card p-6">
-        <p className="section-label">Repairs & replacements</p>
+        <p className="section-label">Fix-it list</p>
         <h2 className="font-display text-2xl mt-1">Keep the place cared for</h2>
         <ul className="mt-4">
           {open.map((f) => (
@@ -71,6 +79,7 @@ export default async function FixitPage() {
         </ul>
       </section>
 
+      {/* Report an issue */}
       <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
         <p className="section-label">Report an issue</p>
         <h2 className="font-display text-2xl mt-1 mb-4">What needs fixing</h2>
@@ -157,6 +166,126 @@ export default async function FixitPage() {
           </ul>
         </section>
       ) : null}
+
+      {/* Maintenance schedules */}
+      <section className="mt-10">
+        <p className="section-label">Preventive care</p>
+        <h2 className="font-display text-2xl mt-1">
+          Keep recurring work from being forgotten
+        </h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {items.map((m) => {
+            const overdue = m.nextDue && m.nextDue < today;
+            const dueSoon = m.nextDue && !overdue && m.nextDue <= soon;
+            return (
+              <article key={m.id} className="card flex flex-col p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span
+                    className={`chip ${overdue ? "chip-urgent" : dueSoon ? "chip-soon" : "chip-whenever"}`}
+                  >
+                    {overdue ? "Overdue" : dueSoon ? "Due soon" : "Upcoming"}
+                  </span>
+                  {editor ? (
+                    <form action={removeSchedule}>
+                      <input type="hidden" name="id" value={m.id} />
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-ink-faint hover:text-rust"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+                <h3 className="font-display text-xl mt-3">
+                  {m.nextDue ? fmtDay(m.nextDue) : "No date"}
+                  <span className="ml-2 align-middle text-[11px] font-sans font-semibold uppercase tracking-wider text-ink-faint">
+                    next due
+                  </span>
+                </h3>
+                <p className="mt-1 font-semibold">{m.task}</p>
+                {m.details ? (
+                  <p className="mt-1 flex-1 text-sm text-ink-soft">{m.details}</p>
+                ) : (
+                  <span className="flex-1" />
+                )}
+                <p className="mt-2 text-xs text-ink-faint">
+                  {m.cadence ?? "No cadence"} · {m.assignedTo ? `Assigned to ${m.assignedTo}` : "Unassigned"}
+                </p>
+                <form
+                  action={updateDue}
+                  className={`mt-3 items-center gap-2 border-t border-sand-line pt-3 ${editor ? "flex" : "hidden"}`}
+                >
+                  <input type="hidden" name="id" value={m.id} />
+                  <input
+                    type="date"
+                    name="nextDue"
+                    defaultValue={m.nextDue ?? ""}
+                    className="field flex-1 py-2"
+                  />
+                  <button type="submit" className="btn btn-quiet shrink-0">
+                    Set next due
+                  </button>
+                </form>
+              </article>
+            );
+          })}
+          {items.length === 0 ? (
+            <p className="text-sm text-ink-soft">No schedules yet.</p>
+          ) : null}
+        </div>
+      </section>
+
+      {/* Add a schedule */}
+      <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
+        <p className="section-label">Add a maintenance item</p>
+        <h2 className="font-display text-2xl mt-1 mb-4">
+          Put it on a schedule
+        </h2>
+        <form action={addSchedule} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label htmlFor="task" className="flabel">
+                Task
+              </label>
+              <input id="task" name="task" required className="field" placeholder="Clean gutters" />
+            </div>
+            <div>
+              <label htmlFor="cadence" className="flabel">
+                How often
+              </label>
+              <input id="cadence" name="cadence" className="field" placeholder="Every spring and fall" />
+            </div>
+            <div>
+              <label htmlFor="nextDue" className="flabel">
+                Next due
+              </label>
+              <input id="nextDue" name="nextDue" type="date" className="field" />
+            </div>
+            <div>
+              <label htmlFor="assignedTo2" className="flabel">
+                Assigned to
+              </label>
+              <input id="assignedTo2" name="assignedTo" className="field" placeholder="Unassigned" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="details2" className="flabel">
+              Details
+            </label>
+            <textarea
+              id="details2"
+              name="details"
+              rows={2}
+              className="field"
+              placeholder="Steps, service provider, supplies, or anything else to remember"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary">
+            Add schedule
+          </button>
+        </form>
+      </section>
     </div>
   );
 }

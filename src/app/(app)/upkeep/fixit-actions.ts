@@ -20,7 +20,7 @@ export async function reportIssue(formData: FormData) {
     createdAt: new Date().toISOString(),
   });
   await logActivity(user, "reported an issue", title);
-  revalidatePath("/fixit");
+  revalidatePath("/upkeep");
   revalidatePath("/");
 }
 
@@ -38,7 +38,7 @@ export async function setFixitStatus(formData: FormData) {
       item.title
     );
   }
-  revalidatePath("/fixit");
+  revalidatePath("/upkeep");
   revalidatePath("/");
 }
 
@@ -49,6 +49,6 @@ export async function removeFixit(formData: FormData) {
   const item = await db.query.fixit.findFirst({ where: eq(schema.fixit.id, id) });
   await db.delete(schema.fixit).where(eq(schema.fixit.id, id));
   if (item) await logActivity(user, "removed a repair", item.title);
-  revalidatePath("/fixit");
+  revalidatePath("/upkeep");
   revalidatePath("/");
 }
