@@ -4,6 +4,7 @@ import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
 
 export type StayFormState = { error?: string; conflict?: string };
@@ -56,6 +57,7 @@ export async function createStay(
     createdBy: user.id,
     createdAt: new Date().toISOString(),
   });
+  await logActivity(user, "booked a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   revalidatePath("/calendar");
   revalidatePath("/");
   return {};
@@ -65,7 +67,7 @@ export async function updateStay(
   _prev: StayFormState,
   formData: FormData
 ): Promise<StayFormState> {
-  await requireEditor();
+  const user = await requireEditor();
   const id = Number(formData.get("id"));
   const stay = readStay(formData);
   if (!id) return { error: "Missing stay." };
@@ -82,16 +84,23 @@ export async function updateStay(
   }
 
   await db.update(schema.stays).set(stay).where(eq(schema.stays.id, id));
+  await logActivity(user, "edited a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   revalidatePath("/calendar");
   revalidatePath("/");
   return {};
 }
 
 export async function deleteStay(formData: FormData) {
-  await requireEditor();
+  const user = await requireEditor();
   const id = Number(formData.get("id"));
   if (id) {
+    const stay = await db.query.stays.findFirst({
+      where: eq(schema.stays.id, id),
+    });
     await db.delete(schema.stays).where(eq(schema.stays.id, id));
+    if (stay) {
+      await logActivity(user, "removed a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
+    }
     revalidatePath("/calendar");
     revalidatePath("/");
   }

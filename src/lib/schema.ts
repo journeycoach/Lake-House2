@@ -101,6 +101,16 @@ export const loginEvents = sqliteTable("login_events", {
   at: text("at").notNull(),
 });
 
+/* Who did what, when: bookings, check-offs, edits. Shown on Admin. */
+export const activityLog = sqliteTable("activity_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name").notNull(),
+  action: text("action").notNull(), // short verb phrase
+  detail: text("detail"), // what it applied to
+  at: text("at").notNull(),
+});
+
 /* Every email the app wants to send lands here first. If RESEND_API_KEY is
    set it also actually sends. Admin can read the outbox either way. */
 export const outbox = sqliteTable("outbox", {

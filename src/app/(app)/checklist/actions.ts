@@ -3,7 +3,8 @@
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { requireEditor } from "@/lib/auth";
+import { requireEditor, requireUser } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 function refresh() {
   revalidatePath("/checklist");
@@ -23,11 +24,14 @@ export async function addItem(formData: FormData) {
     done: 0,
     position,
   });
+  await logActivity(user, "added a checklist item", title);
   refresh();
 }
 
+/* Everyone signed in can check things off, family tier included. Clearing
+   items out (remove, reorder, add) stays with household and admin. */
 export async function toggleItem(formData: FormData) {
-  await requireEditor();
+  const user = await requireUser();
   const id = Number(formData.get("id"));
   const item = await db.query.checklist.findFirst({
     where: eq(schema.checklist.id, id),
@@ -37,14 +41,23 @@ export async function toggleItem(formData: FormData) {
     .update(schema.checklist)
     .set({ done: item.done ? 0 : 1 })
     .where(eq(schema.checklist.id, id));
+  await logActivity(
+    user,
+    item.done ? "unchecked a checklist item" : "checked off a checklist item",
+    item.title
+  );
   refresh();
 }
 
 export async function removeItem(formData: FormData) {
-  await requireEditor();
+  const user = await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
+  const item = await db.query.checklist.findFirst({
+    where: eq(schema.checklist.id, id),
+  });
   await db.delete(schema.checklist).where(eq(schema.checklist.id, id));
+  if (item) await logActivity(user, "removed a checklist item", item.title);
   refresh();
 }
 

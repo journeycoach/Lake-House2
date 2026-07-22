@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
 import { getEffectiveUser, requireEditor } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { canEdit } from "@/lib/roles";
 
 export async function addNote(formData: FormData) {
@@ -18,6 +19,7 @@ export async function addNote(formData: FormData) {
     tag,
     createdAt: new Date().toISOString(),
   });
+  await logActivity(user, "shared a note", body.slice(0, 80));
   revalidatePath("/notes");
   revalidatePath("/");
 }
@@ -32,6 +34,7 @@ export async function removeNote(formData: FormData) {
   if (!note) return;
   if (note.authorId !== user.id && user.effectiveRole !== "admin") return;
   await db.delete(schema.notes).where(eq(schema.notes.id, id));
+  await logActivity(user, "removed a note", note.body.slice(0, 80));
   revalidatePath("/notes");
   revalidatePath("/");
 }

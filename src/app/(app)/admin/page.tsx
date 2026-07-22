@@ -28,7 +28,7 @@ function fmtStamp(iso: string): string {
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
-  const [users, households, logins, mails] = await Promise.all([
+  const [users, households, logins, mails, activity] = await Promise.all([
     db.select().from(schema.users).orderBy(asc(schema.users.name)),
     db.select().from(schema.households).orderBy(asc(schema.households.name)),
     db
@@ -37,6 +37,11 @@ export default async function AdminPage() {
       .orderBy(desc(schema.loginEvents.id))
       .limit(30),
     db.select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
+    db
+      .select()
+      .from(schema.activityLog)
+      .orderBy(desc(schema.activityLog.id))
+      .limit(50),
   ]);
 
   return (
@@ -198,7 +203,35 @@ export default async function AdminPage() {
         </section>
       </div>
 
-      {/* Activity + outbox */}
+      {/* Recent activity */}
+      <section className="card mt-6 p-6">
+        <p className="section-label">Recent activity</p>
+        <h2 className="font-display text-2xl mt-1">Who did what, when</h2>
+        <ul className="mt-4 space-y-2">
+          {activity.map((a) => (
+            <li
+              key={a.id}
+              className="flex items-baseline justify-between gap-4 text-sm"
+            >
+              <span className="min-w-0">
+                <span className="font-semibold">{a.userName}</span>{" "}
+                <span className="text-ink-soft">{a.action}</span>
+                {a.detail ? (
+                  <span className="text-ink-faint"> · {a.detail}</span>
+                ) : null}
+              </span>
+              <span className="shrink-0 text-xs text-ink-faint">
+                {fmtStamp(a.at)}
+              </span>
+            </li>
+          ))}
+          {activity.length === 0 ? (
+            <li className="text-sm text-ink-soft">Nothing logged yet.</li>
+          ) : null}
+        </ul>
+      </section>
+
+      {/* Sign-ins + outbox */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="card p-6">
           <p className="section-label">Sign-in activity</p>

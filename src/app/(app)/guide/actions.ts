@@ -4,9 +4,10 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 export async function saveSection(formData: FormData) {
-  await requireEditor();
+  const user = await requireEditor();
   const id = Number(formData.get("id"));
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
@@ -15,5 +16,6 @@ export async function saveSection(formData: FormData) {
     .update(schema.guideSections)
     .set({ title, body })
     .where(eq(schema.guideSections.id, id));
+  await logActivity(user, "edited the house guide", title);
   revalidatePath("/guide");
 }

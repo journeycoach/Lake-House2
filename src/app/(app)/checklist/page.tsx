@@ -49,32 +49,16 @@ export default async function ChecklistPage() {
               key={item.id}
               className="flex items-center gap-3 border-t border-sand-line py-3 first:border-0"
             >
-              {editor ? (
-                <form action={toggleItem} className="shrink-0">
-                  <input type="hidden" name="id" value={item.id} />
-                  <button
-                    type="submit"
-                    aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
-                    className={`flex h-5 w-5 items-center justify-center rounded-[4px] border ${
-                      item.done
-                        ? "border-sage bg-sage text-white"
-                        : "border-sand-line hover:border-water"
-                    }`}
-                  >
-                    {item.done ? (
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1.5 5.5L4 8l4.5-6" />
-                      </svg>
-                    ) : null}
-                  </button>
-                </form>
-              ) : (
-                <span
-                  aria-hidden
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
+              {/* Everyone can check things off; only editors clear them out. */}
+              <form action={toggleItem} className="shrink-0">
+                <input type="hidden" name="id" value={item.id} />
+                <button
+                  type="submit"
+                  aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
+                  className={`flex h-5 w-5 items-center justify-center rounded-[4px] border ${
                     item.done
                       ? "border-sage bg-sage text-white"
-                      : "border-sand-line"
+                      : "border-sand-line hover:border-water"
                   }`}
                 >
                   {item.done ? (
@@ -82,8 +66,8 @@ export default async function ChecklistPage() {
                       <path d="M1.5 5.5L4 8l4.5-6" />
                     </svg>
                   ) : null}
-                </span>
-              )}
+                </button>
+              </form>
               <div className="min-w-0 flex-1">
                 <p
                   className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
