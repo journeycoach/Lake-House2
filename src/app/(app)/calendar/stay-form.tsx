@@ -235,6 +235,12 @@ export function StayListItem({
           </>
         ) : (
           <>
+            <a
+              href={`/api/stay-ics/${stay.id}`}
+              className="text-sm font-medium text-water hover:text-deep-2"
+            >
+              Add to calendar
+            </a>
             <button
               type="button"
               onClick={() => setEditing(true)}

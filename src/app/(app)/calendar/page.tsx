@@ -1,22 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { asc } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
 import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
+import { getFeedToken } from "@/lib/feed-token";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
+import { YearGrid } from "@/components/year-grid";
+import { CopyField } from "@/components/copy-field";
 import { PageHeader } from "@/components/page-header";
 import { StayForm, StayListItem } from "./stay-form";
 
 export const metadata: Metadata = { title: "Calendar · The Lakehouse" };
 
+function tab(active: boolean) {
+  return `rounded-lh px-4 py-2 text-sm font-semibold transition-colors ${
+    active ? "bg-deep text-white" : "text-ink-soft hover:text-ink"
+  }`;
+}
+
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ m?: string }>;
+  searchParams: Promise<{ m?: string; y?: string; view?: string }>;
 }) {
   const params = await searchParams;
+  const view = params.view === "year" ? "year" : "month";
   const today = todayISO();
   const t = parseISO(today);
   let y = t.y;
@@ -26,6 +37,9 @@ export default async function CalendarPage({
     y = py;
     m = pm;
   }
+  let yearY = t.y;
+  if (params.y && /^\d{4}$/.test(params.y)) yearY = Number(params.y);
+
   const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
 
@@ -34,6 +48,9 @@ export default async function CalendarPage({
   const monthStays = stays.filter(
     (s) => s.start <= `${monthKey}-31` && s.end >= `${monthKey}-01`
   );
+  const yearStays = stays.filter(
+    (s) => s.start <= `${yearY}-12-31` && s.end >= `${yearY}-01-01`
+  );
   const households = await db
     .select({ id: schema.households.id, name: schema.households.name })
     .from(schema.households)
@@ -41,40 +58,70 @@ export default async function CalendarPage({
 
   const upcoming = [...staysNow(stays, today), ...staysUpcoming(stays, today)];
 
+  const token = await getFeedToken();
+  const host = (await headers()).get("host") ?? "localhost:3000";
+  const feedPath = `/api/feed/${token}.ics`;
+
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Calendar" action={<span />} />
 
-      {/* Month view: desktop only. Phones get the agenda below instead. */}
+      {/* Month / year views: md and up. Phones get the agenda list below. */}
       <section className="card hidden p-6 md:block">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="font-display text-2xl">{monthName(y, m)}</h2>
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/calendar?m=${prev}`}
-              aria-label="Previous month"
-              className="btn btn-quiet px-3"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 2L4 7l5 5" />
-              </svg>
-            </Link>
-            <Link
-              href={`/calendar?m=${next}`}
-              aria-label="Next month"
-              className="btn btn-quiet px-3"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 2l5 5-5 5" />
-              </svg>
-            </Link>
+          {view === "month" ? (
+            <h2 className="font-display text-2xl">{monthName(y, m)}</h2>
+          ) : (
+            <h2 className="font-display text-2xl">{yearY}</h2>
+          )}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 rounded-lh border border-sand-line p-1">
+              <Link href="/calendar?view=month" className={tab(view === "month")}>
+                Month
+              </Link>
+              <Link href="/calendar?view=year" className={tab(view === "year")}>
+                Year
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={
+                  view === "month"
+                    ? `/calendar?view=month&m=${prev}`
+                    : `/calendar?view=year&y=${yearY - 1}`
+                }
+                aria-label={view === "month" ? "Previous month" : "Previous year"}
+                className="btn btn-quiet px-3"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 2L4 7l5 5" />
+                </svg>
+              </Link>
+              <Link
+                href={
+                  view === "month"
+                    ? `/calendar?view=month&m=${next}`
+                    : `/calendar?view=year&y=${yearY + 1}`
+                }
+                aria-label={view === "month" ? "Next month" : "Next year"}
+                className="btn btn-quiet px-3"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 2l5 5-5 5" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
         <div className="mt-4">
-          <MonthGrid year={y} month={m} stays={monthStays} today={today} />
+          {view === "month" ? (
+            <MonthGrid year={y} month={m} stays={monthStays} today={today} />
+          ) : (
+            <YearGrid year={yearY} stays={yearStays} today={today} />
+          )}
         </div>
         <div className="mt-4 border-t border-sand-line pt-3">
-          <HouseholdLegend stays={monthStays} />
+          <HouseholdLegend stays={view === "month" ? monthStays : yearStays} />
         </div>
       </section>
 
@@ -109,6 +156,30 @@ export default async function CalendarPage({
         <p className="section-label">Plan a stay</p>
         <h2 className="font-display text-2xl mt-1 mb-4">Put it on the calendar</h2>
         <StayForm households={households} />
+      </section>
+
+      {/* Subscribe */}
+      <section className="card mt-6 p-6">
+        <p className="section-label">Subscribe</p>
+        <h2 className="font-display text-2xl mt-1">
+          The lake schedule, on your own calendar
+        </h2>
+        <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+          Subscribe once and every stay shows up in your calendar app
+          automatically, including changes. In Apple Calendar, open the webcal
+          link. In Google Calendar, choose Other calendars, then From URL, and
+          paste the https link. Subscriptions update on the calendar app&apos;s
+          own schedule, usually within a day.
+        </p>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <CopyField label="Apple Calendar (webcal)" value={`webcal://${host}${feedPath}`} />
+          <CopyField label="Google Calendar (from URL)" value={`https://${host}${feedPath}`} />
+        </div>
+        <p className="mt-3 text-xs text-ink-faint">
+          Anyone with this link can see the schedule, so treat it like a house
+          key. Subscriptions from outside this computer start working once the
+          site is on its real domain.
+        </p>
       </section>
     </div>
   );

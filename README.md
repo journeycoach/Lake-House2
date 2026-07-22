@@ -29,6 +29,9 @@ Admin page. Admins can add people, reset passwords, and see sign-in activity.
   messages are logged to the outbox (visible on Admin) instead of sent.
   `GET /api/reminders` (with `Authorization: Bearer CRON_SECRET`) queues
   check-in and checkout reminders; point a scheduler at it in production.
+- The calendar is subscribable: `/api/feed/<token>.ics` serves an iCalendar
+  feed (token lives in the settings table; the Calendar page shows the
+  subscribe links). Each stay also has a one-off "Add to calendar" download.
 
 ## Environment
 
