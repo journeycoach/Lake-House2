@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { buildCalendar } from "@/lib/ics";
 
 /* Single-stay .ics download ("Add to calendar"). Session-guarded by proxy. */
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const stay = await db.query.stays.findFirst({
+  const stay = await getDb().query.stays.findFirst({
     where: eq(schema.stays.id, Number(id)),
   });
   if (!stay) {

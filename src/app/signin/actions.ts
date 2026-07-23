@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/session";
 import type { Role } from "@/lib/roles";
 
@@ -19,13 +19,13 @@ export async function signIn(
   const password = String(formData.get("password") ?? "");
   const now = new Date().toISOString();
 
-  const user = await db.query.users.findFirst({
+  const user = await getDb().query.users.findFirst({
     where: eq(schema.users.email, email),
   });
 
   const ok = user ? await bcrypt.compare(password, user.passwordHash) : false;
 
-  await db.insert(schema.loginEvents).values({
+  await getDb().insert(schema.loginEvents).values({
     email,
     userId: user?.id ?? null,
     success: ok ? 1 : 0,

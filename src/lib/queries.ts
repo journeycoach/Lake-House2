@@ -1,6 +1,6 @@
 import "server-only";
 import { asc, desc, eq } from "drizzle-orm";
-import { db, schema } from "./db";
+import { getDb, schema } from "./db";
 import { todayISO } from "./dates";
 
 export type StayRow = {
@@ -15,7 +15,7 @@ export type StayRow = {
 };
 
 export async function allStays(): Promise<StayRow[]> {
-  const rows = await db
+  const rows = await getDb()
     .select({
       id: schema.stays.id,
       label: schema.stays.label,
@@ -44,7 +44,7 @@ export function staysUpcoming(stays: StayRow[], today = todayISO()): StayRow[] {
 }
 
 export async function latestNotes(limit?: number) {
-  const rows = await db
+  const rows = await getDb()
     .select()
     .from(schema.notes)
     .orderBy(desc(schema.notes.createdAt), desc(schema.notes.id));
@@ -53,7 +53,7 @@ export async function latestNotes(limit?: number) {
 
 export async function openFixit() {
   const order = { urgent: 0, soon: 1, whenever: 2 } as Record<string, number>;
-  const rows = await db
+  const rows = await getDb()
     .select()
     .from(schema.fixit)
     .where(eq(schema.fixit.status, "open"));
@@ -63,21 +63,21 @@ export async function openFixit() {
 }
 
 export async function checklistItems() {
-  return db
+  return getDb()
     .select()
     .from(schema.checklist)
     .orderBy(asc(schema.checklist.position));
 }
 
 export async function maintenanceItems() {
-  return db
+  return getDb()
     .select()
     .from(schema.maintenance)
     .orderBy(asc(schema.maintenance.nextDue));
 }
 
 export async function guideSections() {
-  return db
+  return getDb()
     .select()
     .from(schema.guideSections)
     .orderBy(asc(schema.guideSections.position));

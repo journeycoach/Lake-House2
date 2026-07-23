@@ -2,7 +2,7 @@
 
 import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
@@ -21,7 +21,7 @@ function readStay(formData: FormData) {
 }
 
 async function findConflict(start: string, end: string, excludeId?: number) {
-  const overlapping = await db
+  const overlapping = await getDb()
     .select()
     .from(schema.stays)
     .where(
@@ -52,7 +52,7 @@ export async function createStay(
     };
   }
 
-  await db.insert(schema.stays).values({
+  await getDb().insert(schema.stays).values({
     ...stay,
     createdBy: user.id,
     createdAt: new Date().toISOString(),
@@ -83,7 +83,7 @@ export async function updateStay(
     };
   }
 
-  await db.update(schema.stays).set(stay).where(eq(schema.stays.id, id));
+  await getDb().update(schema.stays).set(stay).where(eq(schema.stays.id, id));
   await logActivity(user, "edited a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   revalidatePath("/calendar");
   revalidatePath("/");
@@ -94,10 +94,10 @@ export async function deleteStay(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
   if (id) {
-    const stay = await db.query.stays.findFirst({
+    const stay = await getDb().query.stays.findFirst({
       where: eq(schema.stays.id, id),
     });
-    await db.delete(schema.stays).where(eq(schema.stays.id, id));
+    await getDb().delete(schema.stays).where(eq(schema.stays.id, id));
     if (stay) {
       await logActivity(user, "removed a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
     }

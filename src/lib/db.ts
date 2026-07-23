@@ -1,13 +1,22 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import path from "path";
+import "server-only";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-const dbPath = process.env.DATABASE_PATH ?? path.join(process.cwd(), "data", "lakehouse.db");
+function createDb() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not set");
+  }
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("foreign_keys = ON");
+  return drizzle(neon(databaseUrl), { schema });
+}
 
-export const db = drizzle(sqlite, { schema });
+let database: ReturnType<typeof createDb> | null = null;
+
+export function getDb() {
+  if (!database) database = createDb();
+  return database;
+}
+
 export { schema };

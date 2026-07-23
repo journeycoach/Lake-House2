@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { asc } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
 import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
@@ -55,7 +55,7 @@ export default async function CalendarPage({
   const yearStays = stays.filter(
     (s) => s.start <= `${yearY}-12-31` && s.end >= `${yearY}-01-01`
   );
-  const households = await db
+  const households = await getDb()
     .select({ id: schema.households.id, name: schema.households.name })
     .from(schema.households)
     .orderBy(asc(schema.households.name));

@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 
@@ -10,7 +10,7 @@ export async function reportIssue(formData: FormData) {
   const user = await requireEditor();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
-  await db.insert(schema.fixit).values({
+  await getDb().insert(schema.fixit).values({
     title,
     details: String(formData.get("details") ?? "").trim() || null,
     location: String(formData.get("location") ?? "").trim() || null,
@@ -29,8 +29,8 @@ export async function setFixitStatus(formData: FormData) {
   const id = Number(formData.get("id"));
   const status = String(formData.get("status")) === "done" ? "done" : "open";
   if (!id) return;
-  const item = await db.query.fixit.findFirst({ where: eq(schema.fixit.id, id) });
-  await db.update(schema.fixit).set({ status }).where(eq(schema.fixit.id, id));
+  const item = await getDb().query.fixit.findFirst({ where: eq(schema.fixit.id, id) });
+  await getDb().update(schema.fixit).set({ status }).where(eq(schema.fixit.id, id));
   if (item) {
     await logActivity(
       user,
@@ -46,8 +46,8 @@ export async function removeFixit(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
-  const item = await db.query.fixit.findFirst({ where: eq(schema.fixit.id, id) });
-  await db.delete(schema.fixit).where(eq(schema.fixit.id, id));
+  const item = await getDb().query.fixit.findFirst({ where: eq(schema.fixit.id, id) });
+  await getDb().delete(schema.fixit).where(eq(schema.fixit.id, id));
   if (item) await logActivity(user, "removed a repair", item.title);
   revalidatePath("/upkeep");
   revalidatePath("/");

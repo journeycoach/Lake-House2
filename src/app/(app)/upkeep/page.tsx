@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { desc, eq } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
 import { addDays, fmtDay, todayISO } from "@/lib/dates";
@@ -17,7 +17,7 @@ export default async function UpkeepPage() {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const open = await openFixit();
-  const done = await db
+  const done = await getDb()
     .select()
     .from(schema.fixit)
     .where(eq(schema.fixit.status, "done"))

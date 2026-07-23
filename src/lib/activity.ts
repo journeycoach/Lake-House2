@@ -1,5 +1,5 @@
 import "server-only";
-import { db, schema } from "./db";
+import { getDb, schema } from "./db";
 
 /* One line per meaningful action. Fire and forget from server actions. */
 export async function logActivity(
@@ -7,7 +7,7 @@ export async function logActivity(
   action: string,
   detail?: string
 ) {
-  await db.insert(schema.activityLog).values({
+  await getDb().insert(schema.activityLog).values({
     userId: user.id,
     userName: user.name,
     action,

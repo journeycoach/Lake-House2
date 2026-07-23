@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = { title: "Activity · The Lakehouse" };
@@ -20,12 +20,12 @@ function fmtStamp(iso: string): string {
 export default async function ActivityPage() {
   await requireAdmin();
   const [activity, logins] = await Promise.all([
-    db
+    getDb()
       .select()
       .from(schema.activityLog)
       .orderBy(desc(schema.activityLog.id))
       .limit(200),
-    db
+    getDb()
       .select()
       .from(schema.loginEvents)
       .orderBy(desc(schema.loginEvents.id))

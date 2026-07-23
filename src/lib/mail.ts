@@ -1,6 +1,6 @@
 import "server-only";
 import { eq } from "drizzle-orm";
-import { db, schema } from "./db";
+import { getDb, schema } from "./db";
 
 /*
   Every email lands in the outbox table first, so admins can always see what
@@ -18,7 +18,7 @@ export async function sendMail({
   body: string;
   kind: string;
 }) {
-  const [row] = await db
+  const [row] = await getDb()
     .insert(schema.outbox)
     .values({
       toEmail: to,
@@ -48,13 +48,13 @@ export async function sendMail({
       }),
     });
     const status = res.ok ? "sent" : "failed";
-    await db
+    await getDb()
       .update(schema.outbox)
       .set({ status })
       .where(eq(schema.outbox.id, row.id));
     return { delivered: res.ok };
   } catch {
-    await db
+    await getDb()
       .update(schema.outbox)
       .set({ status: "failed" })
       .where(eq(schema.outbox.id, row.id));

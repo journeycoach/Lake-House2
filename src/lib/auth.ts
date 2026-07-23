@@ -3,14 +3,14 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { db, schema } from "./db";
+import { getDb, schema } from "./db";
 import { readSession } from "./session";
 import { canEdit, type Role } from "./roles";
 
 export const getCurrentUser = cache(async () => {
   const session = await readSession();
   if (!session) return null;
-  const user = await db.query.users.findFirst({
+  const user = await getDb().query.users.findFirst({
     where: eq(schema.users.id, session.uid),
   });
   return user ?? null;

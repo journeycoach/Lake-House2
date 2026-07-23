@@ -2,7 +2,7 @@
 
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { requireEditor, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 
@@ -15,9 +15,9 @@ export async function addItem(formData: FormData) {
   const user = await requireEditor();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
-  const rows = await db.select().from(schema.checklist);
+  const rows = await getDb().select().from(schema.checklist);
   const position = Math.max(0, ...rows.map((r) => r.position)) + 1;
-  await db.insert(schema.checklist).values({
+  await getDb().insert(schema.checklist).values({
     title,
     details: String(formData.get("details") ?? "").trim() || null,
     addedBy: user.name,
@@ -33,11 +33,11 @@ export async function addItem(formData: FormData) {
 export async function toggleItem(formData: FormData) {
   const user = await requireUser();
   const id = Number(formData.get("id"));
-  const item = await db.query.checklist.findFirst({
+  const item = await getDb().query.checklist.findFirst({
     where: eq(schema.checklist.id, id),
   });
   if (!item) return;
-  await db
+  await getDb()
     .update(schema.checklist)
     .set({ done: item.done ? 0 : 1 })
     .where(eq(schema.checklist.id, id));
@@ -53,10 +53,10 @@ export async function removeItem(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
   if (!id) return;
-  const item = await db.query.checklist.findFirst({
+  const item = await getDb().query.checklist.findFirst({
     where: eq(schema.checklist.id, id),
   });
-  await db.delete(schema.checklist).where(eq(schema.checklist.id, id));
+  await getDb().delete(schema.checklist).where(eq(schema.checklist.id, id));
   if (item) await logActivity(user, "removed a checklist item", item.title);
   refresh();
 }
@@ -65,7 +65,7 @@ export async function moveItem(formData: FormData) {
   await requireEditor();
   const id = Number(formData.get("id"));
   const dir = String(formData.get("dir")) === "up" ? -1 : 1;
-  const rows = await db
+  const rows = await getDb()
     .select()
     .from(schema.checklist)
     .orderBy(asc(schema.checklist.position));
@@ -73,11 +73,11 @@ export async function moveItem(formData: FormData) {
   const swap = rows[idx + dir];
   if (idx === -1 || !swap) return;
   const a = rows[idx];
-  await db
+  await getDb()
     .update(schema.checklist)
     .set({ position: swap.position })
     .where(eq(schema.checklist.id, a.id));
-  await db
+  await getDb()
     .update(schema.checklist)
     .set({ position: a.position })
     .where(eq(schema.checklist.id, swap.id));

@@ -9,9 +9,15 @@ data, and the domain.
 
 ```
 npm install
-npm run seed     # creates data/lakehouse.db and loads the family content
+npm run db:push  # creates/updates the Neon schema
+npm run seed     # loads the family content; launch-time use only
 npm run dev
 ```
+
+Copy the pooled Neon connection string from the Neon dashboard into
+`DATABASE_URL` in `.env.local` before running the database commands. Vercel
+marks Marketplace credentials as sensitive, so the CLI intentionally does not
+download their values.
 
 Then open the printed localhost URL and sign in.
 
@@ -21,8 +27,7 @@ Admin page. Admins can add people, reset passwords, and see sign-in activity.
 ## How it is put together
 
 - Next.js (App Router) with server actions. No client state library.
-- SQLite via Drizzle at `data/lakehouse.db`. The schema ports to Postgres when
-  the site moves to hosting.
+- Neon Postgres via Drizzle and the serverless HTTP driver.
 - Sign-in is email + password with a signed session cookie. `src/proxy.ts`
   guards every route.
 - Email lives in `src/lib/mail.ts`. Without a `RESEND_API_KEY` in `.env.local`,
@@ -38,6 +43,7 @@ Admin page. Admins can add people, reset passwords, and see sign-in activity.
 `.env.local` (not committed):
 
 - `AUTH_SECRET` - required, any long random string
+- `DATABASE_URL` - required, pooled Neon Postgres connection string
 - `RESEND_API_KEY` - optional, enables real email
 - `MAIL_FROM` - optional, the from address for reminders
 - `CRON_SECRET` - optional, protects the reminders endpoint

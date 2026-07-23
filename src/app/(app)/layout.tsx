@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { roleLabel } from "@/lib/roles";
 import { Sidebar, MobileHeader } from "@/components/nav";
 import { signOut } from "@/app/signin/actions";
 import { setViewAs, clearViewAs } from "./view-as-actions";
 
 async function houseStatus(): Promise<string> {
-  const row = await db.query.settings.findFirst({
+  const row = await getDb().query.settings.findFirst({
     where: eq(schema.settings.key, "house_status"),
   });
   return row?.value ?? "Ready";

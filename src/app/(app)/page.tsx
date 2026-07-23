@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { fmtDay, fmtLong, fmtRange, parseISO, todayISO } from "@/lib/dates";
 import { householdVar } from "@/lib/colors";
 import { canEdit } from "@/lib/roles";
@@ -23,7 +23,7 @@ export default async function HomePage() {
     latestNotes(3),
     openFixit(),
     checklistItems(),
-    db.query.settings.findFirst({
+    getDb().query.settings.findFirst({
       where: eq(schema.settings.key, "house_status"),
     }),
   ]);

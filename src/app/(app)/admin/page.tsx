@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { asc, desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
 import { ROLES, roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
@@ -29,9 +29,9 @@ function fmtStamp(iso: string): string {
 export default async function AdminPage() {
   const admin = await requireAdmin();
   const [users, households, mails] = await Promise.all([
-    db.select().from(schema.users).orderBy(asc(schema.users.name)),
-    db.select().from(schema.households).orderBy(asc(schema.households.name)),
-    db.select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
+    getDb().select().from(schema.users).orderBy(asc(schema.users.name)),
+    getDb().select().from(schema.households).orderBy(asc(schema.households.name)),
+    getDb().select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
   ]);
 
   return (

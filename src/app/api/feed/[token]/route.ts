@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { asc } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { buildCalendar } from "@/lib/ics";
 import { getFeedToken } from "@/lib/feed-token";
 
@@ -19,7 +19,7 @@ export async function GET(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const stays = await db
+  const stays = await getDb()
     .select()
     .from(schema.stays)
     .orderBy(asc(schema.stays.start));

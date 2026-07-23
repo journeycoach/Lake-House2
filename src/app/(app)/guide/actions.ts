@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 
@@ -12,7 +12,7 @@ export async function saveSection(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   if (!id || !title) return;
-  await db
+  await getDb()
     .update(schema.guideSections)
     .set({ title, body })
     .where(eq(schema.guideSections.id, id));

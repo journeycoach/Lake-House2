@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db, schema } from "@/lib/db";
+import { getDb, schema } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { eq } from "drizzle-orm";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const today = todayISO();
   const tomorrow = addDays(today, 1);
-  const stays = await db.select().from(schema.stays);
+  const stays = await getDb().select().from(schema.stays);
   let queued = 0;
 
   for (const stay of stays) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     if (!isCheckin && !isCheckout) continue;
     if (!stay.householdId) continue;
 
-    const members = await db
+    const members = await getDb()
       .select()
       .from(schema.users)
       .where(eq(schema.users.householdId, stay.householdId));

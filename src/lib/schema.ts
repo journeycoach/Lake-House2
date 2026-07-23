@@ -1,25 +1,21 @@
-import {
-  sqliteTable,
-  text,
-  integer,
-} from "drizzle-orm/sqlite-core";
+import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
 
 /*
   Schema notes:
-  - SQLite locally. Types chosen to port cleanly to Postgres (Neon) later.
+  - PostgreSQL on Neon in every environment.
   - Dates are ISO strings (YYYY-MM-DD) so they sort and compare lexically.
   - assigned/added names are plain strings where the source site used plain
     names, so we never invent accounts for people who have none yet.
 */
 
-export const households = sqliteTable("households", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const households = pgTable("households", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   color: text("color").notNull(), // token: steel | pine | drift | huckle | dusk | reed
 });
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
@@ -28,8 +24,8 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at").notNull(),
 });
 
-export const stays = sqliteTable("stays", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const stays = pgTable("stays", {
+  id: serial("id").primaryKey(),
   label: text("label").notNull(), // display name: household or group ("Guys Weekend")
   householdId: integer("household_id").references(() => households.id),
   start: text("start").notNull(), // YYYY-MM-DD, first night
@@ -41,8 +37,8 @@ export const stays = sqliteTable("stays", {
   createdAt: text("created_at").notNull(),
 });
 
-export const notes = sqliteTable("notes", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const notes = pgTable("notes", {
+  id: serial("id").primaryKey(),
   authorName: text("author_name").notNull(),
   authorId: integer("author_id").references(() => users.id),
   body: text("body").notNull(),
@@ -50,8 +46,8 @@ export const notes = sqliteTable("notes", {
   createdAt: text("created_at").notNull(),
 });
 
-export const fixit = sqliteTable("fixit", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const fixit = pgTable("fixit", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
   details: text("details"),
   location: text("location"),
@@ -61,8 +57,8 @@ export const fixit = sqliteTable("fixit", {
   createdAt: text("created_at").notNull(),
 });
 
-export const checklist = sqliteTable("checklist", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const checklist = pgTable("checklist", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
   details: text("details"),
   addedBy: text("added_by").notNull(),
@@ -70,8 +66,8 @@ export const checklist = sqliteTable("checklist", {
   position: integer("position").notNull(),
 });
 
-export const maintenance = sqliteTable("maintenance", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const maintenance = pgTable("maintenance", {
+  id: serial("id").primaryKey(),
   task: text("task").notNull(),
   details: text("details"),
   cadence: text("cadence"), // "Monthly during lake season"
@@ -80,21 +76,21 @@ export const maintenance = sqliteTable("maintenance", {
   createdAt: text("created_at").notNull(),
 });
 
-export const guideSections = sqliteTable("guide_sections", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const guideSections = pgTable("guide_sections", {
+  id: serial("id").primaryKey(),
   position: integer("position").notNull(),
   title: text("title").notNull(),
   body: text("body").notNull(),
 });
 
-export const settings = sqliteTable("settings", {
+export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
 
-export const loginEvents = sqliteTable("login_events", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const loginEvents = pgTable("login_events", {
+  id: serial("id").primaryKey(),
   email: text("email").notNull(),
   userId: integer("user_id").references(() => users.id),
   success: integer("success").notNull(),
@@ -102,8 +98,8 @@ export const loginEvents = sqliteTable("login_events", {
 });
 
 /* Who did what, when: bookings, check-offs, edits. Shown on Admin. */
-export const activityLog = sqliteTable("activity_log", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const activityLog = pgTable("activity_log", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   userName: text("user_name").notNull(),
   action: text("action").notNull(), // short verb phrase
@@ -113,8 +109,8 @@ export const activityLog = sqliteTable("activity_log", {
 
 /* Every email the app wants to send lands here first. If RESEND_API_KEY is
    set it also actually sends. Admin can read the outbox either way. */
-export const outbox = sqliteTable("outbox", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const outbox = pgTable("outbox", {
+  id: serial("id").primaryKey(),
   toEmail: text("to_email").notNull(),
   subject: text("subject").notNull(),
   body: text("body").notNull(),
