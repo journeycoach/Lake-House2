@@ -87,7 +87,12 @@ export function Sidebar({
         </p>
         {previewSlot}
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-white">{user.name}</p>
+          <Link
+            href="/account"
+            className="text-sm font-semibold text-white hover:underline"
+          >
+            {user.name}
+          </Link>
           {signOutSlot}
         </div>
       </div>
@@ -149,7 +154,14 @@ export function MobileHeader({
             {previewSlot}
             <div className="flex items-center justify-between">
               <p className="text-sm text-white/80">
-                {user.name} · house is {status.toLowerCase()}
+                <Link
+                  href="/account"
+                  onClick={() => setOpen(false)}
+                  className="font-semibold text-white hover:underline"
+                >
+                  {user.name}
+                </Link>{" "}
+                · house is {status.toLowerCase()}
               </p>
               {signOutSlot}
             </div>

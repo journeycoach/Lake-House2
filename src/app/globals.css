@@ -11,7 +11,7 @@
   /* neutrals */
   --ink: #1e2b2a;
   --ink-soft: #48605d;
-  --ink-faint: #6a8783;
+  --ink-faint: #567069;
   --mist: #eef0ea;
   --card: #fbfbf8;
   --sand: #e6e2d4;
@@ -124,6 +124,10 @@ body {
 .btn:disabled {
   opacity: 0.55;
   cursor: default;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--water);
+  outline-offset: 2px;
 }
 
 /* Inputs */

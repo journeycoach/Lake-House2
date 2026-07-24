@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
 import { latestNotes } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { addNote, removeNote } from "./actions";
 
 export const metadata: Metadata = { title: "Family notes · The Lakehouse" };
@@ -48,9 +49,7 @@ export default async function NotesPage() {
                 ))}
               </select>
             </div>
-            <button type="submit" className="btn btn-primary">
-              Share note
-            </button>
+            <SubmitButton>Share note</SubmitButton>
           </div>
         </form>
       </section>

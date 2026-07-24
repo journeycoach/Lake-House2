@@ -11,6 +11,17 @@ import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "../src/lib/schema";
 
 async function main() {
+// The family's real data lives in this shared database now. Running the seed
+// deletes ALL of it and replaces it with starter content, so it refuses to
+// run unless you say you mean it: SEED_CONFIRM=wipe npm run seed
+if (process.env.SEED_CONFIRM !== "wipe") {
+  console.error(
+    "Refusing to seed: this wipes every stay, note, and checklist item in the shared database."
+  );
+  console.error("If you truly mean to start over: SEED_CONFIRM=wipe npm run seed");
+  process.exit(1);
+}
+
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 

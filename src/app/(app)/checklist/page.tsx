@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
 import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { addItem, toggleItem, removeItem, moveItem } from "./actions";
 
 export const metadata: Metadata = { title: "Checklist · The Lakehouse" };
@@ -153,12 +154,9 @@ export default async function ChecklistPage() {
               placeholder="Quantity, brand, or location"
             />
           </label>
-          <button
-            type="submit"
-            className="btn btn-primary self-end whitespace-nowrap"
-          >
+          <SubmitButton className="btn btn-primary self-end whitespace-nowrap">
             Add to list
-          </button>
+          </SubmitButton>
         </form>
 
         <ul className="mt-4">
