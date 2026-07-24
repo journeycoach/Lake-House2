@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { BrandMark } from "./brand-mark";
 
 export type NavUser = { name: string; role: string };
 
@@ -52,9 +53,7 @@ function NavLinks({
 function Mark() {
   return (
     <Link href="/" className="flex items-center gap-3">
-      <span className="h-10 w-10 rounded-lh border border-white/25 flex items-center justify-center font-display text-sm text-white">
-        LH
-      </span>
+      <BrandMark size="sm" />
       <span>
         <span className="block font-display text-lg leading-tight text-white">
           The Lakehouse

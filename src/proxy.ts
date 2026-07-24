@@ -15,7 +15,9 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api/reminders") ||
     pathname.startsWith("/api/feed/") ||
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
+    pathname === "/favicon.ico" ||
+    pathname === "/icon.svg" ||
+    pathname === "/apple-icon.png"
   ) {
     return NextResponse.next();
   }
