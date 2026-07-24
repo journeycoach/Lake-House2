@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
@@ -127,35 +127,30 @@ export async function updateHousehold(formData: FormData) {
   refresh();
 }
 
-export async function setHouseholdMembers(formData: FormData) {
+export async function setMemberHouseholds(formData: FormData) {
   await requireAdmin();
-  const householdId = Number(formData.get("householdId"));
-  if (!householdId) return;
-
-  const household = await getDb().query.households.findFirst({
-    where: eq(schema.households.id, householdId),
-  });
-  if (!household) return;
-
-  const memberIds = [
+  const householdIds = new Set(
+    (await getDb().select({ id: schema.households.id }).from(schema.households))
+      .map((household) => household.id)
+  );
+  const userIds = [
     ...new Set(
       formData
-        .getAll("memberIds")
+        .getAll("userIds")
         .map(Number)
         .filter((id) => Number.isInteger(id) && id > 0)
     ),
   ];
 
-  await getDb()
-    .update(schema.users)
-    .set({ householdId: null })
-    .where(eq(schema.users.householdId, householdId));
-
-  if (memberIds.length > 0) {
-    await getDb()
-      .update(schema.users)
-      .set({ householdId })
-      .where(inArray(schema.users.id, memberIds));
-  }
+  await Promise.all(
+    userIds.map((userId) => {
+      const selectedId = Number(formData.get(`household-${userId}`));
+      const householdId = householdIds.has(selectedId) ? selectedId : null;
+      return getDb()
+        .update(schema.users)
+        .set({ householdId })
+        .where(eq(schema.users.id, userId));
+    })
+  );
   refresh();
 }

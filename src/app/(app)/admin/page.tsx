@@ -13,7 +13,7 @@ import {
   setHouseStatus,
   addHousehold,
   updateHousehold,
-  setHouseholdMembers,
+  setMemberHouseholds,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · The Lakehouse" };
@@ -148,10 +148,10 @@ export default async function AdminPage() {
         <section className="card p-6 lg:col-span-2">
           <p className="section-label">Households</p>
           <h2 className="font-display text-2xl mt-1">
-            Members and calendar colors
+            Household names and colors
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
-            Edit a household, then choose which family accounts belong to it.
+            Choose the color that identifies each household on the calendar.
           </p>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -160,7 +160,7 @@ export default async function AdminPage() {
                 key={h.id}
                 className="rounded-lg border border-sand-line bg-card p-4"
               >
-                <form action={updateHousehold}>
+                <form action={updateHousehold} className="space-y-4">
                   <input type="hidden" name="id" value={h.id} />
                   <div className="flex items-center gap-3">
                     <span
@@ -176,53 +176,40 @@ export default async function AdminPage() {
                       className="field min-w-0 flex-1"
                     />
                   </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <select
-                      name="color"
-                      defaultValue={h.color}
-                      aria-label={`Color for ${h.name}`}
-                      className="field min-w-0 flex-1"
-                    >
+                  <fieldset>
+                    <legend className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                      Calendar color
+                    </legend>
+                    <div className="mt-2 flex flex-wrap gap-3">
                       {HOUSEHOLD_TOKENS.map((token) => (
-                        <option key={token} value={token}>
-                          {token.charAt(0).toUpperCase() + token.slice(1)}
-                        </option>
+                        <label
+                          key={token}
+                          className="cursor-pointer"
+                          title={token.charAt(0).toUpperCase() + token.slice(1)}
+                        >
+                          <input
+                            type="radio"
+                            name="color"
+                            value={token}
+                            defaultChecked={h.color === token}
+                            className="peer sr-only"
+                          />
+                          <span
+                            className="block h-8 w-8 rounded-full border-2 border-white shadow-sm ring-1 ring-sand-line transition peer-checked:ring-2 peer-checked:ring-deep peer-checked:ring-offset-2"
+                            style={{ background: householdVar(token) }}
+                          />
+                          <span className="sr-only">
+                            {token.charAt(0).toUpperCase() + token.slice(1)}
+                          </span>
+                        </label>
                       ))}
-                    </select>
-                    <button type="submit" className="btn btn-quiet shrink-0">
-                      Save details
+                    </div>
+                  </fieldset>
+                  <div className="flex justify-end">
+                    <button type="submit" className="btn btn-quiet">
+                      Save household
                     </button>
                   </div>
-                </form>
-
-                <form
-                  action={setHouseholdMembers}
-                  className="mt-4 border-t border-sand-line pt-4"
-                >
-                  <input type="hidden" name="householdId" value={h.id} />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                    Members
-                  </p>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    {users.map((user) => (
-                      <label
-                        key={user.id}
-                        className="flex cursor-pointer items-center gap-2 text-sm"
-                      >
-                        <input
-                          type="checkbox"
-                          name="memberIds"
-                          value={user.id}
-                          defaultChecked={user.householdId === h.id}
-                          className="h-4 w-4 accent-water"
-                        />
-                        <span className="truncate">{user.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <button type="submit" className="btn btn-quiet mt-3">
-                    Save members
-                  </button>
                 </form>
               </article>
             ))}
@@ -249,6 +236,50 @@ export default async function AdminPage() {
               Add
             </button>
           </form>
+
+          <div className="mt-6 border-t border-sand-line pt-5">
+            <p className="section-label">People</p>
+            <h3 className="font-display text-xl mt-1">Who belongs where</h3>
+            <p className="mt-1 text-sm text-ink-soft">
+              Select one household for each person, or leave them unassigned.
+            </p>
+            <form action={setMemberHouseholds} className="mt-3">
+              <div className="divide-y divide-sand-line rounded-lg border border-sand-line bg-card px-4">
+                {users.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex flex-wrap items-center gap-3 py-3"
+                  >
+                    <input type="hidden" name="userIds" value={user.id} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold">{user.name}</p>
+                      <p className="truncate text-xs text-ink-faint">
+                        {user.email}
+                      </p>
+                    </div>
+                    <select
+                      name={`household-${user.id}`}
+                      defaultValue={user.householdId ?? ""}
+                      aria-label={`Household for ${user.name}`}
+                      className="field w-full py-2 text-sm sm:w-52"
+                    >
+                      <option value="">No household</option>
+                      {households.map((household) => (
+                        <option key={household.id} value={household.id}>
+                          {household.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex justify-end">
+                <button type="submit" className="btn btn-primary">
+                  Save people
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
 
         <section className="card p-6">
