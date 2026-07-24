@@ -66,7 +66,11 @@ export async function checklistItems() {
   return getDb()
     .select()
     .from(schema.checklist)
-    .orderBy(asc(schema.checklist.position));
+    .orderBy(
+      asc(schema.checklist.done),
+      asc(schema.checklist.position),
+      asc(schema.checklist.id)
+    );
 }
 
 export async function maintenanceItems() {

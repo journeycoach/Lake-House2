@@ -11,11 +11,34 @@ function refresh() {
   revalidatePath("/");
 }
 
+async function groupItems(done: number) {
+  return getDb()
+    .select()
+    .from(schema.checklist)
+    .where(eq(schema.checklist.done, done))
+    .orderBy(asc(schema.checklist.position), asc(schema.checklist.id));
+}
+
+async function normalizeGroup(done: number) {
+  const rows = await groupItems(done);
+  await Promise.all(
+    rows.map((row, index) => {
+      const position = index + 1;
+      return row.position === position
+        ? Promise.resolve()
+        : getDb()
+            .update(schema.checklist)
+            .set({ position })
+            .where(eq(schema.checklist.id, row.id));
+    })
+  );
+}
+
 export async function addItem(formData: FormData) {
   const user = await requireEditor();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
-  const rows = await getDb().select().from(schema.checklist);
+  const rows = await groupItems(0);
   const position = Math.max(0, ...rows.map((r) => r.position)) + 1;
   await getDb().insert(schema.checklist).values({
     title,
@@ -37,10 +60,14 @@ export async function toggleItem(formData: FormData) {
     where: eq(schema.checklist.id, id),
   });
   if (!item) return;
+  const nextDone = item.done ? 0 : 1;
+  const targetRows = await groupItems(nextDone);
+  const position = Math.max(0, ...targetRows.map((row) => row.position)) + 1;
   await getDb()
     .update(schema.checklist)
-    .set({ done: item.done ? 0 : 1 })
+    .set({ done: nextDone, position })
     .where(eq(schema.checklist.id, id));
+  await Promise.all([normalizeGroup(item.done), normalizeGroup(nextDone)]);
   await logActivity(
     user,
     item.done ? "unchecked a checklist item" : "checked off a checklist item",
@@ -57,6 +84,7 @@ export async function removeItem(formData: FormData) {
     where: eq(schema.checklist.id, id),
   });
   await getDb().delete(schema.checklist).where(eq(schema.checklist.id, id));
+  if (item) await normalizeGroup(item.done);
   if (item) await logActivity(user, "removed a checklist item", item.title);
   refresh();
 }
@@ -65,13 +93,16 @@ export async function moveItem(formData: FormData) {
   await requireEditor();
   const id = Number(formData.get("id"));
   const dir = String(formData.get("dir")) === "up" ? -1 : 1;
-  const rows = await getDb()
-    .select()
-    .from(schema.checklist)
-    .orderBy(asc(schema.checklist.position));
+  const item = await getDb().query.checklist.findFirst({
+    where: eq(schema.checklist.id, id),
+  });
+  if (!item) return;
+  await normalizeGroup(item.done);
+  const rows = await groupItems(item.done);
   const idx = rows.findIndex((r) => r.id === id);
+  if (idx === -1) return;
   const swap = rows[idx + dir];
-  if (idx === -1 || !swap) return;
+  if (!swap) return;
   const a = rows[idx];
   await getDb()
     .update(schema.checklist)
