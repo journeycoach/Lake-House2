@@ -10,6 +10,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "../src/lib/schema";
 
+async function main() {
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
@@ -283,3 +284,9 @@ await db.insert(schema.settings).values({
 });
 
 console.log("Seeded Neon with carried-over LakeHouse content.");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
