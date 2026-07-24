@@ -18,8 +18,14 @@ export default async function ChecklistPage() {
     return rows.map((item, i) => (
       <li
         key={item.id}
-        className="flex items-center gap-3 border-t border-sand-line py-3 first:border-0"
+        className="flex flex-wrap items-center gap-3 border-t border-sand-line py-3 first:border-0"
       >
+        <span
+          aria-hidden
+          className="w-5 shrink-0 text-center text-xs font-semibold text-ink-faint"
+        >
+          {i + 1}
+        </span>
         <form action={toggleItem} className="shrink-0">
           <input type="hidden" name="id" value={item.id} />
           <button
@@ -48,7 +54,7 @@ export default async function ChecklistPage() {
             ) : null}
           </button>
         </form>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-48">
           <p
             className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
           >
@@ -66,7 +72,9 @@ export default async function ChecklistPage() {
           <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
         </div>
         <div
-          className={`shrink-0 items-center gap-2 ${editor ? "flex" : "hidden"}`}
+          className={`w-full items-center justify-end gap-2 sm:w-auto ${
+            editor ? "flex" : "hidden"
+          }`}
         >
           <form action={moveItem}>
             <input type="hidden" name="id" value={item.id} />
@@ -75,20 +83,9 @@ export default async function ChecklistPage() {
               type="submit"
               disabled={i === 0}
               aria-label={`Move "${item.title}" up`}
-              className="btn btn-quiet h-8 w-8 p-0 disabled:opacity-30"
+              className="rounded-md border border-sand-line px-2 py-1 text-xs font-semibold text-water transition hover:border-water disabled:cursor-default disabled:opacity-30"
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 10V2M2.5 5.5L6 2l3.5 3.5" />
-              </svg>
+              Move up
             </button>
           </form>
           <form action={moveItem}>
@@ -98,20 +95,9 @@ export default async function ChecklistPage() {
               type="submit"
               disabled={i === rows.length - 1}
               aria-label={`Move "${item.title}" down`}
-              className="btn btn-quiet h-8 w-8 p-0 disabled:opacity-30"
+              className="rounded-md border border-sand-line px-2 py-1 text-xs font-semibold text-water transition hover:border-water disabled:cursor-default disabled:opacity-30"
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 2v8M2.5 6.5L6 10l3.5-3.5" />
-              </svg>
+              Move down
             </button>
           </form>
           <form action={removeItem}>
@@ -142,20 +128,35 @@ export default async function ChecklistPage() {
 
         <form
           action={addItem}
-          className={`mt-4 flex-col gap-3 sm:flex-row ${editor ? "flex" : "hidden"}`}
+          className={`mt-4 gap-3 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
+            editor ? "grid" : "hidden"
+          }`}
         >
-          <input
-            name="title"
-            required
-            className="field sm:flex-1"
-            placeholder="What do we need to bring, buy, or do?"
-          />
-          <input
-            name="details"
-            className="field sm:w-56"
-            placeholder="Quantity, brand, location"
-          />
-          <button type="submit" className="btn btn-primary shrink-0">
+          <label className="min-w-0">
+            <span className="mb-1 block text-xs font-semibold text-ink-soft">
+              Item
+            </span>
+            <input
+              name="title"
+              required
+              className="field"
+              placeholder="Paper towels"
+            />
+          </label>
+          <label className="min-w-0">
+            <span className="mb-1 block text-xs font-semibold text-ink-soft">
+              Details
+            </span>
+            <input
+              name="details"
+              className="field"
+              placeholder="Quantity, brand, or location"
+            />
+          </label>
+          <button
+            type="submit"
+            className="btn btn-primary self-end whitespace-nowrap"
+          >
             Add to list
           </button>
         </form>
