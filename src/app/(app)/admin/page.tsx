@@ -12,6 +12,8 @@ import {
   removeUser,
   setHouseStatus,
   addHousehold,
+  updateHousehold,
+  setHouseholdMembers,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · The Lakehouse" };
@@ -143,27 +145,103 @@ export default async function AdminPage() {
 
       {/* Households + status */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="card p-6">
+        <section className="card p-6 lg:col-span-2">
           <p className="section-label">Households</p>
-          <h2 className="font-display text-2xl mt-1">Calendar colors</h2>
-          <ul className="mt-4 space-y-2">
+          <h2 className="font-display text-2xl mt-1">
+            Members and calendar colors
+          </h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            Edit a household, then choose which family accounts belong to it.
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             {households.map((h) => (
-              <li key={h.id} className="flex items-center gap-3 text-sm">
-                <span
-                  aria-hidden
-                  className="h-3 w-3 rounded-full"
-                  style={{ background: householdVar(h.color) }}
-                />
-                {h.name}
-              </li>
+              <article
+                key={h.id}
+                className="rounded-lg border border-sand-line bg-card p-4"
+              >
+                <form action={updateHousehold}>
+                  <input type="hidden" name="id" value={h.id} />
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden
+                      className="h-4 w-4 shrink-0 rounded-full"
+                      style={{ background: householdVar(h.color) }}
+                    />
+                    <input
+                      name="name"
+                      required
+                      defaultValue={h.name}
+                      aria-label="Household name"
+                      className="field min-w-0 flex-1"
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <select
+                      name="color"
+                      defaultValue={h.color}
+                      aria-label={`Color for ${h.name}`}
+                      className="field min-w-0 flex-1"
+                    >
+                      {HOUSEHOLD_TOKENS.map((token) => (
+                        <option key={token} value={token}>
+                          {token.charAt(0).toUpperCase() + token.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn btn-quiet shrink-0">
+                      Save details
+                    </button>
+                  </div>
+                </form>
+
+                <form
+                  action={setHouseholdMembers}
+                  className="mt-4 border-t border-sand-line pt-4"
+                >
+                  <input type="hidden" name="householdId" value={h.id} />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                    Members
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {users.map((user) => (
+                      <label
+                        key={user.id}
+                        className="flex cursor-pointer items-center gap-2 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          name="memberIds"
+                          value={user.id}
+                          defaultChecked={user.householdId === h.id}
+                          className="h-4 w-4 accent-water"
+                        />
+                        <span className="truncate">{user.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <button type="submit" className="btn btn-quiet mt-3">
+                    Save members
+                  </button>
+                </form>
+              </article>
             ))}
-          </ul>
-          <form action={addHousehold} className="mt-4 flex flex-wrap items-center gap-2 border-t border-sand-line pt-4">
-            <input name="name" required placeholder="New household" className="field flex-1" />
+          </div>
+
+          <form
+            action={addHousehold}
+            className="mt-5 flex flex-wrap items-center gap-2 border-t border-sand-line pt-4"
+          >
+            <input
+              name="name"
+              required
+              placeholder="New household"
+              className="field flex-1"
+            />
             <select name="color" className="field w-28">
-              {HOUSEHOLD_TOKENS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {HOUSEHOLD_TOKENS.map((token) => (
+                <option key={token} value={token}>
+                  {token.charAt(0).toUpperCase() + token.slice(1)}
                 </option>
               ))}
             </select>

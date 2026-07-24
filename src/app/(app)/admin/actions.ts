@@ -1,18 +1,28 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
+import { HOUSEHOLD_TOKENS } from "@/lib/colors";
 
 function refresh() {
   revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/calendar");
 }
 
 function readRole(value: unknown): string {
   const v = String(value);
   return v === "admin" || v === "household" || v === "family" ? v : "family";
+}
+
+function readHouseholdColor(value: unknown): string {
+  const color = String(value);
+  return (HOUSEHOLD_TOKENS as readonly string[]).includes(color)
+    ? color
+    : "steel";
 }
 
 export async function addUser(formData: FormData) {
@@ -88,12 +98,64 @@ export async function setHouseStatus(formData: FormData) {
 export async function addHousehold(formData: FormData) {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
-  const color = String(formData.get("color") ?? "steel");
+  const color = readHouseholdColor(formData.get("color"));
   if (!name) return;
   const existing = await getDb().query.households.findFirst({
     where: eq(schema.households.name, name),
   });
   if (existing) return;
   await getDb().insert(schema.households).values({ name, color });
+  refresh();
+}
+
+export async function updateHousehold(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const name = String(formData.get("name") ?? "").trim();
+  const color = readHouseholdColor(formData.get("color"));
+  if (!id || !name) return;
+
+  const existing = await getDb().query.households.findFirst({
+    where: eq(schema.households.name, name),
+  });
+  if (existing && existing.id !== id) return;
+
+  await getDb()
+    .update(schema.households)
+    .set({ name, color })
+    .where(eq(schema.households.id, id));
+  refresh();
+}
+
+export async function setHouseholdMembers(formData: FormData) {
+  await requireAdmin();
+  const householdId = Number(formData.get("householdId"));
+  if (!householdId) return;
+
+  const household = await getDb().query.households.findFirst({
+    where: eq(schema.households.id, householdId),
+  });
+  if (!household) return;
+
+  const memberIds = [
+    ...new Set(
+      formData
+        .getAll("memberIds")
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0)
+    ),
+  ];
+
+  await getDb()
+    .update(schema.users)
+    .set({ householdId: null })
+    .where(eq(schema.users.householdId, householdId));
+
+  if (memberIds.length > 0) {
+    await getDb()
+      .update(schema.users)
+      .set({ householdId })
+      .where(inArray(schema.users.id, memberIds));
+  }
   refresh();
 }
