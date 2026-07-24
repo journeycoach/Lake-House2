@@ -4,7 +4,7 @@
   The Lakehouse design tokens.
   Palette: lake water, morning mist, dock sand, one canoe-rust accent.
   Rules held everywhere: radius 8px, spacing scale 4/8/16/24/32/48,
-  two typefaces (Fraunces display, Geist body), color used semantically.
+  two typefaces (Newsreader display, Geist body), color used semantically.
 */
 
 :root {
@@ -55,7 +55,7 @@
   --color-sage: var(--sage);
   --color-amber: var(--amber);
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-newsreader);
   --font-sans: var(--font-geist);
 
   --radius-lh: 8px;
@@ -68,8 +68,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Component classes live in the components layer so Tailwind utilities
+   (sm:w-56, flex-1, etc.) can override them. Unlayered CSS would win over
+   every utility and quietly break per-use sizing. */
+@layer components {
+
 .font-display {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-display), Georgia, serif;
 }
 
 /* Section label: plain letterspaced caps. No pill, no border. */
@@ -174,3 +179,5 @@ body {
   color: var(--ink-soft);
   background: color-mix(in srgb, var(--ink-soft) 10%, transparent);
 }
+
+} /* end @layer components */

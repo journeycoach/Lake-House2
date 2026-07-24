@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Fraunces, Geist } from "next/font/google";
+import { Newsreader, Geist } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+/* Display serif. Newsreader over Fraunces: same warm editorial feel, but
+   conventional letterforms - Fraunces's curled "j" read as a squiggle in a
+   family full of J names (Jeff, Jenn, John). */
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
 });
 
@@ -26,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${geist.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${geist.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
