@@ -6,6 +6,7 @@ import { canEdit } from "@/lib/roles";
 import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { maintenanceItems, openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { reportIssue, setFixitStatus, removeFixit } from "./fixit-actions";
 import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
 
@@ -120,9 +121,7 @@ export default async function UpkeepPage() {
             </label>
             <textarea id="details" name="details" rows={2} className="field" placeholder="Check the fixture and replace it if needed." />
           </div>
-          <button type="submit" className="btn btn-primary">
-            Add to the list
-          </button>
+          <SubmitButton>Add to the list</SubmitButton>
         </form>
       </section>
 
@@ -281,9 +280,7 @@ export default async function UpkeepPage() {
               placeholder="Steps, service provider, supplies, or anything else to remember"
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            Add schedule
-          </button>
+          <SubmitButton>Add schedule</SubmitButton>
         </form>
       </section>
     </div>

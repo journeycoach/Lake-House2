@@ -16,11 +16,7 @@ export default async function GuidePage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader title="House guide" />
       <section>
-        <p className="section-label">House guide</p>
-        <h2 className="font-display text-2xl mt-1">
-          Everything the family needs to know
-        </h2>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="text-sm text-ink-soft">
           Practical information for arrivals, lake days, emergencies, and caring
           for the house. Anyone can edit a section.
         </p>
