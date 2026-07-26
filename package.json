@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
-    "seed": "dotenv -e .env.local -- tsx scripts/seed.ts"
+    "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
+    "ship": "vercel deploy --prod"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

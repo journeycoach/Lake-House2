@@ -12,11 +12,11 @@ The repo is the only channel between them. Rules:
 - Branch names say whose agent did the work: `claude/<topic>` or `codex/<topic>`.
 - Never push directly to `main`. Open a PR and say in the description what
   changed and why. The other side reads PRs to catch up - write for them.
-- Hosting lives on Jeff's Vercel (Hobby plan): only commits authored by Jeff
-  auto-deploy once the Git connection is active, and Jeff can always ship
-  manually with `vercel deploy --prod`. Either side opens PRs; Jeff merges
-  using "Create a merge commit" (not squash or rebase) so the deploy commit
-  is his. John owns the domain (paines.com), the Neon database, and the repo.
+- Hosting lives on Jeff's Vercel and serves paines.com. The project is NOT
+  connected to GitHub, so nothing deploys automatically: after a PR is merged,
+  Jeff pulls `main` and runs `npm run ship`. Either side opens PRs; Jeff
+  merges and ships. John owns the repo, the domain registration, and the Neon
+  database.
 - When you close an issue, comment what you actually did.
 - Never force-push, never commit `.env*`, secrets, or local data.
 - The production database is shared and live. Schema changes go through
