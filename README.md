@@ -21,6 +21,17 @@ download their values.
 
 Then open the printed localhost URL and sign in.
 
+## Ship it
+
+```
+npm run ship     # builds and deploys to paines.com
+```
+
+The Vercel project is not connected to GitHub (the repo and the hosting account
+belong to different people, and connecting them needs a GitHub App install on
+the repo owner's account). So merging a PR does not deploy on its own: merge,
+pull `main`, then run the command above.
+
 Every account starts with the password `lakehouse` until it is changed on the
 Admin page. Admins can add people, reset passwords, and see sign-in activity.
 
