@@ -32,6 +32,7 @@ export default async function NotesPage() {
               name="body"
               required
               rows={3}
+              maxLength={4000}
               className="field"
               placeholder="The lake is high this week, tie everything down."
             />

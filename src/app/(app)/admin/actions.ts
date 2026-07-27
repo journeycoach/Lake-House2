@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { HOUSEHOLD_TOKENS } from "@/lib/colors";
+import { readText } from "@/lib/forms";
 
 function refresh() {
   revalidatePath("/admin");
@@ -27,8 +28,8 @@ function readHouseholdColor(value: unknown): string {
 
 export async function addUser(formData: FormData) {
   await requireAdmin();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = readText(formData.get("name"), 200);
+  const email = readText(formData.get("email"), 254).toLowerCase();
   const password = String(formData.get("password") ?? "");
   const role = readRole(formData.get("role"));
   const householdId = Number(formData.get("householdId") || 0) || null;
@@ -79,7 +80,7 @@ export async function removeUser(formData: FormData) {
 
 export async function setHouseStatus(formData: FormData) {
   await requireAdmin();
-  const value = String(formData.get("value") ?? "").trim();
+  const value = readText(formData.get("value"), 200);
   if (!value) return;
   await getDb()
     .insert(schema.settings)
@@ -97,7 +98,7 @@ export async function setHouseStatus(formData: FormData) {
 
 export async function addHousehold(formData: FormData) {
   await requireAdmin();
-  const name = String(formData.get("name") ?? "").trim();
+  const name = readText(formData.get("name"), 200);
   const color = readHouseholdColor(formData.get("color"));
   if (!name) return;
   const existing = await getDb().query.households.findFirst({
@@ -111,7 +112,7 @@ export async function addHousehold(formData: FormData) {
 export async function updateHousehold(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
-  const name = String(formData.get("name") ?? "").trim();
+  const name = readText(formData.get("name"), 200);
   const color = readHouseholdColor(formData.get("color"));
   if (!id || !name) return;
 

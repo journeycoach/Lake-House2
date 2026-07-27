@@ -140,6 +140,7 @@ export default async function ChecklistPage() {
             <input
               name="title"
               required
+              maxLength={200}
               className="field"
               placeholder="Paper towels"
             />
@@ -150,6 +151,7 @@ export default async function ChecklistPage() {
             </span>
             <input
               name="details"
+              maxLength={4000}
               className="field"
               placeholder="Quantity, brand, or location"
             />

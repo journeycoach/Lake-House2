@@ -90,13 +90,13 @@ export default async function UpkeepPage() {
               <label htmlFor="title" className="flabel">
                 What is broken
               </label>
-              <input id="title" name="title" required className="field" placeholder="Dock light is flickering" />
+              <input id="title" name="title" required maxLength={200} className="field" placeholder="Dock light is flickering" />
             </div>
             <div>
               <label htmlFor="location" className="flabel">
                 Where
               </label>
-              <input id="location" name="location" className="field" placeholder="Dock" />
+              <input id="location" name="location" maxLength={200} className="field" placeholder="Dock" />
             </div>
             <div>
               <label htmlFor="priority" className="flabel">
@@ -112,14 +112,14 @@ export default async function UpkeepPage() {
               <label htmlFor="assignedTo" className="flabel">
                 Who is on it (optional)
               </label>
-              <input id="assignedTo" name="assignedTo" className="field" placeholder="Dad" />
+              <input id="assignedTo" name="assignedTo" maxLength={200} className="field" placeholder="Dad" />
             </div>
           </div>
           <div>
             <label htmlFor="details" className="flabel">
               Details
             </label>
-            <textarea id="details" name="details" rows={2} className="field" placeholder="Check the fixture and replace it if needed." />
+            <textarea id="details" name="details" rows={2} maxLength={4000} className="field" placeholder="Check the fixture and replace it if needed." />
           </div>
           <SubmitButton>Add to the list</SubmitButton>
         </form>
@@ -247,13 +247,13 @@ export default async function UpkeepPage() {
               <label htmlFor="task" className="flabel">
                 Task
               </label>
-              <input id="task" name="task" required className="field" placeholder="Clean gutters" />
+              <input id="task" name="task" required maxLength={200} className="field" placeholder="Clean gutters" />
             </div>
             <div>
               <label htmlFor="cadence" className="flabel">
                 How often
               </label>
-              <input id="cadence" name="cadence" className="field" placeholder="Every spring and fall" />
+              <input id="cadence" name="cadence" maxLength={200} className="field" placeholder="Every spring and fall" />
             </div>
             <div>
               <label htmlFor="nextDue" className="flabel">
@@ -265,7 +265,7 @@ export default async function UpkeepPage() {
               <label htmlFor="assignedTo2" className="flabel">
                 Assigned to
               </label>
-              <input id="assignedTo2" name="assignedTo" className="field" placeholder="Unassigned" />
+              <input id="assignedTo2" name="assignedTo" maxLength={200} className="field" placeholder="Unassigned" />
             </div>
           </div>
           <div>
@@ -276,6 +276,7 @@ export default async function UpkeepPage() {
               id="details2"
               name="details"
               rows={2}
+              maxLength={4000}
               className="field"
               placeholder="Steps, service provider, supplies, or anything else to remember"
             />

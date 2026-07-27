@@ -37,6 +37,7 @@ export function ProfileForm({
             name="name"
             required
             defaultValue={name}
+            maxLength={200}
             className="field"
           />
         </div>
@@ -50,6 +51,7 @@ export function ProfileForm({
             type="email"
             required
             defaultValue={email}
+            maxLength={254}
             className="field"
           />
         </div>

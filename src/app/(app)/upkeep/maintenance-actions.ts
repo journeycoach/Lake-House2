@@ -5,17 +5,18 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
+import { readText } from "@/lib/forms";
 
 export async function addSchedule(formData: FormData) {
   const user = await requireEditor();
-  const task = String(formData.get("task") ?? "").trim();
+  const task = readText(formData.get("task"), 200);
   if (!task) return;
   await getDb().insert(schema.maintenance).values({
     task,
-    details: String(formData.get("details") ?? "").trim() || null,
-    cadence: String(formData.get("cadence") ?? "").trim() || null,
+    details: readText(formData.get("details"), 4000) || null,
+    cadence: readText(formData.get("cadence"), 200) || null,
     nextDue: String(formData.get("nextDue") ?? "") || null,
-    assignedTo: String(formData.get("assignedTo") ?? "").trim() || null,
+    assignedTo: readText(formData.get("assignedTo"), 200) || null,
     createdAt: new Date().toISOString(),
   });
   await logActivity(user, "added a maintenance schedule", task);
