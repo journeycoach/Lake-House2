@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { asc, desc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
+import { approveRequest, declineRequest } from "./request-actions";
+import { clearHistory } from "./storage-actions";
+import { storageReport } from "@/lib/backup";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
 import { ROLES, roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
@@ -30,15 +33,82 @@ function fmtStamp(iso: string): string {
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
-  const [users, households, mails] = await Promise.all([
+  const [users, households, mails, requests, storage] = await Promise.all([
     getDb().select().from(schema.users).orderBy(asc(schema.users.name)),
     getDb().select().from(schema.households).orderBy(asc(schema.households.name)),
     getDb().select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
+    getDb()
+      .select()
+      .from(schema.accessRequests)
+      .where(eq(schema.accessRequests.status, "pending"))
+      .orderBy(asc(schema.accessRequests.id)),
+    storageReport(),
   ]);
 
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Admin" action={<span className="chip chip-whenever">Admin only</span>} />
+
+      {/* Pending access requests. Only rendered when someone is waiting, so
+          the page stays quiet the rest of the time. */}
+      {requests.length > 0 ? (
+        <section id="requests" className="card mb-6 border-rust p-6">
+          <p className="section-label">Waiting on you</p>
+          <h2 className="font-display text-2xl mt-1">
+            {requests.length} {requests.length === 1 ? "person wants" : "people want"} in
+          </h2>
+          <ul className="mt-4">
+            {requests.map((r) => (
+              <li
+                key={r.id}
+                className="border-t border-sand-line py-4 first:border-0 first:pt-0"
+              >
+                <p className="font-semibold">{r.name}</p>
+                <p className="text-sm text-ink-soft">{r.email}</p>
+                {r.message ? (
+                  <p className="mt-2 text-sm">{r.message}</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <form action={approveRequest} className="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="id" value={r.id} />
+                    <select name="role" defaultValue="family" className="field w-44 py-2 text-sm">
+                      {ROLES.map((role) => (
+                        <option key={role.value} value={role.value}>
+                          {role.label}
+                        </option>
+                      ))}
+                    </select>
+                    <select name="householdId" defaultValue="" className="field w-44 py-2 text-sm">
+                      <option value="">No household</option>
+                      {households.map((h) => (
+                        <option key={h.id} value={h.id}>
+                          {h.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn btn-primary py-2">
+                      Approve
+                    </button>
+                  </form>
+                  <form action={declineRequest}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button
+                      type="submit"
+                      className="text-xs font-medium text-ink-faint hover:text-rust"
+                    >
+                      Decline
+                    </button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-ink-faint">
+            Approving creates the account and emails them a link to set their
+            own password.
+          </p>
+        </section>
+      ) : null}
 
       {/* Family accounts */}
       <section className="card p-6">
@@ -304,6 +374,64 @@ export default async function AdminPage() {
           </p>
         </section>
       </div>
+
+      {/* Storage and backups */}
+      <section className={`card mt-6 p-6 ${storage.nearlyFull ? "border-amber" : ""}`}>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="section-label">Storage</p>
+            <h2 className="font-display text-2xl mt-1">
+              {storage.nearlyFull
+                ? "Filling up, worth clearing"
+                : "Plenty of room"}
+            </h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              {storage.totalRows.toLocaleString()} entries stored.{" "}
+              {storage.historyRows.toLocaleString()} of those are history that
+              can be cleared.
+            </p>
+          </div>
+          <a href="/api/backup" className="btn btn-primary shrink-0">
+            Download a backup
+          </a>
+        </div>
+
+        <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+          {storage.perTable.map((t) => (
+            <li
+              key={t.name}
+              className="flex items-baseline justify-between gap-3 border-t border-sand-line pt-2 text-sm"
+            >
+              <span>
+                {t.label}
+                {t.clearable ? (
+                  <span className="ml-2 text-xs text-ink-faint">clearable</span>
+                ) : null}
+              </span>
+              <span className="font-semibold">{t.rows.toLocaleString()}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-6 border-t border-sand-line pt-4">
+          <h3 className="font-semibold">Clear old history</h3>
+          <p className="mt-1 text-sm text-ink-soft">
+            Removes activity, sign-in records, and sent mail older than what you
+            keep. Bookings, notes, the guide, and accounts are never touched.
+            Download a backup first.
+          </p>
+          <form action={clearHistory} className="mt-3 flex flex-wrap items-center gap-2">
+            <select name="keep" defaultValue="month" className="field w-56">
+              <option value="week">Keep the last week</option>
+              <option value="month">Keep the last 30 days</option>
+              <option value="quarter">Keep the last 90 days</option>
+            </select>
+            <button type="submit" className="btn btn-quiet">
+              Clear the rest
+            </button>
+          </form>
+        </div>
+      </section>
 
       {/* Outbox */}
       <div className="mt-6 grid gap-6">

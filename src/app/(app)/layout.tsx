@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
@@ -76,6 +77,17 @@ export default async function AppLayout({
               Exit preview
             </button>
           </form>
+        </div>
+      ) : null}
+      {user.mustChangePassword && !user.viewingAs ? (
+        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-amber px-4 py-2 text-sm font-medium text-white">
+          <span>You are still using the password you were given.</span>
+          <Link
+            href="/account"
+            className="rounded-lh bg-white/20 px-3 py-1 text-xs font-semibold hover:bg-white/30 transition-colors"
+          >
+            Pick your own
+          </Link>
         </div>
       ) : null}
       <div className="flex-1 flex flex-col lg:flex-row">

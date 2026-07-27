@@ -39,6 +39,7 @@ export async function signIn(
     uid: user.id,
     name: user.name,
     role: user.role as Role,
+    v: user.sessionVersion,
   });
   redirect("/");
 }

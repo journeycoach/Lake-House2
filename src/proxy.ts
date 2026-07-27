@@ -12,7 +12,11 @@ export async function proxy(request: NextRequest) {
 
   if (
     pathname.startsWith("/signin") ||
+    pathname.startsWith("/forgot") ||
+    pathname.startsWith("/reset/") ||
+    pathname.startsWith("/request") ||
     pathname.startsWith("/api/reminders") ||
+    pathname.startsWith("/api/weekly") ||
     pathname.startsWith("/api/feed/") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
