@@ -15,6 +15,9 @@ export type SessionPayload = {
   uid: number;
   name: string;
   role: Role;
+  // Session version at sign-in. Checked against the user's current version so
+  // removing an account or changing a password kills sessions already issued.
+  v: number;
 };
 
 export async function createSession(payload: SessionPayload) {
@@ -43,6 +46,7 @@ export async function readSession(): Promise<SessionPayload | null> {
       uid: payload.uid as number,
       name: payload.name as string,
       role: payload.role as Role,
+      v: (payload.v as number) ?? 0,
     };
   } catch {
     return null;

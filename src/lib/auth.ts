@@ -13,7 +13,11 @@ export const getCurrentUser = cache(async () => {
   const user = await getDb().query.users.findFirst({
     where: eq(schema.users.id, session.uid),
   });
-  return user ?? null;
+  if (!user) return null;
+  // A cookie issued before the account's password changed or the account was
+  // removed no longer counts, even though the signature is still valid.
+  if (user.sessionVersion !== session.v) return null;
+  return user;
 });
 
 /*

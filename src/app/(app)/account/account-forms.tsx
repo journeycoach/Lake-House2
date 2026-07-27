@@ -54,6 +54,18 @@ export function ProfileForm({
           />
         </div>
       </div>
+      <div>
+        <label htmlFor="confirmPassword" className="flabel">
+          Current password (only needed to change your email)
+        </label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          autoComplete="current-password"
+          className="field sm:w-1/2"
+        />
+      </div>
       <Feedback state={state} />
       <button type="submit" disabled={pending} className="btn btn-primary">
         {pending ? "Saving" : "Save details"}

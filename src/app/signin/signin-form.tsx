@@ -44,7 +44,13 @@ export function SignInForm() {
         {pending ? "Signing in" : "Sign in"}
       </button>
       <p className="text-xs text-ink-faint">
-        Forgot your password? Any admin can reset it from the Admin page.
+        <a href="/forgot" className="underline hover:text-water">
+          Forgot your password?
+        </a>{" "}
+        New to the family?{" "}
+        <a href="/request" className="underline hover:text-water">
+          Ask to join.
+        </a>
       </p>
     </form>
   );

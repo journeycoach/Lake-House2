@@ -22,6 +22,11 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("family"), // admin | household | family
   householdId: integer("household_id").references(() => households.id),
   createdAt: text("created_at").notNull(),
+  // Set when an admin creates or approves an account, cleared once the person
+  // picks their own password. Drives the "still on a starting password" banner.
+  mustChangePassword: integer("must_change_password").notNull().default(0),
+  // Bumped to invalidate every existing session cookie for this user.
+  sessionVersion: integer("session_version").notNull().default(0),
 });
 
 export const stays = pgTable("stays", {
@@ -105,6 +110,33 @@ export const activityLog = pgTable("activity_log", {
   action: text("action").notNull(), // short verb phrase
   detail: text("detail"), // what it applied to
   at: text("at").notNull(),
+});
+
+/* Single-use tokens for setting a password without being signed in: either a
+   forgotten-password reset, or the first password on a newly approved account.
+   Only the hash is stored, so a leaked database row cannot be used as a link. */
+export const passwordTokens = pgTable("password_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
+  tokenHash: text("token_hash").notNull(),
+  purpose: text("purpose").notNull(), // reset | invite
+  expiresAt: text("expires_at").notNull(),
+  usedAt: text("used_at"),
+  createdAt: text("created_at").notNull(),
+});
+
+/* Someone asking to join. No account exists until an admin approves. */
+export const accessRequests = pgTable("access_requests", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message"),
+  status: text("status").notNull().default("pending"), // pending | approved | declined
+  createdAt: text("created_at").notNull(),
+  decidedBy: text("decided_by"),
+  decidedAt: text("decided_at"),
 });
 
 /* Every email the app wants to send lands here first. If RESEND_API_KEY is

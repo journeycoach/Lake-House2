@@ -18,6 +18,17 @@ export async function updateProfile(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!name || !email) return { error: "Name and email are both required." };
 
+  // The email address is how you get back in if you forget your password, so
+  // changing it needs the current password. A borrowed session should not be
+  // able to walk off with the account.
+  if (email !== user.email) {
+    const confirm = String(formData.get("confirmPassword") ?? "");
+    if (!confirm)
+      return { error: "Enter your current password to change your email." };
+    if (!(await bcrypt.compare(confirm, user.passwordHash)))
+      return { error: "That password is not right." };
+  }
+
   const taken = await getDb().query.users.findFirst({
     where: and(eq(schema.users.email, email), ne(schema.users.id, user.id)),
   });
@@ -48,9 +59,10 @@ export async function changePassword(
 
   await getDb()
     .update(schema.users)
-    .set({ passwordHash: bcrypt.hashSync(next, 10) })
+    .set({ passwordHash: bcrypt.hashSync(next, 10), mustChangePassword: 0 })
     .where(eq(schema.users.id, user.id));
   await logActivity(user, "changed their password");
   revalidatePath("/account");
+  revalidatePath("/", "layout");
   return { saved: true };
 }

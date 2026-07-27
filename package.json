@@ -8,7 +8,8 @@
     "start": "next start",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
-    "ship": "vercel deploy --prod"
+    "ship": "vercel deploy --prod",
+    "restore": "dotenv -e .env.local -- tsx scripts/restore.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
