@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireEditor, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
+import { readText } from "@/lib/forms";
 
 function refresh() {
   revalidatePath("/checklist");
@@ -36,13 +37,13 @@ async function normalizeGroup(done: number) {
 
 export async function addItem(formData: FormData) {
   const user = await requireEditor();
-  const title = String(formData.get("title") ?? "").trim();
+  const title = readText(formData.get("title"), 200);
   if (!title) return;
   const rows = await groupItems(0);
   const position = Math.max(0, ...rows.map((r) => r.position)) + 1;
   await getDb().insert(schema.checklist).values({
     title,
-    details: String(formData.get("details") ?? "").trim() || null,
+    details: readText(formData.get("details"), 4000) || null,
     addedBy: user.name,
     done: 0,
     position,

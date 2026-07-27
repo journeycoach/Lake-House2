@@ -5,17 +5,18 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
+import { readText } from "@/lib/forms";
 
 export async function reportIssue(formData: FormData) {
   const user = await requireEditor();
-  const title = String(formData.get("title") ?? "").trim();
+  const title = readText(formData.get("title"), 200);
   if (!title) return;
   await getDb().insert(schema.fixit).values({
     title,
-    details: String(formData.get("details") ?? "").trim() || null,
-    location: String(formData.get("location") ?? "").trim() || null,
+    details: readText(formData.get("details"), 4000) || null,
+    location: readText(formData.get("location"), 200) || null,
     priority: String(formData.get("priority") ?? "whenever"),
-    assignedTo: String(formData.get("assignedTo") ?? "").trim() || null,
+    assignedTo: readText(formData.get("assignedTo"), 200) || null,
     status: "open",
     createdAt: new Date().toISOString(),
   });

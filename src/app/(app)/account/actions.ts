@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
+import { readText } from "@/lib/forms";
 
 export type AccountState = { error?: string; saved?: boolean };
 
@@ -14,8 +15,8 @@ export async function updateProfile(
   formData: FormData
 ): Promise<AccountState> {
   const user = await requireUser();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = readText(formData.get("name"), 200);
+  const email = readText(formData.get("email"), 254).toLowerCase();
   if (!name || !email) return { error: "Name and email are both required." };
 
   const taken = await getDb().query.users.findFirst({

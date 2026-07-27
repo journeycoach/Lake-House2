@@ -111,8 +111,8 @@ export default async function AdminPage() {
         <div className="mt-6 border-t border-sand-line pt-4">
           <h3 className="font-semibold">Add a person</h3>
           <form action={addUser} className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <input name="name" required placeholder="Name" className="field" />
-            <input name="email" type="email" required placeholder="Email" className="field" />
+            <input name="name" required placeholder="Name" maxLength={200} className="field" />
+            <input name="email" type="email" required placeholder="Email" maxLength={254} className="field" />
             <input
               name="password"
               type="password"
@@ -172,6 +172,7 @@ export default async function AdminPage() {
                       name="name"
                       required
                       defaultValue={h.name}
+                      maxLength={200}
                       aria-label="Household name"
                       className="field min-w-0 flex-1"
                     />
@@ -223,6 +224,7 @@ export default async function AdminPage() {
               name="name"
               required
               placeholder="New household"
+              maxLength={200}
               className="field flex-1"
             />
             <select name="color" className="field w-28">
@@ -290,6 +292,7 @@ export default async function AdminPage() {
               name="value"
               required
               placeholder="Ready"
+              maxLength={200}
               className="field flex-1"
             />
             <button type="submit" className="btn btn-quiet shrink-0">

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getDb, schema } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/session";
 import type { Role } from "@/lib/roles";
+import { readText } from "@/lib/forms";
 
 export type SignInState = { error?: string };
 
@@ -13,9 +14,7 @@ export async function signIn(
   _prev: SignInState,
   formData: FormData
 ): Promise<SignInState> {
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase();
+  const email = readText(formData.get("email"), 254).toLowerCase();
   const password = String(formData.get("password") ?? "");
   const now = new Date().toISOString();
 
