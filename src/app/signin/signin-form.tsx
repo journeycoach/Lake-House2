@@ -20,6 +20,7 @@ export function SignInForm() {
           type="email"
           autoComplete="email"
           required
+          maxLength={254}
           className="field"
           placeholder="you@example.com"
         />

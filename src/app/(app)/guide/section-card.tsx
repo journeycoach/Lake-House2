@@ -23,8 +23,8 @@ export function SectionCard({
           className="space-y-3"
         >
           <input type="hidden" name="id" value={section.id} />
-          <input name="title" defaultValue={section.title} className="field font-semibold" />
-          <textarea name="body" defaultValue={section.body} rows={6} className="field text-sm" />
+          <input name="title" defaultValue={section.title} maxLength={200} className="field font-semibold" />
+          <textarea name="body" defaultValue={section.body} rows={6} maxLength={4000} className="field text-sm" />
           <div className="flex gap-2">
             <button type="submit" className="btn btn-primary">
               Save

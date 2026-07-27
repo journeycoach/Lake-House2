@@ -6,17 +6,18 @@ import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
+import { readText } from "@/lib/forms";
 
 export type StayFormState = { error?: string; conflict?: string };
 
 function readStay(formData: FormData) {
-  const label = String(formData.get("label") ?? "").trim();
+  const label = readText(formData.get("label"), 200);
   const householdId = Number(formData.get("householdId") || 0) || null;
   const start = String(formData.get("start") ?? "");
   const end = String(formData.get("end") ?? "");
   const adults = Number(formData.get("adults") || 0);
   const kids = Number(formData.get("kids") || 0);
-  const note = String(formData.get("note") ?? "").trim() || null;
+  const note = readText(formData.get("note"), 4000) || null;
   return { label, householdId, start, end, adults, kids, note };
 }
 

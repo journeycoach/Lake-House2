@@ -6,10 +6,11 @@ import { getDb, schema } from "@/lib/db";
 import { getEffectiveUser, requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { canEdit } from "@/lib/roles";
+import { readText } from "@/lib/forms";
 
 export async function addNote(formData: FormData) {
   const user = await requireEditor();
-  const body = String(formData.get("body") ?? "").trim();
+  const body = readText(formData.get("body"), 4000);
   const tag = String(formData.get("tag") ?? "house update");
   if (!body) return;
   await getDb().insert(schema.notes).values({
