@@ -86,6 +86,23 @@ export const guideSections = pgTable("guide_sections", {
   position: integer("position").notNull(),
   title: text("title").notNull(),
   body: text("body").notNull(),
+  // Lowest tier that can see this section at all. "family" means everyone.
+  minRole: text("min_role").notNull().default("family"),
+});
+
+/* The house guide is built from these: a section holds any number of blocks,
+   each rendered by kind. Codes stay hidden until someone asks to see them,
+   photos open full size, and any single block can be limited to a tier. */
+export const guideBlocks = pgTable("guide_blocks", {
+  id: serial("id").primaryKey(),
+  sectionId: integer("section_id")
+    .notNull()
+    .references(() => guideSections.id),
+  position: integer("position").notNull(),
+  kind: text("kind").notNull(), // text | secret | photo | contact | address
+  label: text("label"),
+  value: text("value").notNull(),
+  minRole: text("min_role").notNull().default("family"),
 });
 
 export const settings = pgTable("settings", {
