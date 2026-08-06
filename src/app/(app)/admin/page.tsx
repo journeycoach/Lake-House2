@@ -19,7 +19,7 @@ import {
   setMemberHouseholds,
 } from "./actions";
 
-export const metadata: Metadata = { title: "Admin · The Lakehouse" };
+export const metadata: Metadata = { title: "Admin · Paine Pointe" };
 
 function fmtStamp(iso: string): string {
   const d = new Date(iso);

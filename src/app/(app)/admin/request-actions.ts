@@ -65,11 +65,11 @@ export async function approveRequest(formData: FormData) {
     await sendTemplateMail({
       to: req.email,
       kind: "invite",
-      subject: "You are in: the family lakehouse site",
-      heading: "Welcome to the lakehouse",
+      subject: "You are in: Paine Pointe",
+      heading: "Welcome to Paine Pointe",
       preview: "Set a password and you are in.",
       blocks: [
-        { type: "text", text: `Hi ${req.name}, ${admin.name} let you in to the family lakehouse site. Pick a password and you can see the calendar, notes, and house guide.` },
+        { type: "text", text: `Hi ${req.name}, ${admin.name} let you in to Paine Pointe. Pick a password and you can see the calendar, notes, and house guide.` },
         { type: "button", label: "Set your password", href: `${siteUrl()}/reset/${token}` },
         { type: "quiet", text: "This link works once and lasts three days. If it expires, use the forgot-password link on the sign-in page." },
       ],

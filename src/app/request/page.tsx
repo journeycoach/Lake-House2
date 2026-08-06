@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
 import { RequestForm } from "./request-form";
 
-export const metadata: Metadata = { title: "Ask to join · The Lakehouse" };
+export const metadata: Metadata = { title: "Ask to join · Paine Pointe" };
 
 export default function RequestPage() {
   return (

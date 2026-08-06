@@ -1,6 +1,6 @@
-# The Lakehouse
+# Paine Pointe
 
-Private family site for the Paine lakehouse: who is up, the shared calendar,
+Private family site for Paine Pointe: who is up, the shared calendar,
 family notes, the fix-it list, checklists, maintenance schedules, and the house
 guide. Rebuilt from the original prototype so the family owns the code, the
 data, and the domain.

@@ -62,7 +62,7 @@ function event(stay: IcsStay): string[] {
     `DTSTAMP:${stamp(stay.createdAt)}`,
     `DTSTART;VALUE=DATE:${dateNum(stay.start)}`,
     `DTEND;VALUE=DATE:${dateNum(addDays(stay.end, 1))}`,
-    fold(`SUMMARY:${esc(`${stay.label} at the lakehouse (${guests} guest${guests === 1 ? "" : "s"})`)}`),
+    fold(`SUMMARY:${esc(`${stay.label} at Paine Pointe (${guests} guest${guests === 1 ? "" : "s"})`)}`),
     fold(`DESCRIPTION:${esc(desc)}`),
     "TRANSP:TRANSPARENT",
     "END:VEVENT",
@@ -73,11 +73,11 @@ export function buildCalendar(stays: IcsStay[]): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//The Lakehouse//Family Calendar//EN",
+    "PRODID:-//Paine Pointe//Family Calendar//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:The Lakehouse",
-    "X-WR-CALDESC:Who is using the lakehouse",
+    "X-WR-CALNAME:Paine Pointe",
+    "X-WR-CALDESC:Who is using Paine Pointe",
     ...stays.flatMap(event),
     "END:VCALENDAR",
   ];

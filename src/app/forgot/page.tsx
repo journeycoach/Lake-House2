@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
 import { ForgotForm } from "./forgot-form";
 
-export const metadata: Metadata = { title: "Forgot password · The Lakehouse" };
+export const metadata: Metadata = { title: "Forgot password · Paine Pointe" };
 
 export default function ForgotPage() {
   return (

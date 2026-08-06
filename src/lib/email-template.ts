@@ -100,10 +100,10 @@ export function renderEmail({
 <tr><td style="background:${DEEP};border-radius:8px 8px 0 0;padding:24px 32px;">
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
 <td style="padding-right:12px;">
-<div style="width:40px;height:40px;border:1px solid rgba(255,255,255,0.25);border-radius:8px;text-align:center;line-height:40px;font-family:${SERIF};font-size:15px;color:#ffffff;">LH</div>
+<div style="width:40px;height:40px;border:1px solid rgba(255,255,255,0.25);border-radius:8px;text-align:center;line-height:40px;font-family:${SERIF};font-size:15px;color:#ffffff;">PP</div>
 </td>
 <td>
-<div style="font-family:${SERIF};font-size:18px;color:#ffffff;line-height:1.2;">The Lakehouse</div>
+<div style="font-family:${SERIF};font-size:18px;color:#ffffff;line-height:1.2;">Paine Pointe</div>
 <div style="font-family:${SANS};font-size:12px;color:rgba(255,255,255,0.55);">Our family place</div>
 </td>
 </tr></table>
@@ -118,7 +118,7 @@ ${body}
 
 <tr><td style="background:${CARD};border-radius:0 0 8px 8px;border:1px solid ${LINE};border-top:none;padding:20px 32px;">
 <p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.6;color:${INK_FAINT};">
-Sent by the family lakehouse site. <a href="${url}" style="color:${INK_SOFT};">${esc(
+Sent by Paine Pointe. <a href="${url}" style="color:${INK_SOFT};">${esc(
     url.replace(/^https?:\/\//, "")
   )}</a>
 </p>
@@ -137,7 +137,7 @@ Sent by the family lakehouse site. <a href="${url}" style="color:${INK_SOFT};">$
       return b.text;
     }),
     "",
-    "Sent by the family lakehouse site.",
+    "Sent by Paine Pointe.",
     url,
   ].join("\n");
 

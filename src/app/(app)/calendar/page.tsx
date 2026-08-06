@@ -15,7 +15,7 @@ import { CopyField } from "@/components/copy-field";
 import { PageHeader } from "@/components/page-header";
 import { StayForm, StayListItem } from "./stay-form";
 
-export const metadata: Metadata = { title: "Calendar · The Lakehouse" };
+export const metadata: Metadata = { title: "Calendar · Paine Pointe" };
 
 function tab(active: boolean) {
   return `rounded-lh px-4 py-2 text-sm font-semibold transition-colors ${
@@ -132,7 +132,7 @@ export default async function CalendarPage({
       {/* Stays list */}
       <section className="card mt-6 p-6">
         <p className="section-label">Upcoming stays</p>
-        <h2 className="font-display text-2xl mt-1">Who is using the lakehouse</h2>
+        <h2 className="font-display text-2xl mt-1">Who is using Paine Pointe</h2>
         <p className="mt-1 text-sm text-ink-soft">
           Conflicting dates are flagged before saving.
         </p>

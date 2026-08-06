@@ -19,7 +19,7 @@ export async function GET(
   return new NextResponse(buildCalendar([stay]), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `attachment; filename="lakehouse-${slug}.ics"`,
+      "Content-Disposition": `attachment; filename="paine-pointe-${slug}.ics"`,
     },
   });
 }
