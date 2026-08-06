@@ -36,9 +36,9 @@ export async function requestReset(
     await sendTemplateMail({
       to: user.email,
       kind: "password-reset",
-      subject: "Reset your Lakehouse password",
+      subject: "Reset your Paine Pointe password",
       heading: "Reset your password",
-      preview: "A link to set a new password for the family lakehouse site.",
+      preview: "A link to set a new password for Paine Pointe.",
       blocks: [
         { type: "text", text: `Hi ${user.name}, someone asked to reset the password for this account.` },
         { type: "button", label: "Set a new password", href: link },

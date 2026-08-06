@@ -4,7 +4,7 @@ import { roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
 import { ProfileForm, PasswordForm } from "./account-forms";
 
-export const metadata: Metadata = { title: "Account · The Lakehouse" };
+export const metadata: Metadata = { title: "Account · Paine Pointe" };
 
 /* Every tier gets this page: it is how each person changes their own
    password off the shared default without asking an admin. */

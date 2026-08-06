@@ -52,9 +52,9 @@ export async function requestAccess(
     await sendTemplateMail({
       to: admin.email,
       kind: "access-request",
-      subject: `${name} asked to join the lakehouse site`,
+      subject: `${name} asked to join Paine Pointe`,
       heading: "Someone asked to join",
-      preview: `${name} requested access to the family lakehouse site.`,
+      preview: `${name} requested access to Paine Pointe.`,
       blocks: [
         { type: "detail", label: "Name", value: name },
         { type: "detail", label: "Email", value: email },

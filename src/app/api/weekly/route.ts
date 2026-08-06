@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
       to: admin.email,
       kind: "weekly-backup",
       subject: storage.nearlyFull
-        ? "Lakehouse backup, and storage is filling up"
-        : "Lakehouse weekly backup",
+        ? "Paine Pointe backup, and storage is filling up"
+        : "Paine Pointe weekly backup",
       heading: "This week's backup",
-      preview: "A copy of everything on the lakehouse site is attached.",
+      preview: "A copy of everything on Paine Pointe is attached.",
       blocks: [
         {
           type: "text",

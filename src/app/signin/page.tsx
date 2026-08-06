@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BrandMark } from "@/components/brand-mark";
 import { SignInForm } from "./signin-form";
 
-export const metadata: Metadata = { title: "Sign in · The Lakehouse" };
+export const metadata: Metadata = { title: "Sign in · Paine Pointe" };
 
 export default function SignInPage() {
   return (
@@ -12,8 +12,7 @@ export default function SignInPage() {
           <div className="mx-auto mb-4 flex justify-center">
             <BrandMark size="lg" />
           </div>
-          <h1 className="font-display text-3xl text-white">The Lakehouse</h1>
-          <p className="mt-2 text-sm text-white/60">
+          <p className="mt-4 text-sm text-white/60">
             Family only. Sign in to see the calendar, notes, and house guide.
           </p>
         </div>

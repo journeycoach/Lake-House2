@@ -16,9 +16,9 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "The Lakehouse",
+  title: "Paine Pointe",
   description:
-    "The Paine family lakehouse: who is up, what needs doing, and how the house works.",
+    "Paine Pointe: who is up, what needs doing, and how the house works.",
 };
 
 export default function RootLayout({

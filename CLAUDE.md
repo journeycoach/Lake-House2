@@ -1,8 +1,8 @@
 @AGENTS.md
 
-# The Lakehouse - project notes for agents
+# Paine Pointe - project notes for agents
 
-Family lakehouse app, live at paines.com. Next.js App Router + Tailwind v4,
+Paine Pointe family app, live at paines.com. Next.js App Router + Tailwind v4,
 Neon Postgres via Drizzle (`npm run db:push` for schema, `npm run seed` for
 content), email + password auth with a signed cookie, route guard in
 `src/proxy.ts` (Next 16 renamed middleware to proxy; read the bundled docs in

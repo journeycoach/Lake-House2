@@ -10,7 +10,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { reportIssue, setFixitStatus, removeFixit } from "./fixit-actions";
 import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
 
-export const metadata: Metadata = { title: "Upkeep · The Lakehouse" };
+export const metadata: Metadata = { title: "Upkeep · Paine Pointe" };
 
 /* One page for taking care of the house: what is broken now, then the
    recurring work that keeps things from breaking. */

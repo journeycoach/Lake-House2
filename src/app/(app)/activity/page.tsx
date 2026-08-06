@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Activity · The Lakehouse" };
+export const metadata: Metadata = { title: "Activity · Paine Pointe" };
 
 function fmtStamp(iso: string): string {
   const d = new Date(iso);

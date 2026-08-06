@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { addNote, removeNote } from "./actions";
 
-export const metadata: Metadata = { title: "Family notes · The Lakehouse" };
+export const metadata: Metadata = { title: "Family notes · Paine Pointe" };
 
 const TAGS = ["local tip", "house update", "for the next visit"];
 

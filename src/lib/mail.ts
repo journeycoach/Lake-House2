@@ -9,7 +9,7 @@ import { renderEmail, type EmailBlock } from "./email-template";
   Resend; without it the app runs fine and just logs.
 */
 
-const FROM = process.env.MAIL_FROM ?? "The Lakehouse <lakehouse@paines.com>";
+const FROM = process.env.MAIL_FROM ?? "Paine Pointe <lakehouse@paines.com>";
 const REPLY_TO = process.env.MAIL_REPLY_TO;
 
 type Attachment = { filename: string; content: string };

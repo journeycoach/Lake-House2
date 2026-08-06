@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { addItem, toggleItem, removeItem, moveItem } from "./actions";
 
-export const metadata: Metadata = { title: "Checklist · The Lakehouse" };
+export const metadata: Metadata = { title: "Checklist · Paine Pointe" };
 
 export default async function ChecklistPage() {
   const user = await requireUser();
@@ -120,7 +120,7 @@ export default async function ChecklistPage() {
       <PageHeader title="Checklist" />
 
       <section className="card p-6">
-        <p className="section-label">Shared checklist</p>
+        <p className="section-label">Checklist</p>
         <h2 className="font-display text-2xl mt-1">Before the next trip</h2>
         <p className="mt-1 text-sm text-ink-soft">
           Everyone can check items off. Household members and admins can add,

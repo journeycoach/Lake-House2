@@ -3,10 +3,10 @@ import type { MetadataRoute } from "next";
 /* "Add to Home Screen" on family phones installs this like an app. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "The Lakehouse",
-    short_name: "Lakehouse",
+    name: "Paine Pointe",
+    short_name: "Paine Pointe",
     description:
-      "The Paine family lakehouse: who is up, what needs doing, and how the house works.",
+      "Paine Pointe: who is up, what needs doing, and how the house works.",
     start_url: "/",
     display: "standalone",
     background_color: "#123236",

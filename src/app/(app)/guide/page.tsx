@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { SectionCard } from "./section-card";
 import { AddSection } from "./add-section";
 
-export const metadata: Metadata = { title: "House guide · The Lakehouse" };
+export const metadata: Metadata = { title: "House guide · Paine Pointe" };
 
 export default async function GuidePage() {
   const user = await requireUser();

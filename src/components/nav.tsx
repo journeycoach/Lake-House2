@@ -11,7 +11,7 @@ const LINKS: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/", label: "Home" },
   { href: "/calendar", label: "Calendar" },
   { href: "/notes", label: "Family notes" },
-  { href: "/upkeep", label: "Upkeep" },
+  { href: "/upkeep", label: "Fix It List" },
   { href: "/checklist", label: "Checklist" },
   { href: "/guide", label: "House guide" },
   { href: "/activity", label: "Activity", adminOnly: true },
@@ -52,14 +52,8 @@ function NavLinks({
 
 function Mark() {
   return (
-    <Link href="/" className="flex items-center gap-3">
+    <Link href="/" className="inline-flex">
       <BrandMark size="sm" />
-      <span>
-        <span className="block font-display text-lg leading-tight text-white">
-          The Lakehouse
-        </span>
-        <span className="block text-xs text-white/55">Our family place</span>
-      </span>
     </Link>
   );
 }

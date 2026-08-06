@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { readToken } from "@/lib/tokens";
 import { ResetForm } from "./reset-form";
 
-export const metadata: Metadata = { title: "Set a password · The Lakehouse" };
+export const metadata: Metadata = { title: "Set a password · Paine Pointe" };
 
 export default async function ResetPage({
   params,
@@ -26,7 +26,7 @@ export default async function ResetPage({
             <BrandMark size="lg" />
           </div>
           <h1 className="font-display text-3xl text-white">
-            {invite ? "Welcome to the lakehouse" : "Set a new password"}
+            {invite ? "Welcome to Paine Pointe" : "Set a new password"}
           </h1>
           {valid ? (
             <p className="mt-2 text-sm text-white/60">
