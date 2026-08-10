@@ -67,6 +67,7 @@ export const checklist = pgTable("checklist", {
   title: text("title").notNull(),
   details: text("details"),
   addedBy: text("added_by").notNull(),
+  checkedBy: text("checked_by"),
   done: integer("done").notNull().default(0),
   position: integer("position").notNull(),
 });

@@ -21,6 +21,8 @@ export async function addSchedule(formData: FormData) {
   });
   await logActivity(user, "added a maintenance schedule", task);
   revalidatePath("/upkeep");
+  revalidatePath("/calendar");
+  revalidatePath("/");
 }
 
 export async function updateDue(formData: FormData) {
@@ -37,6 +39,8 @@ export async function updateDue(formData: FormData) {
   });
   if (item) await logActivity(user, "set a maintenance due date", `${item.task}, ${nextDue}`);
   revalidatePath("/upkeep");
+  revalidatePath("/calendar");
+  revalidatePath("/");
 }
 
 export async function removeSchedule(formData: FormData) {
@@ -49,4 +53,6 @@ export async function removeSchedule(formData: FormData) {
   await getDb().delete(schema.maintenance).where(eq(schema.maintenance.id, id));
   if (item) await logActivity(user, "removed a maintenance schedule", item.task);
   revalidatePath("/upkeep");
+  revalidatePath("/calendar");
+  revalidatePath("/");
 }

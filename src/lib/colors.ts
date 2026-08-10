@@ -1,5 +1,15 @@
 /* Household color tokens map to CSS variables defined in globals.css. */
-const TOKENS = ["steel", "pine", "drift", "huckle", "dusk", "reed"] as const;
+const TOKENS = [
+  "steel",
+  "pine",
+  "drift",
+  "huckle",
+  "dusk",
+  "reed",
+  "cove",
+  "clay",
+  "plum",
+] as const;
 export type HouseholdColor = (typeof TOKENS)[number];
 
 export function householdVar(token: string): string {

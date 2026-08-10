@@ -1,6 +1,6 @@
 import { householdVar } from "@/lib/colors";
 import { iso, monthGrid } from "@/lib/dates";
-import type { StayRow } from "@/lib/queries";
+import type { MaintenanceRow, StayRow } from "@/lib/queries";
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -13,14 +13,23 @@ export function MonthGrid({
   year,
   month,
   stays,
+  maintenance,
   today,
 }: {
   year: number;
   month: number;
   stays: StayRow[];
+  maintenance: MaintenanceRow[];
   today: string;
 }) {
   const cells = monthGrid(year, month);
+  const maintenanceByDate = new Map<string, MaintenanceRow[]>();
+  for (const item of maintenance) {
+    if (!item.nextDue) continue;
+    const items = maintenanceByDate.get(item.nextDue) ?? [];
+    items.push(item);
+    maintenanceByDate.set(item.nextDue, items);
+  }
 
   function staysOn(dayIso: string): StayRow[] {
     return stays.filter((s) => s.start <= dayIso && dayIso <= s.end);
@@ -41,12 +50,20 @@ export function MonthGrid({
           if (day === null) return <div key={`e${i}`} />;
           const dayIso = iso(year, month, day);
           const dayStays = staysOn(dayIso);
+          const dayMaintenance = maintenanceByDate.get(dayIso) ?? [];
+          const visibleStays = dayStays.slice(0, 2);
+          const visibleMaintenance = dayMaintenance.slice(0, 1);
+          const hiddenCount =
+            dayStays.length +
+            dayMaintenance.length -
+            visibleStays.length -
+            visibleMaintenance.length;
           const first = dayStays[0];
           const isToday = dayIso === today;
           return (
             <div
               key={dayIso}
-              className={`min-h-16 rounded-lh border p-1.5 ${
+              className={`min-h-20 rounded-lh border p-1.5 ${
                 isToday ? "border-rust" : "border-transparent"
               }`}
               style={
@@ -54,7 +71,15 @@ export function MonthGrid({
                   ? {
                       background: `color-mix(in srgb, ${householdVar(first.color)} 14%, transparent)`,
                     }
-                  : { background: "color-mix(in srgb, var(--sand) 35%, transparent)" }
+                  : dayMaintenance.length > 0
+                    ? {
+                        background:
+                          "color-mix(in srgb, var(--care) 10%, transparent)",
+                      }
+                    : {
+                        background:
+                          "color-mix(in srgb, var(--sand) 35%, transparent)",
+                      }
               }
             >
               <span
@@ -62,7 +87,7 @@ export function MonthGrid({
               >
                 {day}
               </span>
-              {dayStays.slice(0, 2).map((s) => (
+              {visibleStays.map((s) => (
                 <span
                   key={s.id}
                   className="mt-0.5 flex items-center gap-1 truncate text-[10px] font-medium text-ink-soft"
@@ -75,9 +100,22 @@ export function MonthGrid({
                   {s.label}
                 </span>
               ))}
-              {dayStays.length > 2 ? (
+              {visibleMaintenance.map((item) => (
+                <span
+                  key={`maintenance-${item.id}`}
+                  title={`Preventive care: ${item.task}`}
+                  className="mt-0.5 flex items-center gap-1 truncate text-[10px] font-semibold text-care"
+                >
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 shrink-0 rounded-[2px] bg-care"
+                  />
+                  {item.task}
+                </span>
+              ))}
+              {hiddenCount > 0 ? (
                 <span className="text-[10px] text-ink-faint">
-                  +{dayStays.length - 2} more
+                  +{hiddenCount} more
                 </span>
               ) : null}
             </div>
@@ -88,10 +126,16 @@ export function MonthGrid({
   );
 }
 
-export function HouseholdLegend({ stays }: { stays: StayRow[] }) {
+export function HouseholdLegend({
+  stays,
+  showMaintenance = false,
+}: {
+  stays: StayRow[];
+  showMaintenance?: boolean;
+}) {
   const seen = new Map<string, string>();
   for (const s of stays) if (!seen.has(s.label)) seen.set(s.label, s.color);
-  if (seen.size === 0) return null;
+  if (seen.size === 0 && !showMaintenance) return null;
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1">
       {[...seen.entries()].map(([label, color]) => (
@@ -107,6 +151,15 @@ export function HouseholdLegend({ stays }: { stays: StayRow[] }) {
           {label}
         </span>
       ))}
+      {showMaintenance ? (
+        <span className="flex items-center gap-1.5 text-xs text-ink-soft">
+          <span
+            aria-hidden
+            className="h-2 w-2 rounded-[2px] bg-care"
+          />
+          Preventive care
+        </span>
+      ) : null}
     </div>
   );
 }

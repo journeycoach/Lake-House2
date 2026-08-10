@@ -39,7 +39,7 @@ export default async function GuidePage() {
       <section>
         <p className="text-sm text-ink-soft">
           Everything about arriving, lake days, emergencies, and looking after
-          the house. {editor ? "Anyone in a household can add to it." : null}
+          the house. {editor ? "Family and admins can add to it." : null}
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

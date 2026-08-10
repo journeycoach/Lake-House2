@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -10,11 +11,17 @@ import { SubmitButton } from "@/components/submit-button";
 import { reportIssue, setFixitStatus, removeFixit } from "./fixit-actions";
 import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
 
-export const metadata: Metadata = { title: "Upkeep · Paine Pointe" };
+export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
 
 /* One page for taking care of the house: what is broken now, then the
    recurring work that keeps things from breaking. */
-export default async function UpkeepPage() {
+export default async function UpkeepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
+  const activeTab = params.tab === "maintenance" ? "maintenance" : "fixit";
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const open = await openFixit();
@@ -29,7 +36,38 @@ export default async function UpkeepPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Upkeep" />
+      <PageHeader title="Fix It List" />
+
+      <nav
+        aria-label="Fix It List sections"
+        className="mb-6 flex gap-1 rounded-lh border border-sand-line bg-white/60 p-1"
+      >
+        <Link
+          href="/upkeep?tab=fixit"
+          aria-current={activeTab === "fixit" ? "page" : undefined}
+          className={`flex-1 rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
+            activeTab === "fixit"
+              ? "bg-deep text-white shadow-sm"
+              : "text-ink-soft hover:bg-white hover:text-ink"
+          }`}
+        >
+          Fix It Now
+        </Link>
+        <Link
+          href="/upkeep?tab=maintenance"
+          aria-current={activeTab === "maintenance" ? "page" : undefined}
+          className={`flex-1 rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
+            activeTab === "maintenance"
+              ? "bg-deep text-white shadow-sm"
+              : "text-ink-soft hover:bg-white hover:text-ink"
+          }`}
+        >
+          Reoccurring Maintenance
+        </Link>
+      </nav>
+
+      {activeTab === "fixit" ? (
+        <>
 
       {/* Fix-it list */}
       <section className="card p-6">
@@ -166,9 +204,12 @@ export default async function UpkeepPage() {
         </section>
       ) : null}
 
+        </>
+      ) : (
+        <>
       {/* Maintenance schedules */}
-      <section className="mt-10">
-        <p className="section-label">Preventive care</p>
+      <section>
+        <p className="section-label text-care">Preventive care</p>
         <h2 className="font-display text-2xl mt-1">
           Keep recurring work from being forgotten
         </h2>
@@ -284,6 +325,8 @@ export default async function UpkeepPage() {
           <SubmitButton>Add schedule</SubmitButton>
         </form>
       </section>
+        </>
+      )}
     </div>
   );
 }

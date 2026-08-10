@@ -9,6 +9,7 @@ import {
   allStays,
   checklistItems,
   latestNotes,
+  maintenanceItems,
   openFixit,
   staysNow,
   staysUpcoming,
@@ -18,11 +19,12 @@ import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
 export default async function HomePage() {
   const user = await requireUser();
   const today = todayISO();
-  const [stays, notes, fixes, checks, statusRow] = await Promise.all([
+  const [stays, notes, fixes, checks, maintenance, statusRow] = await Promise.all([
     allStays(),
     latestNotes(3),
     openFixit(),
     checklistItems(),
+    maintenanceItems(),
     getDb().query.settings.findFirst({
       where: eq(schema.settings.key, "house_status"),
     }),
@@ -40,7 +42,15 @@ export default async function HomePage() {
       s.start <= `${y}-${String(m).padStart(2, "0")}-31` &&
       s.end >= `${y}-${String(m).padStart(2, "0")}-01`
   );
-  const openChecks = checks.filter((c) => !c.done);
+  const monthKey = `${y}-${String(m).padStart(2, "0")}`;
+  const monthMaintenance = maintenance.filter((item) =>
+    item.nextDue?.startsWith(monthKey)
+  );
+  const currentChecks = checks.filter((check) => !check.done).slice(0, 5);
+  const recentCompletedChecks = checks
+    .filter((check) => check.done)
+    .sort((a, b) => b.position - a.position)
+    .slice(0, 5);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -59,24 +69,27 @@ export default async function HomePage() {
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
-      <section className="card p-6 lg:p-8">
+      <section className="card p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">
-          <p className="section-label">At the lake</p>
+          <p className="section-label">Who is at the lake</p>
           <span className="chip chip-ready">House is {status.toLowerCase()}</span>
         </div>
         {here.length > 0 ? (
-          <div className="mt-3 space-y-4">
+          <div className="mt-2 space-y-3">
             {here.map((s) => (
-              <div key={s.id}>
-                <h2 className="font-display text-3xl lg:text-5xl leading-tight">
+              <div
+                key={s.id}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
+              >
+                <h2 className="font-display text-2xl lg:text-4xl leading-tight">
                   <span
                     aria-hidden
                     className="mr-3 inline-block h-3 w-3 rounded-full align-middle"
                     style={{ background: householdVar(s.color) }}
                   />
-                  {s.label} is here
+                  {s.label}
                 </h2>
-                <p className="mt-2 text-ink-soft">
+                <p className="text-sm text-ink-soft">
                   Through {fmtDay(s.end)} · {s.adults + s.kids} guest
                   {s.adults + s.kids === 1 ? "" : "s"}
                   {s.note ? ` · "${s.note}"` : ""}
@@ -85,14 +98,14 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="mt-3">
-            <h2 className="font-display text-3xl lg:text-5xl leading-tight">
+          <div className="mt-2">
+            <h2 className="font-display text-2xl lg:text-4xl leading-tight">
               Nobody at the lake right now
             </h2>
           </div>
         )}
         {next ? (
-          <p className="mt-5 border-t border-sand-line pt-4 text-sm text-ink-soft">
+          <p className="mt-4 border-t border-sand-line pt-3 text-sm text-ink-soft">
             Next up: <span className="font-semibold text-ink">{next.label}</span>
             , arriving {fmtDay(next.start)}
             {next.note ? ` · "${next.note}"` : ""}
@@ -102,26 +115,29 @@ export default async function HomePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
-        <section className="card p-6 lg:col-span-3">
+        <Link
+          href="/calendar"
+          className="card group block p-6 transition-colors hover:border-water/40 lg:col-span-3"
+        >
           <div className="flex items-baseline justify-between gap-4">
             <div>
               <p className="section-label">Family calendar</p>
-              <Link
-                href="/calendar"
-                className="font-display text-2xl hover:text-water transition-colors"
-              >
+              <h2 className="font-display text-2xl transition-colors group-hover:text-water">
                 This month
-              </Link>
+              </h2>
             </div>
-            <Link
-              href="/calendar"
-              className="text-sm font-medium text-water hover:text-deep-2"
-            >
+            <span className="text-sm font-medium text-water transition-colors group-hover:text-deep-2">
               Open calendar
-            </Link>
+            </span>
           </div>
           <div className="mt-4 hidden md:block">
-            <MonthGrid year={y} month={m} stays={monthStays} today={today} />
+            <MonthGrid
+              year={y}
+              month={m}
+              stays={monthStays}
+              maintenance={monthMaintenance}
+              today={today}
+            />
           </div>
           <ul className="mt-4 space-y-3 md:hidden">
             {[...here, ...staysUpcoming(stays, today)].slice(0, 4).map((s) => (
@@ -141,39 +157,115 @@ export default async function HomePage() {
             ))}
           </ul>
           <div className="mt-4 border-t border-sand-line pt-3">
-            <HouseholdLegend stays={monthStays} />
+            <HouseholdLegend
+              stays={monthStays}
+              showMaintenance={monthMaintenance.length > 0}
+            />
           </div>
-        </section>
+        </Link>
 
-        {/* Notes */}
+        {/* Checklist */}
         <section className="card p-6 lg:col-span-2">
           <div className="flex items-baseline justify-between gap-4">
             <div>
-              <p className="section-label">Family notes</p>
+              <p className="section-label">Check List</p>
               <Link
-                href="/notes"
+                href="/checklist"
                 className="font-display text-2xl hover:text-water transition-colors"
               >
-                FYI everyone
+                Before the next trip
               </Link>
             </div>
             <Link
-              href="/notes"
+              href="/checklist"
               className="text-sm font-medium text-water hover:text-deep-2"
             >
-              All notes
+              {canEdit(user.effectiveRole) ? "Add or edit" : "See the list"}
             </Link>
           </div>
-          <ul className="mt-4 space-y-4">
-            {notes.map((n) => (
-              <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
-                <p className="text-sm">{n.body}</p>
-                <p className="mt-1 text-xs text-ink-faint">
-                  {n.authorName} · {n.tag}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-4">
+            <p className="section-label">Current</p>
+            <ul className="mt-2">
+              {currentChecks.map((check) => (
+                <li
+                  key={check.id}
+                  className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
+                >
+                  <span
+                    aria-hidden
+                    className="h-7 w-7 shrink-0 rounded-md border border-sand-line bg-white"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{check.title}</p>
+                    {check.details ? (
+                      <p className="text-sm text-ink-soft">{check.details}</p>
+                    ) : null}
+                    <p className="text-xs font-medium text-water">
+                      Added by {check.addedBy}
+                    </p>
+                  </div>
+                </li>
+              ))}
+              {currentChecks.length === 0 ? (
+                <li className="text-sm text-ink-soft">
+                  Everything is checked off.
+                </li>
+              ) : null}
+            </ul>
+          </div>
+
+          <div className="mt-5 border-t border-sand-line pt-4">
+            <p className="section-label">Recently checked off</p>
+            <ul className="mt-2">
+              {recentCompletedChecks.map((check) => (
+                <li
+                  key={check.id}
+                  className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
+                >
+                  <span
+                    aria-hidden
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-sage bg-sage text-white"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 10 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1.5 5.5L4 8l4.5-6" />
+                    </svg>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <p className="font-semibold text-ink-faint line-through">
+                        {check.title}
+                      </p>
+                      <span className="text-xs text-ink-faint">
+                        Checked by {check.checkedBy ?? "Unknown"}
+                      </span>
+                    </div>
+                    {check.details ? (
+                      <p className="text-sm text-ink-faint line-through">
+                        {check.details}
+                      </p>
+                    ) : null}
+                    <p className="text-xs font-medium text-water">
+                      Added by {check.addedBy}
+                    </p>
+                  </div>
+                </li>
+              ))}
+              {recentCompletedChecks.length === 0 ? (
+                <li className="text-sm text-ink-soft">
+                  Nothing has been checked off yet.
+                </li>
+              ) : null}
+            </ul>
+          </div>
         </section>
 
         {/* Fix-it */}
@@ -213,38 +305,33 @@ export default async function HomePage() {
           </ul>
         </section>
 
-        {/* Checklist */}
+        {/* Notes */}
         <section className="card p-6 lg:col-span-2">
           <div className="flex items-baseline justify-between gap-4">
             <div>
-              <p className="section-label">Shared checklist</p>
               <Link
-                href="/checklist"
+                href="/notes"
                 className="font-display text-2xl hover:text-water transition-colors"
               >
-                Before the next trip
+                FYI Everyone
               </Link>
             </div>
             <Link
-              href="/checklist"
+              href="/notes"
               className="text-sm font-medium text-water hover:text-deep-2"
             >
-              {canEdit(user.effectiveRole) ? "Add or edit" : "See the list"}
+              All notes
             </Link>
           </div>
-          <ul className="mt-4 space-y-2">
-            {openChecks.slice(0, 5).map((c) => (
-              <li key={c.id} className="flex items-center gap-2 text-sm">
-                <span
-                  aria-hidden
-                  className="h-4 w-4 shrink-0 rounded-[4px] border border-sand-line"
-                />
-                {c.title}
+          <ul className="mt-4 space-y-4">
+            {notes.map((n) => (
+              <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
+                <p className="text-sm">{n.body}</p>
+                <p className="mt-1 text-xs text-ink-faint">
+                  {n.authorName} · {n.tag}
+                </p>
               </li>
             ))}
-            {openChecks.length === 0 ? (
-              <li className="text-sm text-ink-soft">All stocked up.</li>
-            ) : null}
           </ul>
         </section>
       </div>

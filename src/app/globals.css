@@ -28,6 +28,7 @@
   --rust-dark: #96431f;
   --sage: #5f8271; /* ready / ok */
   --amber: #a4761c; /* soon / due */
+  --care: #ce2029; /* preventive care / fire-engine red */
 
   /* household colors: muted, distinguishable, never neon */
   --hh-steel: #527d8a;
@@ -36,6 +37,9 @@
   --hh-huckle: #8b6178;
   --hh-dusk: #5e6b8c;
   --hh-reed: #7e8a5a;
+  --hh-cove: #4f827b;
+  --hh-clay: #a35f49;
+  --hh-plum: #725e83;
 }
 
 @theme inline {
@@ -54,6 +58,7 @@
   --color-rust-dark: var(--rust-dark);
   --color-sage: var(--sage);
   --color-amber: var(--amber);
+  --color-care: var(--care);
 
   --font-display: var(--font-newsreader);
   --font-sans: var(--font-geist);
@@ -178,6 +183,10 @@ body {
 .chip-soon {
   color: var(--amber);
   background: color-mix(in srgb, var(--amber) 14%, transparent);
+}
+.chip-care {
+  color: var(--care);
+  background: color-mix(in srgb, var(--care) 12%, transparent);
 }
 .chip-whenever {
   color: var(--ink-soft);

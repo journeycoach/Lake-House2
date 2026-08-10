@@ -7,15 +7,20 @@ import { BrandMark } from "./brand-mark";
 
 export type NavUser = { name: string; role: string };
 
-const LINKS: { href: string; label: string; adminOnly?: boolean }[] = [
-  { href: "/", label: "Home" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/notes", label: "Family notes" },
-  { href: "/upkeep", label: "Fix It List" },
-  { href: "/checklist", label: "Checklist" },
-  { href: "/guide", label: "House guide" },
-  { href: "/activity", label: "Activity", adminOnly: true },
-  { href: "/admin", label: "Admin", adminOnly: true },
+const LINKS: {
+  href: string;
+  label: string;
+  icon?: string;
+  adminOnly?: boolean;
+}[] = [
+  { href: "/", label: "Home", icon: "🏠" },
+  { href: "/calendar", label: "Calendar", icon: "📅" },
+  { href: "/upkeep", label: "Fix It List", icon: "🛠️" },
+  { href: "/checklist", label: "Check List", icon: "✅" },
+  { href: "/notes", label: "FYI Everyone", icon: "📝" },
+  { href: "/guide", label: "House guide", icon: "📖" },
+  { href: "/activity", label: "Activity", icon: "🕘", adminOnly: true },
+  { href: "/admin", label: "Admin", icon: "⚙️", adminOnly: true },
 ];
 
 function NavLinks({
@@ -42,6 +47,11 @@ function NavLinks({
                 : "text-white/65 hover:text-white hover:bg-white/5"
             }`}
           >
+            {l.icon ? (
+              <span aria-hidden className="mr-2 inline-block w-5 text-center">
+                {l.icon}
+              </span>
+            ) : null}
             {l.label}
           </Link>
         );

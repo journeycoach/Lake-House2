@@ -66,7 +66,11 @@ export async function toggleItem(formData: FormData) {
   const position = Math.max(0, ...targetRows.map((row) => row.position)) + 1;
   await getDb()
     .update(schema.checklist)
-    .set({ done: nextDone, position })
+    .set({
+      done: nextDone,
+      position,
+      checkedBy: nextDone ? user.name : null,
+    })
     .where(eq(schema.checklist.id, id));
   await Promise.all([normalizeGroup(item.done), normalizeGroup(nextDone)]);
   await logActivity(

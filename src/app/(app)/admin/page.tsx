@@ -14,9 +14,7 @@ import {
   setRole,
   removeUser,
   setHouseStatus,
-  addHousehold,
-  updateHousehold,
-  setMemberHouseholds,
+  setUserColor,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · Paine Pointe" };
@@ -34,7 +32,10 @@ function fmtStamp(iso: string): string {
 export default async function AdminPage() {
   const admin = await requireAdmin();
   const [users, households, mails, requests, storage] = await Promise.all([
-    getDb().select().from(schema.users).orderBy(asc(schema.users.name)),
+    getDb()
+      .select()
+      .from(schema.users)
+      .orderBy(asc(schema.users.createdAt), asc(schema.users.id)),
     getDb().select().from(schema.households).orderBy(asc(schema.households.name)),
     getDb().select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
     getDb()
@@ -44,10 +45,37 @@ export default async function AdminPage() {
       .orderBy(asc(schema.accessRequests.id)),
     storageReport(),
   ]);
+  const householdsById = new Map(
+    households.map((household) => [household.id, household])
+  );
+  const currentUser = users.find((user) => user.id === admin.id);
+  const orderedUsers = currentUser
+    ? [currentUser, ...users.filter((user) => user.id !== admin.id)]
+    : users;
 
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Admin" action={<span className="chip chip-whenever">Admin only</span>} />
+
+      <section className="card mb-6 p-6">
+        <p className="section-label">House status</p>
+        <h2 className="font-display text-2xl mt-1">Shown to everyone</h2>
+        <form action={setHouseStatus} className="mt-4 flex items-center gap-2">
+          <input
+            name="value"
+            required
+            placeholder="Ready"
+            maxLength={200}
+            className="field flex-1"
+          />
+          <button type="submit" className="btn btn-quiet shrink-0">
+            Update
+          </button>
+        </form>
+        <p className="mt-2 text-xs text-ink-faint">
+          Keep it short: Ready, Winterized, Water off, Under repair.
+        </p>
+      </section>
 
       {/* Pending access requests. Only rendered when someone is waiting, so
           the page stays quiet the rest of the time. */}
@@ -112,23 +140,87 @@ export default async function AdminPage() {
 
       {/* Family accounts */}
       <section className="card p-6">
-        <p className="section-label">Family accounts</p>
-        <h2 className="font-display text-2xl mt-1">Who can sign in</h2>
+        <p className="section-label">People</p>
+        <h2 className="font-display text-2xl mt-1">
+          Family accounts and calendar colors
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Add or remove people, control their access, and choose the color that
+          identifies each person on the calendar.
+        </p>
         <ul className="mt-4">
-          {users.map((u) => (
-            <li
-              key={u.id}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-sand-line py-4 first:border-0"
-            >
-              <div className="min-w-0 flex-1 basis-48">
-                <p className="font-semibold">
-                  {u.name}
-                  {u.id === admin.id ? (
-                    <span className="ml-2 text-xs font-medium text-ink-faint">you</span>
-                  ) : null}
-                </p>
-                <p className="truncate text-sm text-ink-soft">{u.email}</p>
-              </div>
+          {orderedUsers.map((u) => {
+            const household = u.householdId
+              ? householdsById.get(u.householdId)
+              : undefined;
+            return (
+              <li
+                key={u.id}
+                className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-sand-line py-4 first:border-0"
+              >
+                <div className="min-w-0 flex-1 basis-48">
+                  <p className="flex items-center gap-2 font-semibold">
+                    <span
+                      aria-hidden
+                      className="h-3 w-3 shrink-0 rounded-full border border-sand-line"
+                      style={{
+                        background: household
+                          ? householdVar(household.color)
+                          : "transparent",
+                      }}
+                    />
+                    <span>
+                      {u.name}
+                      {u.id === admin.id ? (
+                        <span className="ml-2 text-xs font-medium text-ink-faint">
+                          you
+                        </span>
+                      ) : null}
+                    </span>
+                  </p>
+                  <p className="truncate text-sm text-ink-soft">{u.email}</p>
+                  <p className="text-xs text-ink-faint">
+                    {household
+                      ? `${household.name} household color`
+                      : "No household color"}
+                  </p>
+                </div>
+                <form action={setUserColor} className="w-full">
+                  <input type="hidden" name="userId" value={u.id} />
+                  <fieldset className="flex flex-wrap items-center gap-3 rounded-lg bg-sand/40 px-3 py-2">
+                    <legend className="sr-only">Calendar color for {u.name}</legend>
+                    <span className="text-xs font-semibold text-ink-soft">
+                      Calendar color
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {HOUSEHOLD_TOKENS.map((token) => (
+                        <label
+                          key={token}
+                          className="cursor-pointer"
+                          title={token.charAt(0).toUpperCase() + token.slice(1)}
+                        >
+                          <input
+                            type="radio"
+                            name="color"
+                            value={token}
+                            defaultChecked={household?.color === token}
+                            className="peer sr-only"
+                          />
+                          <span
+                            className="block h-7 w-7 rounded-full border-2 border-white shadow-sm ring-1 ring-sand-line transition peer-checked:ring-2 peer-checked:ring-deep peer-checked:ring-offset-2"
+                            style={{ background: householdVar(token) }}
+                          />
+                          <span className="sr-only">
+                            {token.charAt(0).toUpperCase() + token.slice(1)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <button type="submit" className="btn btn-quiet ml-auto py-2">
+                      Save color
+                    </button>
+                  </fieldset>
+                </form>
               {u.id !== admin.id ? (
                 <div className="flex items-center gap-3">
                   <form action={setRole} className="flex items-center gap-2">
@@ -174,8 +266,9 @@ export default async function AdminPage() {
                   Reset
                 </button>
               </form>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
 
         <div className="mt-6 border-t border-sand-line pt-4">
@@ -198,11 +291,10 @@ export default async function AdminPage() {
                 </option>
               ))}
             </select>
-            <select name="householdId" className="field" defaultValue="">
-              <option value="">No household</option>
-              {households.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
+            <select name="color" className="field" defaultValue="steel">
+              {HOUSEHOLD_TOKENS.map((token) => (
+                <option key={token} value={token}>
+                  {token.charAt(0).toUpperCase() + token.slice(1)} color
                 </option>
               ))}
             </select>
@@ -212,168 +304,6 @@ export default async function AdminPage() {
           </form>
         </div>
       </section>
-
-      {/* Households + status */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="card p-6 lg:col-span-2">
-          <p className="section-label">Households</p>
-          <h2 className="font-display text-2xl mt-1">
-            Household names and colors
-          </h2>
-          <p className="mt-1 text-sm text-ink-soft">
-            Choose the color that identifies each household on the calendar.
-          </p>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {households.map((h) => (
-              <article
-                key={h.id}
-                className="rounded-lg border border-sand-line bg-card p-4"
-              >
-                <form action={updateHousehold} className="space-y-4">
-                  <input type="hidden" name="id" value={h.id} />
-                  <div className="flex items-center gap-3">
-                    <span
-                      aria-hidden
-                      className="h-4 w-4 shrink-0 rounded-full"
-                      style={{ background: householdVar(h.color) }}
-                    />
-                    <input
-                      name="name"
-                      required
-                      defaultValue={h.name}
-                      maxLength={200}
-                      aria-label="Household name"
-                      className="field min-w-0 flex-1"
-                    />
-                  </div>
-                  <fieldset>
-                    <legend className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                      Calendar color
-                    </legend>
-                    <div className="mt-2 flex flex-wrap gap-3">
-                      {HOUSEHOLD_TOKENS.map((token) => (
-                        <label
-                          key={token}
-                          className="cursor-pointer"
-                          title={token.charAt(0).toUpperCase() + token.slice(1)}
-                        >
-                          <input
-                            type="radio"
-                            name="color"
-                            value={token}
-                            defaultChecked={h.color === token}
-                            className="peer sr-only"
-                          />
-                          <span
-                            className="block h-8 w-8 rounded-full border-2 border-white shadow-sm ring-1 ring-sand-line transition peer-checked:ring-2 peer-checked:ring-deep peer-checked:ring-offset-2"
-                            style={{ background: householdVar(token) }}
-                          />
-                          <span className="sr-only">
-                            {token.charAt(0).toUpperCase() + token.slice(1)}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <div className="flex justify-end">
-                    <button type="submit" className="btn btn-quiet">
-                      Save household
-                    </button>
-                  </div>
-                </form>
-              </article>
-            ))}
-          </div>
-
-          <form
-            action={addHousehold}
-            className="mt-5 flex flex-wrap items-center gap-2 border-t border-sand-line pt-4"
-          >
-            <input
-              name="name"
-              required
-              placeholder="New household"
-              maxLength={200}
-              className="field flex-1"
-            />
-            <select name="color" className="field w-28">
-              {HOUSEHOLD_TOKENS.map((token) => (
-                <option key={token} value={token}>
-                  {token.charAt(0).toUpperCase() + token.slice(1)}
-                </option>
-              ))}
-            </select>
-            <button type="submit" className="btn btn-quiet">
-              Add
-            </button>
-          </form>
-
-          <div className="mt-6 border-t border-sand-line pt-5">
-            <p className="section-label">People</p>
-            <h3 className="font-display text-xl mt-1">Who belongs where</h3>
-            <p className="mt-1 text-sm text-ink-soft">
-              Select one household for each person, or leave them unassigned.
-            </p>
-            <form action={setMemberHouseholds} className="mt-3">
-              <div className="divide-y divide-sand-line rounded-lg border border-sand-line bg-card px-4">
-                {users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex flex-wrap items-center gap-3 py-3"
-                  >
-                    <input type="hidden" name="userIds" value={user.id} />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="truncate text-xs text-ink-faint">
-                        {user.email}
-                      </p>
-                    </div>
-                    <select
-                      name={`household-${user.id}`}
-                      defaultValue={user.householdId ?? ""}
-                      aria-label={`Household for ${user.name}`}
-                      className="field w-full py-2 text-sm sm:w-52"
-                    >
-                      <option value="">No household</option>
-                      {households.map((household) => (
-                        <option key={household.id} value={household.id}>
-                          {household.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 flex justify-end">
-                <button type="submit" className="btn btn-primary">
-                  Save people
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <section className="card p-6">
-          <p className="section-label">House status</p>
-          <h2 className="font-display text-2xl mt-1">Shown to everyone</h2>
-          <form action={setHouseStatus} className="mt-4 flex items-center gap-2">
-            <input
-              name="value"
-              required
-              placeholder="Ready"
-              maxLength={200}
-              className="field flex-1"
-            />
-            <button type="submit" className="btn btn-quiet shrink-0">
-              Update
-            </button>
-          </form>
-          <p className="mt-2 text-xs text-ink-faint">
-            Keep it short: Ready, Winterized, Water off, Under repair.
-          </p>
-        </section>
-      </div>
 
       {/* Storage and backups */}
       <section className={`card mt-6 p-6 ${storage.nearlyFull ? "border-amber" : ""}`}>

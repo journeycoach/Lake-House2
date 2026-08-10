@@ -5,7 +5,12 @@ import { asc } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
-import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
+import {
+  allStays,
+  maintenanceItems,
+  staysNow,
+  staysUpcoming,
+} from "@/lib/queries";
 import { getFeedToken } from "@/lib/feed-token";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
@@ -47,7 +52,14 @@ export default async function CalendarPage({
   const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
 
-  const stays = await allStays();
+  const [stays, maintenance, households] = await Promise.all([
+    allStays(),
+    maintenanceItems(),
+    getDb()
+      .select({ id: schema.households.id, name: schema.households.name })
+      .from(schema.households)
+      .orderBy(asc(schema.households.name)),
+  ]);
   const monthKey = `${y}-${String(m).padStart(2, "0")}`;
   const monthStays = stays.filter(
     (s) => s.start <= `${monthKey}-31` && s.end >= `${monthKey}-01`
@@ -55,10 +67,13 @@ export default async function CalendarPage({
   const yearStays = stays.filter(
     (s) => s.start <= `${yearY}-12-31` && s.end >= `${yearY}-01-01`
   );
-  const households = await getDb()
-    .select({ id: schema.households.id, name: schema.households.name })
-    .from(schema.households)
-    .orderBy(asc(schema.households.name));
+  const monthMaintenance = maintenance.filter((item) =>
+    item.nextDue?.startsWith(monthKey)
+  );
+  const yearMaintenance = maintenance.filter((item) =>
+    item.nextDue?.startsWith(`${yearY}-`)
+  );
+  const datedMaintenance = maintenance.filter((item) => item.nextDue);
 
   const upcoming = [...staysNow(stays, today), ...staysUpcoming(stays, today)];
 
@@ -119,14 +134,65 @@ export default async function CalendarPage({
         </div>
         <div className="mt-4">
           {view === "month" ? (
-            <MonthGrid year={y} month={m} stays={monthStays} today={today} />
+            <MonthGrid
+              year={y}
+              month={m}
+              stays={monthStays}
+              maintenance={monthMaintenance}
+              today={today}
+            />
           ) : (
-            <YearGrid year={yearY} stays={yearStays} today={today} />
+            <YearGrid
+              year={yearY}
+              stays={yearStays}
+              maintenance={yearMaintenance}
+              today={today}
+            />
           )}
         </div>
         <div className="mt-4 border-t border-sand-line pt-3">
-          <HouseholdLegend stays={view === "month" ? monthStays : yearStays} />
+          <HouseholdLegend
+            stays={view === "month" ? monthStays : yearStays}
+            showMaintenance={
+              (view === "month" ? monthMaintenance : yearMaintenance).length > 0
+            }
+          />
         </div>
+      </section>
+
+      <section className="card mt-6 p-6">
+        <p className="section-label text-care">Preventive care</p>
+        <h2 className="font-display text-2xl mt-1">Maintenance dates</h2>
+        <ul className="mt-4 divide-y divide-sand-line">
+          {datedMaintenance.map((item) => (
+            <li
+              key={item.id}
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0"
+            >
+              <span className="chip chip-care shrink-0">
+                {fmtDay(item.nextDue!)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{item.task}</p>
+                <p className="text-xs text-ink-soft">
+                  {item.cadence ?? "No cadence"}
+                  {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : ""}
+                </p>
+              </div>
+              <Link
+                href="/upkeep"
+                className="text-sm font-medium text-water hover:text-deep-2"
+              >
+                Open
+              </Link>
+            </li>
+          ))}
+          {datedMaintenance.length === 0 ? (
+            <li className="py-4 text-sm text-ink-soft">
+              No preventive care dates have been scheduled yet.
+            </li>
+          ) : null}
+        </ul>
       </section>
 
       {/* Stays list */}
@@ -172,11 +238,11 @@ export default async function CalendarPage({
           The lake schedule, on your own calendar
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-          Subscribe once and every stay shows up in your calendar app
-          automatically, including changes. In Apple Calendar, open the webcal
-          link. In Google Calendar, choose Other calendars, then From URL, and
-          paste the https link. Subscriptions update on the calendar app&apos;s
-          own schedule, usually within a day.
+          Subscribe once and every stay and preventive care date shows up in
+          your calendar app automatically, including changes. In Apple
+          Calendar, open the webcal link. In Google Calendar, choose Other
+          calendars, then From URL, and paste the https link. Subscriptions
+          update on the calendar app&apos;s own schedule, usually within a day.
         </p>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <CopyField label="Apple Calendar (webcal)" value={`webcal://${host}${feedPath}`} />

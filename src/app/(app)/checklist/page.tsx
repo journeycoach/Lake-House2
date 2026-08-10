@@ -56,11 +56,18 @@ export default async function ChecklistPage() {
           </button>
         </form>
         <div className="min-w-0 flex-1 basis-48">
-          <p
-            className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
-          >
-            {item.title}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <p
+              className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
+            >
+              {item.title}
+            </p>
+            {item.done ? (
+              <span className="text-xs text-ink-faint">
+                Checked by {item.checkedBy ?? "Unknown"}
+              </span>
+            ) : null}
+          </div>
           {item.details ? (
             <p
               className={`text-sm ${
@@ -123,7 +130,7 @@ export default async function ChecklistPage() {
         <p className="section-label">Checklist</p>
         <h2 className="font-display text-2xl mt-1">Before the next trip</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Everyone can check items off. Household members and admins can add,
+          Everyone can check items off. Family and admins can add,
           remove, and reorder them.
         </p>
 

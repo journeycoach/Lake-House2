@@ -17,6 +17,16 @@ type IcsStay = {
   createdAt: string;
 };
 
+type IcsMaintenance = {
+  id: number;
+  task: string;
+  details: string | null;
+  cadence: string | null;
+  nextDue: string | null;
+  assignedTo: string | null;
+  createdAt: string;
+};
+
 function esc(text: string): string {
   return text
     .replace(/\\/g, "\\\\")
@@ -69,7 +79,32 @@ function event(stay: IcsStay): string[] {
   ];
 }
 
-export function buildCalendar(stays: IcsStay[]): string {
+function maintenanceEvent(item: IcsMaintenance): string[] {
+  if (!item.nextDue) return [];
+  const desc = [
+    item.details ?? "",
+    item.cadence ? `Cadence: ${item.cadence}` : "",
+    item.assignedTo ? `Assigned to: ${item.assignedTo}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  return [
+    "BEGIN:VEVENT",
+    `UID:maintenance-${item.id}@lakehouse.paines`,
+    `DTSTAMP:${stamp(item.createdAt)}`,
+    `DTSTART;VALUE=DATE:${dateNum(item.nextDue)}`,
+    `DTEND;VALUE=DATE:${dateNum(addDays(item.nextDue, 1))}`,
+    fold(`SUMMARY:${esc(`Preventive care: ${item.task}`)}`),
+    fold(`DESCRIPTION:${esc(desc)}`),
+    "TRANSP:TRANSPARENT",
+    "END:VEVENT",
+  ];
+}
+
+export function buildCalendar(
+  stays: IcsStay[],
+  maintenance: IcsMaintenance[] = []
+): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -77,8 +112,9 @@ export function buildCalendar(stays: IcsStay[]): string {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "X-WR-CALNAME:Paine Pointe",
-    "X-WR-CALDESC:Who is using Paine Pointe",
+    "X-WR-CALDESC:Stays and preventive care at Paine Pointe",
     ...stays.flatMap(event),
+    ...maintenance.flatMap(maintenanceEvent),
     "END:VCALENDAR",
   ];
   return lines.join("\r\n") + "\r\n";

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { householdVar } from "@/lib/colors";
 import { iso, monthGrid } from "@/lib/dates";
-import type { StayRow } from "@/lib/queries";
+import type { MaintenanceRow, StayRow } from "@/lib/queries";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -15,12 +15,20 @@ const MONTHS = [
 export function YearGrid({
   year,
   stays,
+  maintenance,
   today,
 }: {
   year: number;
   stays: StayRow[];
+  maintenance: MaintenanceRow[];
   today: string;
 }) {
+  const maintenanceByDate = new Map(
+    maintenance.flatMap((item) =>
+      item.nextDue ? [[item.nextDue, item] as const] : []
+    )
+  );
+
   function stayOn(dayIso: string): StayRow | undefined {
     return stays.find((s) => s.start <= dayIso && dayIso <= s.end);
   }
@@ -43,21 +51,36 @@ export function YearGrid({
                 if (day === null) return <span key={`e${i}`} className="h-5" />;
                 const dayIso = iso(year, m, day);
                 const stay = stayOn(dayIso);
+                const care = maintenanceByDate.get(dayIso);
                 const isToday = dayIso === today;
                 return (
                   <span
                     key={dayIso}
-                    title={stay ? `${stay.label}` : undefined}
+                    title={
+                      [
+                        stay?.label,
+                        care ? `Preventive care: ${care.task}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || undefined
+                    }
                     className={`flex h-5 items-center justify-center rounded-[4px] text-[10px] ${
                       isToday
                         ? "font-bold text-rust ring-1 ring-rust"
                         : stay
                           ? "font-medium text-white"
-                          : "text-ink-faint"
-                    }`}
+                          : care
+                            ? "font-semibold text-care"
+                            : "text-ink-faint"
+                    } ${care ? "border-b-2 border-care" : ""}`}
                     style={
                       stay && !isToday
                         ? { background: householdVar(stay.color) }
+                        : care && !isToday
+                          ? {
+                              background:
+                                "color-mix(in srgb, var(--care) 12%, transparent)",
+                            }
                         : undefined
                     }
                   >

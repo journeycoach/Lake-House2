@@ -7,8 +7,8 @@
 export type Role = "family" | "household" | "admin";
 
 export const ROLES: { value: Role; label: string }[] = [
-  { value: "family", label: "Family member" },
-  { value: "household", label: "Household member" },
+  { value: "family", label: "Visitor" },
+  { value: "household", label: "Family" },
   { value: "admin", label: "Admin" },
 ];
 
@@ -34,6 +34,6 @@ export function meetsRole(role: string, required: string): boolean {
 /* What a piece of content can be restricted to. Family means everyone. */
 export const VISIBILITY: { value: Role; label: string }[] = [
   { value: "family", label: "Everyone" },
-  { value: "household", label: "Household members and admins" },
+  { value: "household", label: "Family and admins" },
   { value: "admin", label: "Admins only" },
 ];

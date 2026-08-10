@@ -14,6 +14,8 @@ export type StayRow = {
   color: string;
 };
 
+export type MaintenanceRow = typeof schema.maintenance.$inferSelect;
+
 export async function allStays(): Promise<StayRow[]> {
   const rows = await getDb()
     .select({
@@ -73,7 +75,7 @@ export async function checklistItems() {
     );
 }
 
-export async function maintenanceItems() {
+export async function maintenanceItems(): Promise<MaintenanceRow[]> {
   return getDb()
     .select()
     .from(schema.maintenance)

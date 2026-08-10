@@ -14,7 +14,7 @@ function Restricted({ minRole }: { minRole: string }) {
   if (minRole === "family") return null;
   return (
     <span className="ml-2 align-middle text-xs font-medium text-ink-faint">
-      {minRole === "admin" ? "admins only" : "household and up"}
+      {minRole === "admin" ? "admins only" : "family and admins"}
     </span>
   );
 }

@@ -107,7 +107,7 @@ export function SectionCard({
           {section.title}
           {section.minRole !== "family" ? (
             <span className="ml-2 align-middle text-xs font-medium text-ink-faint">
-              {section.minRole === "admin" ? "admins only" : "household and up"}
+              {section.minRole === "admin" ? "admins only" : "family and admins"}
             </span>
           ) : null}
         </h3>

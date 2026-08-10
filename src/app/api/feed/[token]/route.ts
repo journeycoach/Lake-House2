@@ -19,12 +19,15 @@ export async function GET(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const stays = await getDb()
-    .select()
-    .from(schema.stays)
-    .orderBy(asc(schema.stays.start));
+  const [stays, maintenance] = await Promise.all([
+    getDb().select().from(schema.stays).orderBy(asc(schema.stays.start)),
+    getDb()
+      .select()
+      .from(schema.maintenance)
+      .orderBy(asc(schema.maintenance.nextDue)),
+  ]);
 
-  return new NextResponse(buildCalendar(stays), {
+  return new NextResponse(buildCalendar(stays, maintenance), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="paine-pointe.ics"',

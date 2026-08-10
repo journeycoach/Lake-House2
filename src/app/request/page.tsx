@@ -15,7 +15,7 @@ export default function RequestPage() {
           </div>
           <h1 className="font-display text-3xl text-white">Ask to join</h1>
           <p className="mt-2 text-sm text-white/60">
-            Family and household members only. An admin approves everyone by
+            Visitors and family only. An admin approves everyone by
             hand.
           </p>
         </div>
