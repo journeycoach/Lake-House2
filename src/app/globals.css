@@ -20,6 +20,7 @@
   /* brand */
   --deep: #123236;
   --deep-2: #1a4249;
+  --ocean: #176b87;
   --water: #2e6069;
   --water-tint: #e3ebe9;
 
@@ -52,6 +53,7 @@
   --color-sand-line: var(--sand-line);
   --color-deep: var(--deep);
   --color-deep-2: var(--deep-2);
+  --color-ocean: var(--ocean);
   --color-water: var(--water);
   --color-water-tint: var(--water-tint);
   --color-rust: var(--rust);
