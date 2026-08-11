@@ -15,6 +15,13 @@
       "when": 1786127870634,
       "tag": "0001_add-checklist-checked-by",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786478085047,
+      "tag": "0002_complete-current-schema",
+      "breakpoints": true
     }
   ]
 }
