@@ -91,9 +91,22 @@ export default async function ChecklistPage() {
               type="submit"
               disabled={i === 0}
               aria-label={`Move "${item.title}" up`}
-              className="rounded-md border border-sand-line px-2 py-1 text-xs font-semibold text-water transition hover:border-water disabled:cursor-default disabled:opacity-30"
+              title="Move up"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
             >
-              Move up
+              <svg
+                aria-hidden
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3.5 9.5 8 5l4.5 4.5" />
+              </svg>
             </button>
           </form>
           <form action={moveItem}>
@@ -103,9 +116,22 @@ export default async function ChecklistPage() {
               type="submit"
               disabled={i === rows.length - 1}
               aria-label={`Move "${item.title}" down`}
-              className="rounded-md border border-sand-line px-2 py-1 text-xs font-semibold text-water transition hover:border-water disabled:cursor-default disabled:opacity-30"
+              title="Move down"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
             >
-              Move down
+              <svg
+                aria-hidden
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m3.5 6.5 4.5 4.5 4.5-4.5" />
+              </svg>
             </button>
           </form>
           <form action={removeItem}>
