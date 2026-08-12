@@ -154,7 +154,9 @@ export default async function ChecklistPage() {
 
       <section className="card p-6">
         <p className="section-label">Checklist</p>
-        <h2 className="font-display text-2xl mt-1">Before the next trip</h2>
+        <h2 className="font-display text-2xl mt-1">
+          Pickup before the next trip
+        </h2>
         <p className="mt-1 text-sm text-ink-soft">
           Everyone can check items off. Family and admins can add,
           remove, and reorder them.

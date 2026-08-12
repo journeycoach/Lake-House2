@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
@@ -14,7 +14,11 @@ import {
 import { getFeedToken } from "@/lib/feed-token";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
-import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
+import {
+  MonthGrid,
+  MiniMonthGrid,
+  HouseholdLegend,
+} from "@/components/month-grid";
 import { YearGrid } from "@/components/year-grid";
 import { CopyField } from "@/components/copy-field";
 import { PageHeader } from "@/components/page-header";
@@ -52,13 +56,22 @@ export default async function CalendarPage({
   const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
 
-  const [stays, maintenance, households] = await Promise.all([
+  const [stays, maintenance, households, stayTemplates, stayCompletions] = await Promise.all([
     allStays(),
     maintenanceItems(),
     getDb()
       .select({ id: schema.households.id, name: schema.households.name })
       .from(schema.households)
       .orderBy(asc(schema.households.name)),
+    getDb()
+      .select()
+      .from(schema.stayChecklistTemplates)
+      .where(eq(schema.stayChecklistTemplates.active, 1))
+      .orderBy(
+        asc(schema.stayChecklistTemplates.phase),
+        asc(schema.stayChecklistTemplates.position)
+      ),
+    getDb().select().from(schema.stayChecklistCompletions),
   ]);
   const monthKey = `${y}-${String(m).padStart(2, "0")}`;
   const monthStays = stays.filter(
@@ -76,6 +89,18 @@ export default async function CalendarPage({
   const datedMaintenance = maintenance.filter((item) => item.nextDue);
 
   const upcoming = [...staysNow(stays, today), ...staysUpcoming(stays, today)];
+  const overlappingVisits = upcoming.flatMap((stay, index) =>
+    upcoming
+      .slice(index + 1)
+      .filter((other) => stay.start <= other.end && other.start <= stay.end)
+      .map((other) => ({ stay, other }))
+  );
+  const completionByStayAndTemplate = new Map(
+    stayCompletions.map((completion) => [
+      `${completion.stayId}:${completion.templateId}`,
+      completion,
+    ])
+  );
 
   const token = await getFeedToken();
   const host = (await headers()).get("host") ?? "localhost:3000";
@@ -85,8 +110,41 @@ export default async function CalendarPage({
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Calendar" action={<span />} />
 
-      {/* Month / year views: md and up. Phones get the agenda list below. */}
-      <section className="card hidden p-6 md:block">
+      <section className="card p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 md:hidden">
+          <h2 className="font-display text-xl">{monthName(y, m)}</h2>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/calendar?view=month&m=${prev}`}
+              aria-label="Previous month"
+              className="btn btn-quiet px-3 py-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 2L4 7l5 5" />
+              </svg>
+            </Link>
+            <Link
+              href={`/calendar?view=month&m=${next}`}
+              aria-label="Next month"
+              className="btn btn-quiet px-3 py-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 2l5 5-5 5" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+        <div className="mt-3 md:hidden">
+          <MiniMonthGrid
+            year={y}
+            month={m}
+            stays={monthStays}
+            maintenance={monthMaintenance}
+            today={today}
+          />
+        </div>
+
+        <div className="hidden md:block">
         <div className="flex items-center justify-between gap-4">
           {view === "month" ? (
             <h2 className="font-display text-2xl">{monthName(y, m)}</h2>
@@ -158,6 +216,67 @@ export default async function CalendarPage({
             }
           />
         </div>
+        </div>
+      </section>
+
+      <section
+        id="calendar-details"
+        className="card mt-4 scroll-mt-4 p-4 md:hidden"
+      >
+        <p className="section-label">Month details</p>
+        <h2 className="font-display mt-1 text-xl">
+          Stays and maintenance
+        </h2>
+        <ul className="mt-3 divide-y divide-sand-line">
+          {monthStays.map((stay) => (
+            <li key={`mobile-stay-${stay.id}`} className="py-3 first:pt-0">
+              <div className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ background: householdVar(stay.color) }}
+                />
+                <div className="min-w-0">
+                  <p className="font-semibold">{stay.label}</p>
+                  <p className="text-xs text-ink-soft">
+                    {fmtRange(stay.start, stay.end)}
+                  </p>
+                  {stay.note ? (
+                    <p className="mt-1 text-xs text-ink-faint">{stay.note}</p>
+                  ) : null}
+                </div>
+              </div>
+            </li>
+          ))}
+          {monthMaintenance.map((item) => (
+            <li
+              key={`mobile-maintenance-${item.id}`}
+              className="flex items-start gap-3 py-3 first:pt-0"
+            >
+              <span
+                aria-hidden
+                className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-care"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{item.task}</p>
+                <p className="text-xs text-ink-soft">
+                  {fmtDay(item.nextDue!)} · Preventive care
+                </p>
+              </div>
+              <Link
+                href="/upkeep?tab=maintenance"
+                className="text-xs font-semibold text-water hover:text-deep-2"
+              >
+                Open
+              </Link>
+            </li>
+          ))}
+          {monthStays.length === 0 && monthMaintenance.length === 0 ? (
+            <li className="py-3 text-sm text-ink-soft">
+              Nothing is scheduled this month.
+            </li>
+          ) : null}
+        </ul>
       </section>
 
       <section className="card mt-6 p-6">
@@ -180,7 +299,7 @@ export default async function CalendarPage({
                 </p>
               </div>
               <Link
-                href="/upkeep"
+                href="/upkeep?tab=maintenance"
                 className="text-sm font-medium text-water hover:text-deep-2"
               >
                 Open
@@ -194,6 +313,32 @@ export default async function CalendarPage({
           ) : null}
         </ul>
       </section>
+
+      {overlappingVisits.length > 0 ? (
+        <section className="card mt-6 border-amber p-6">
+          <p className="section-label text-amber">Shared dates</p>
+          <h2 className="font-display mt-1 text-2xl">
+            Family visits overlap
+          </h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            These reservations share at least one day. Coordinate arrival,
+            sleeping arrangements, and supplies before the trip.
+          </p>
+          <ul className="mt-3">
+            {overlappingVisits.map(({ stay, other }) => (
+              <li
+                key={`${stay.id}:${other.id}`}
+                className="border-t border-sand-line py-2 text-sm first:border-0"
+              >
+                <span className="font-semibold">{stay.label}</span>
+                {` (${fmtRange(stay.start, stay.end)}) shares dates with `}
+                <span className="font-semibold">{other.label}</span>
+                {` (${fmtRange(other.start, other.end)})`}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Stays list */}
       <section className="card mt-6 p-6">
@@ -209,6 +354,18 @@ export default async function CalendarPage({
               stay={s}
               households={households}
               color={householdVar(s.color)}
+              checklist={stayTemplates.map((template) => {
+                const completion = completionByStayAndTemplate.get(
+                  `${s.id}:${template.id}`
+                );
+                return {
+                  id: template.id,
+                  phase: template.phase,
+                  title: template.title,
+                  done: Boolean(completion),
+                  checkedBy: completion?.checkedBy ?? null,
+                };
+              })}
               dateBadge={fmtDay(s.start)}
               meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
               canEdit={editor}

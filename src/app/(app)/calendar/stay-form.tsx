@@ -7,6 +7,7 @@ import {
   deleteStay,
   type StayFormState,
 } from "./actions";
+import { StayChecklist, type StayChecklistEntry } from "./stay-checklist";
 
 type Household = { id: number; name: string };
 export type EditableStay = {
@@ -175,6 +176,7 @@ export function StayListItem({
   dateBadge,
   meta,
   color,
+  checklist,
   canEdit = true,
 }: {
   stay: EditableStay;
@@ -182,6 +184,7 @@ export function StayListItem({
   dateBadge: string;
   meta: string;
   color: string;
+  checklist: StayChecklistEntry[];
   canEdit?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
@@ -200,7 +203,8 @@ export function StayListItem({
   }
 
   return (
-    <li className="flex items-center gap-4 border-t border-sand-line py-4 first:border-0">
+    <li className="border-t border-sand-line py-4 first:border-0">
+      <div className="flex items-center gap-4">
       <span
         className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lh text-white"
         style={{ background: color }}
@@ -265,6 +269,10 @@ export function StayListItem({
             ) : null}
           </>
         )}
+      </div>
+      </div>
+      <div className="ml-16">
+        <StayChecklist stayId={stay.id} items={checklist} />
       </div>
     </li>
   );

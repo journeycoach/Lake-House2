@@ -1,4 +1,10 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 
 /*
   Schema notes:
@@ -42,6 +48,38 @@ export const stays = pgTable("stays", {
   createdAt: text("created_at").notNull(),
 });
 
+/* The same arrival/departure templates appear for every reservation, while
+   completions are stored against one stay so every visit starts fresh. */
+export const stayChecklistTemplates = pgTable("stay_checklist_templates", {
+  id: serial("id").primaryKey(),
+  phase: text("phase").notNull(), // checkin | checkout
+  title: text("title").notNull(),
+  position: integer("position").notNull(),
+  active: integer("active").notNull().default(1),
+  createdAt: text("created_at").notNull(),
+});
+
+export const stayChecklistCompletions = pgTable(
+  "stay_checklist_completions",
+  {
+    id: serial("id").primaryKey(),
+    stayId: integer("stay_id")
+      .notNull()
+      .references(() => stays.id, { onDelete: "cascade" }),
+    templateId: integer("template_id")
+      .notNull()
+      .references(() => stayChecklistTemplates.id, { onDelete: "cascade" }),
+    checkedBy: text("checked_by").notNull(),
+    checkedAt: text("checked_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("stay_checklist_completion_unique").on(
+      table.stayId,
+      table.templateId
+    ),
+  ]
+);
+
 export const notes = pgTable("notes", {
   id: serial("id").primaryKey(),
   authorName: text("author_name").notNull(),
@@ -58,6 +96,8 @@ export const fixit = pgTable("fixit", {
   location: text("location"),
   priority: text("priority").notNull().default("whenever"), // urgent | soon | whenever
   assignedTo: text("assigned_to"), // plain name
+  photoUrl: text("photo_url"),
+  reportedBy: text("reported_by"),
   status: text("status").notNull().default("open"), // open | done
   createdAt: text("created_at").notNull(),
 });
@@ -72,8 +112,39 @@ export const checklist = pgTable("checklist", {
   position: integer("position").notNull(),
 });
 
+export const equipment = pgTable("equipment", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category"),
+  location: text("location"),
+  manufacturer: text("manufacturer"),
+  model: text("model"),
+  serialNumber: text("serial_number"),
+  installedOn: text("installed_on"),
+  warrantyUntil: text("warranty_until"),
+  notes: text("notes"),
+  createdAt: text("created_at").notNull(),
+});
+
+export const serviceRecords = pgTable("service_records", {
+  id: serial("id").primaryKey(),
+  equipmentId: integer("equipment_id")
+    .notNull()
+    .references(() => equipment.id, { onDelete: "cascade" }),
+  servicedOn: text("serviced_on").notNull(),
+  serviceType: text("service_type").notNull(),
+  provider: text("provider"),
+  costCents: integer("cost_cents"),
+  notes: text("notes"),
+  createdBy: text("created_by").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const maintenance = pgTable("maintenance", {
   id: serial("id").primaryKey(),
+  equipmentId: integer("equipment_id").references(() => equipment.id, {
+    onDelete: "set null",
+  }),
   task: text("task").notNull(),
   details: text("details"),
   cadence: text("cadence"), // "Monthly during lake season"
@@ -164,7 +235,7 @@ export const outbox = pgTable("outbox", {
   toEmail: text("to_email").notNull(),
   subject: text("subject").notNull(),
   body: text("body").notNull(),
-  kind: text("kind").notNull(), // checkin-reminder | checkout-reminder | note | manual
+  kind: text("kind").notNull(), // checkin-reminder | checkout-reminder | overlap-notice | note | manual
   status: text("status").notNull().default("logged"), // logged | sent | failed
   createdAt: text("created_at").notNull(),
 });

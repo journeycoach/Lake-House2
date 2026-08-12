@@ -26,18 +26,36 @@ function readHouseholdColor(value: unknown): string {
     : "steel";
 }
 
+async function availableHouseholdColor(
+  requested: string,
+  excludingHouseholdId?: number
+): Promise<string | null> {
+  const households = await getDb()
+    .select({ id: schema.households.id, color: schema.households.color })
+    .from(schema.households);
+  const used = new Set(
+    households
+      .filter((household) => household.id !== excludingHouseholdId)
+      .map((household) => household.color)
+  );
+  if (!used.has(requested)) return requested;
+  return HOUSEHOLD_TOKENS.find((token) => !used.has(token)) ?? null;
+}
+
 export async function addUser(formData: FormData) {
   await requireAdmin();
   const name = readText(formData.get("name"), 200);
   const email = readText(formData.get("email"), 254).toLowerCase();
   const password = String(formData.get("password") ?? "");
   const role = readRole(formData.get("role"));
-  const color = readHouseholdColor(formData.get("color"));
+  const requestedColor = readHouseholdColor(formData.get("color"));
   if (!name || !email || password.length < 8) return;
   const existing = await getDb().query.users.findFirst({
     where: eq(schema.users.email, email),
   });
   if (existing) return;
+  const color = await availableHouseholdColor(requestedColor);
+  if (!color) return;
   const [household] = await getDb()
     .insert(schema.households)
     .values({ name, color })
@@ -107,13 +125,21 @@ export async function setHouseStatus(formData: FormData) {
 export async function setUserColor(formData: FormData) {
   await requireAdmin();
   const userId = Number(formData.get("userId"));
-  const color = readHouseholdColor(formData.get("color"));
+  const requestedColor = readHouseholdColor(formData.get("color"));
   if (!Number.isInteger(userId) || userId < 1) return;
 
   const user = await getDb().query.users.findFirst({
     where: eq(schema.users.id, userId),
   });
   if (!user) return;
+
+  const color = await availableHouseholdColor(
+    requestedColor,
+    user.householdId ?? undefined
+  );
+  // A different household already owns the requested color. The Admin page
+  // disables it too, but the server keeps the rule intact for direct requests.
+  if (!color || color !== requestedColor) return;
 
   if (user.householdId) {
     await getDb()

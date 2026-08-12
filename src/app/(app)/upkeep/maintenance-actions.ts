@@ -12,6 +12,7 @@ export async function addSchedule(formData: FormData) {
   const task = readText(formData.get("task"), 200);
   if (!task) return;
   await getDb().insert(schema.maintenance).values({
+    equipmentId: Number(formData.get("equipmentId") || 0) || null,
     task,
     details: readText(formData.get("details"), 4000) || null,
     cadence: readText(formData.get("cadence"), 200) || null,

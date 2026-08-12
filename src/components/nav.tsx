@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { BrandMark } from "./brand-mark";
 
 export type NavUser = { name: string; role: string };
@@ -12,14 +12,26 @@ const LINKS: {
   label: string;
   icon?: string;
   adminOnly?: boolean;
+  separatorBefore?: boolean;
 }[] = [
   { href: "/", label: "Home", icon: "🏠" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
   { href: "/upkeep", label: "Fix It List", icon: "🛠️" },
+  {
+    href: "/upkeep?tab=maintenance",
+    label: "Maintenance",
+    icon: "🔧",
+  },
   { href: "/checklist", label: "Check List", icon: "✅" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
   { href: "/guide", label: "House guide", icon: "📖" },
-  { href: "/activity", label: "Activity", icon: "🕘", adminOnly: true },
+  {
+    href: "/activity",
+    label: "Site Activity",
+    icon: "🕘",
+    adminOnly: true,
+    separatorBefore: true,
+  },
   { href: "/admin", label: "Admin", icon: "⚙️", adminOnly: true },
 ];
 
@@ -37,23 +49,27 @@ function NavLinks({
         const active =
           l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
-          <Link
-            key={l.href}
-            href={l.href}
-            onClick={onNavigate}
-            className={`rounded-lh px-4 py-2.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-white/10 text-white"
-                : "text-white/65 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            {l.icon ? (
-              <span aria-hidden className="mr-2 inline-block w-5 text-center">
-                {l.icon}
-              </span>
+          <Fragment key={l.href}>
+            {l.separatorBefore ? (
+              <div aria-hidden className="my-2 border-t border-white/15" />
             ) : null}
-            {l.label}
-          </Link>
+            <Link
+              href={l.href}
+              onClick={onNavigate}
+              className={`rounded-lh px-4 py-2.5 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-white/10 text-white"
+                  : "text-white/65 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {l.icon ? (
+                <span aria-hidden className="mr-2 inline-block w-5 text-center">
+                  {l.icon}
+                </span>
+              ) : null}
+              {l.label}
+            </Link>
+          </Fragment>
         );
       })}
     </nav>
