@@ -61,11 +61,19 @@ export default async function HomePage() {
             Good morning, {user.name}
           </h1>
         </div>
-        {canEdit(user.effectiveRole) ? (
-          <Link href="/calendar#plan" className="btn btn-primary">
-            Plan a stay
+        <div className="flex flex-wrap items-center gap-2">
+          {canEdit(user.effectiveRole) ? (
+            <Link href="/calendar#plan" className="btn btn-primary">
+              Plan a stay
+            </Link>
+          ) : null}
+          <Link
+            href="/guide#arrival-check-list"
+            className="btn bg-sage text-white hover:bg-deep"
+          >
+            Check-in list
           </Link>
-        ) : null}
+        </div>
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
@@ -173,7 +181,7 @@ export default async function HomePage() {
                 href="/checklist"
                 className="font-display text-2xl hover:text-water transition-colors"
               >
-                Before the next trip
+                Pickup before the next trip
               </Link>
             </div>
             <Link

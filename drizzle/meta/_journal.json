@@ -22,6 +22,13 @@
       "when": 1786478085047,
       "tag": "0002_complete-current-schema",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786489819048,
+      "tag": "0003_lakehouse_operations",
+      "breakpoints": true
     }
   ]
 }

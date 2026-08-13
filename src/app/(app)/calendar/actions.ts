@@ -7,6 +7,8 @@ import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
 import { readText } from "@/lib/forms";
+import { sendTemplateMail } from "@/lib/mail";
+import { siteUrl } from "@/lib/email-template";
 
 export type StayFormState = { error?: string; conflict?: string };
 
@@ -21,8 +23,8 @@ function readStay(formData: FormData) {
   return { label, householdId, start, end, adults, kids, note };
 }
 
-async function findConflict(start: string, end: string, excludeId?: number) {
-  const overlapping = await getDb()
+async function findConflicts(start: string, end: string, excludeId?: number) {
+  return getDb()
     .select()
     .from(schema.stays)
     .where(
@@ -32,7 +34,62 @@ async function findConflict(start: string, end: string, excludeId?: number) {
         excludeId ? ne(schema.stays.id, excludeId) : undefined
       )
     );
-  return overlapping[0] ?? null;
+}
+
+async function notifyOverlap(
+  stay: ReturnType<typeof readStay>,
+  conflicts: (typeof schema.stays.$inferSelect)[]
+) {
+  if (conflicts.length === 0) return;
+  const householdIds = new Set(
+    [stay.householdId, ...conflicts.map((conflict) => conflict.householdId)].filter(
+      (id): id is number => Boolean(id)
+    )
+  );
+  const users = await getDb().select().from(schema.users);
+  const recipients = new Map(
+    users
+      .filter(
+        (member) =>
+          member.role === "admin" ||
+          (member.householdId ? householdIds.has(member.householdId) : false)
+      )
+      .map((member) => [member.email.toLowerCase(), member])
+  );
+  const otherNames = conflicts.map((conflict) => conflict.label).join(", ");
+
+  await Promise.all(
+    [...recipients.values()].map((member) =>
+      sendTemplateMail({
+        to: member.email,
+        kind: "overlap-notice",
+        subject: `Shared dates at Paine Pointe: ${stay.label} and ${otherNames}`,
+        heading: "Two family visits overlap",
+        preview: `${stay.label} shares dates with ${otherNames}.`,
+        blocks: [
+          {
+            type: "text",
+            text: "The visits were saved as an intentional overlap. Please coordinate sleeping arrangements, arrival timing, and anything the house needs before the shared dates.",
+          },
+          {
+            type: "detail",
+            label: stay.label,
+            value: fmtRange(stay.start, stay.end),
+          },
+          ...conflicts.map((conflict) => ({
+            type: "detail" as const,
+            label: conflict.label,
+            value: fmtRange(conflict.start, conflict.end),
+          })),
+          {
+            type: "button",
+            label: "Open the family calendar",
+            href: `${siteUrl()}/calendar`,
+          },
+        ],
+      })
+    )
+  );
 }
 
 export async function createStay(
@@ -45,11 +102,12 @@ export async function createStay(
   if (!stay.start || !stay.end || stay.end < stay.start)
     return { error: "Check the dates: the end can not come before the start." };
 
-  const conflict = await findConflict(stay.start, stay.end);
+  const conflicts = await findConflicts(stay.start, stay.end);
   const confirmed = formData.get("confirmConflict") === "1";
-  if (conflict && !confirmed) {
+  if (conflicts.length > 0 && !confirmed) {
+    const first = conflicts[0];
     return {
-      conflict: `${conflict.label} is already booked ${fmtRange(conflict.start, conflict.end)}. Save anyway if sharing the house is the plan.`,
+      conflict: `${first.label} is already booked ${fmtRange(first.start, first.end)}${conflicts.length > 1 ? `, along with ${conflicts.length - 1} other visit${conflicts.length === 2 ? "" : "s"}` : ""}. Save anyway if sharing the house is the plan.`,
     };
   }
 
@@ -59,6 +117,7 @@ export async function createStay(
     createdAt: new Date().toISOString(),
   });
   await logActivity(user, "booked a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
+  if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");
   revalidatePath("/");
   return {};
@@ -76,16 +135,18 @@ export async function updateStay(
   if (!stay.start || !stay.end || stay.end < stay.start)
     return { error: "Check the dates: the end can not come before the start." };
 
-  const conflict = await findConflict(stay.start, stay.end, id);
+  const conflicts = await findConflicts(stay.start, stay.end, id);
   const confirmed = formData.get("confirmConflict") === "1";
-  if (conflict && !confirmed) {
+  if (conflicts.length > 0 && !confirmed) {
+    const first = conflicts[0];
     return {
-      conflict: `${conflict.label} is already booked ${fmtRange(conflict.start, conflict.end)}. Save anyway if sharing the house is the plan.`,
+      conflict: `${first.label} is already booked ${fmtRange(first.start, first.end)}${conflicts.length > 1 ? `, along with ${conflicts.length - 1} other visit${conflicts.length === 2 ? "" : "s"}` : ""}. Save anyway if sharing the house is the plan.`,
     };
   }
 
   await getDb().update(schema.stays).set(stay).where(eq(schema.stays.id, id));
   await logActivity(user, "edited a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
+  if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");
   revalidatePath("/");
   return {};

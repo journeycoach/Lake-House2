@@ -48,6 +48,14 @@ export default async function AdminPage() {
   const householdsById = new Map(
     households.map((household) => [household.id, household])
   );
+  const householdsByColor = new Map<string, typeof households>();
+  for (const household of households) {
+    const group = householdsByColor.get(household.color) ?? [];
+    group.push(household);
+    householdsByColor.set(household.color, group);
+  }
+  const firstAvailableColor =
+    HOUSEHOLD_TOKENS.find((token) => !householdsByColor.has(token)) ?? "";
   const currentUser = users.find((user) => user.id === admin.id);
   const orderedUsers = currentUser
     ? [currentUser, ...users.filter((user) => user.id !== admin.id)]
@@ -193,16 +201,26 @@ export default async function AdminPage() {
                       Calendar color
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {HOUSEHOLD_TOKENS.map((token) => (
+                      {HOUSEHOLD_TOKENS.map((token) => {
+                        const otherOwners = (householdsByColor.get(token) ?? [])
+                          .filter((owner) => owner.id !== household?.id);
+                        const unavailable = otherOwners.length > 0;
+                        const colorName = token.charAt(0).toUpperCase() + token.slice(1);
+                        return (
                         <label
                           key={token}
-                          className="cursor-pointer"
-                          title={token.charAt(0).toUpperCase() + token.slice(1)}
+                          className={unavailable ? "cursor-not-allowed opacity-30" : "cursor-pointer"}
+                          title={
+                            unavailable
+                              ? `${colorName} is used by ${otherOwners.map((owner) => owner.name).join(", ")}`
+                              : colorName
+                          }
                         >
                           <input
                             type="radio"
                             name="color"
                             value={token}
+                            disabled={unavailable}
                             defaultChecked={household?.color === token}
                             className="peer sr-only"
                           />
@@ -211,15 +229,22 @@ export default async function AdminPage() {
                             style={{ background: householdVar(token) }}
                           />
                           <span className="sr-only">
-                            {token.charAt(0).toUpperCase() + token.slice(1)}
+                            {colorName}
+                            {unavailable
+                              ? `, already used by ${otherOwners.map((owner) => owner.name).join(", ")}`
+                              : ""}
                           </span>
                         </label>
-                      ))}
+                        );
+                      })}
                     </div>
                     <button type="submit" className="btn btn-quiet ml-auto py-2">
                       Save color
                     </button>
                   </fieldset>
+                  <p className="mt-1 text-xs text-ink-faint">
+                    Dimmed colors belong to another household and cannot be selected.
+                  </p>
                 </form>
               {u.id !== admin.id ? (
                 <div className="flex items-center gap-3">
@@ -291,12 +316,16 @@ export default async function AdminPage() {
                 </option>
               ))}
             </select>
-            <select name="color" className="field" defaultValue="steel">
-              {HOUSEHOLD_TOKENS.map((token) => (
-                <option key={token} value={token}>
+            <select name="color" className="field" defaultValue={firstAvailableColor}>
+              {HOUSEHOLD_TOKENS.map((token) => {
+                const owners = householdsByColor.get(token) ?? [];
+                return (
+                <option key={token} value={token} disabled={owners.length > 0}>
                   {token.charAt(0).toUpperCase() + token.slice(1)} color
+                  {owners.length > 0 ? ` — used by ${owners.map((owner) => owner.name).join(", ")}` : ""}
                 </option>
-              ))}
+                );
+              })}
             </select>
             <button type="submit" className="btn btn-primary">
               Add person

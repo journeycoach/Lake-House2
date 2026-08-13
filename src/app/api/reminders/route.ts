@@ -39,14 +39,14 @@ export async function GET(request: NextRequest) {
         await sendMail({
           to: member.email,
           subject: `Paine Pointe tomorrow: ${stay.label}`,
-          body: `Your stay starts tomorrow, ${fmtDay(stay.start)}.\n\nBefore you head up, check the house guide for the door code and arrival steps, and glance at the shared checklist for anything to bring.\n\nPaine Pointe`,
+          body: `Your stay starts tomorrow, ${fmtDay(stay.start)}.\n\nBefore you head up, open the family calendar to review and complete the check-in steps, and glance at the shared checklist for anything to bring.\n\nPaine Pointe`,
           kind: "checkin-reminder",
         });
       } else {
         await sendMail({
           to: member.email,
           subject: "Paine Pointe checkout today",
-          body: `Today is checkout day, ${fmtDay(stay.end)}.\n\nThe departure checklist is in the house guide: thermostat, linens, trash, doors, and windows.\n\nPaine Pointe`,
+          body: `Today is checkout day, ${fmtDay(stay.end)}.\n\nOpen the family calendar and complete the check-out steps before leaving.\n\nPaine Pointe`,
           kind: "checkout-reminder",
         });
       }

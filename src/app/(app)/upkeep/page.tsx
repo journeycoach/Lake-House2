@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
@@ -8,8 +8,10 @@ import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { maintenanceItems, openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
-import { reportIssue, setFixitStatus, removeFixit } from "./fixit-actions";
+import { setFixitStatus, removeFixit } from "./fixit-actions";
 import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
+import { EquipmentSection } from "./equipment-section";
+import { ReportIssueForm } from "./report-issue-form";
 
 export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
 
@@ -24,13 +26,21 @@ export default async function UpkeepPage({
   const activeTab = params.tab === "maintenance" ? "maintenance" : "fixit";
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
-  const open = await openFixit();
-  const done = await getDb()
-    .select()
-    .from(schema.fixit)
-    .where(eq(schema.fixit.status, "done"))
-    .orderBy(desc(schema.fixit.id));
-  const items = await maintenanceItems();
+  const [open, done, items, equipment, serviceRecords] = await Promise.all([
+    openFixit(),
+    getDb()
+      .select()
+      .from(schema.fixit)
+      .where(eq(schema.fixit.status, "done"))
+      .orderBy(desc(schema.fixit.id)),
+    maintenanceItems(),
+    getDb().select().from(schema.equipment).orderBy(asc(schema.equipment.name)),
+    getDb()
+      .select()
+      .from(schema.serviceRecords)
+      .orderBy(desc(schema.serviceRecords.servicedOn), desc(schema.serviceRecords.id)),
+  ]);
+  const equipmentById = new Map(equipment.map((item) => [item.id, item]));
   const today = todayISO();
   const soon = addDays(today, 14);
 
@@ -95,6 +105,22 @@ export default async function UpkeepPage({
                   className="h-5 w-5 shrink-0 rounded-[4px] border border-sand-line"
                 />
               )}
+              {f.photoUrl ? (
+                <a
+                  href={f.photoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.photoUrl}
+                    alt={`Reported issue: ${f.title}`}
+                    loading="lazy"
+                    className="h-16 w-20 rounded-lh object-cover"
+                  />
+                </a>
+              ) : null}
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{f.title}</p>
                 {f.details ? (
@@ -103,6 +129,7 @@ export default async function UpkeepPage({
                 <p className="text-xs text-ink-faint">
                   {f.location}
                   {f.assignedTo ? ` · Assigned to ${f.assignedTo}` : " · Unassigned"}
+                  {f.reportedBy ? ` · Reported by ${f.reportedBy}` : ""}
                 </p>
               </div>
               <span className={`chip chip-${f.priority} shrink-0`}>
@@ -122,45 +149,7 @@ export default async function UpkeepPage({
       <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
         <p className="section-label">Report an issue</p>
         <h2 className="font-display text-2xl mt-1 mb-4">What needs fixing</h2>
-        <form action={reportIssue} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="title" className="flabel">
-                What is broken
-              </label>
-              <input id="title" name="title" required maxLength={200} className="field" placeholder="Dock light is flickering" />
-            </div>
-            <div>
-              <label htmlFor="location" className="flabel">
-                Where
-              </label>
-              <input id="location" name="location" maxLength={200} className="field" placeholder="Dock" />
-            </div>
-            <div>
-              <label htmlFor="priority" className="flabel">
-                How urgent
-              </label>
-              <select id="priority" name="priority" className="field" defaultValue="whenever">
-                <option value="urgent">Urgent</option>
-                <option value="soon">Soon</option>
-                <option value="whenever">Whenever</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="assignedTo" className="flabel">
-                Who is on it (optional)
-              </label>
-              <input id="assignedTo" name="assignedTo" maxLength={200} className="field" placeholder="Dad" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="details" className="flabel">
-              Details
-            </label>
-            <textarea id="details" name="details" rows={2} maxLength={4000} className="field" placeholder="Check the fixture and replace it if needed." />
-          </div>
-          <SubmitButton>Add to the list</SubmitButton>
-        </form>
+        <ReportIssueForm />
       </section>
 
       {done.length > 0 ? (
@@ -244,6 +233,11 @@ export default async function UpkeepPage({
                   </span>
                 </h3>
                 <p className="mt-1 font-semibold">{m.task}</p>
+                {m.equipmentId && equipmentById.get(m.equipmentId) ? (
+                  <p className="mt-1 text-xs font-semibold text-water">
+                    {equipmentById.get(m.equipmentId)!.name}
+                  </p>
+                ) : null}
                 {m.details ? (
                   <p className="mt-1 flex-1 text-sm text-ink-soft">{m.details}</p>
                 ) : (
@@ -283,7 +277,7 @@ export default async function UpkeepPage({
           Put it on a schedule
         </h2>
         <form action={addSchedule} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div>
               <label htmlFor="task" className="flabel">
                 Task
@@ -308,6 +302,19 @@ export default async function UpkeepPage({
               </label>
               <input id="assignedTo2" name="assignedTo" maxLength={200} className="field" placeholder="Unassigned" />
             </div>
+            <div>
+              <label htmlFor="equipmentId" className="flabel">
+                Equipment
+              </label>
+              <select id="equipmentId" name="equipmentId" className="field" defaultValue="">
+                <option value="">General house task</option>
+                {equipment.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
             <label htmlFor="details2" className="flabel">
@@ -325,6 +332,11 @@ export default async function UpkeepPage({
           <SubmitButton>Add schedule</SubmitButton>
         </form>
       </section>
+      <EquipmentSection
+        equipment={equipment}
+        records={serviceRecords}
+        editor={editor}
+      />
         </>
       )}
     </div>

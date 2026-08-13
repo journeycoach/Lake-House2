@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { VISIBILITY } from "@/lib/roles";
 import { GuideBlock, type Block } from "@/components/guide-block";
 import { AddBlock } from "./add-block";
@@ -25,24 +25,38 @@ export function SectionCard({
   canEdit = false,
   isFirst,
   isLast,
+  stayChecklist,
+  checklistEditHref,
+  anchorId,
 }: {
   section: Section;
   blocks: Block[];
   canEdit?: boolean;
   isFirst: boolean;
   isLast: boolean;
+  stayChecklist?: ReactNode;
+  checklistEditHref?: string;
+  anchorId?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [arranging, setArranging] = useState(false);
 
   return (
-    <article className="card flex flex-col p-5">
+    <article id={anchorId} className="card flex scroll-mt-4 flex-col p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="font-display text-2xl text-amber">
           {String(section.position).padStart(2, "0")}
         </p>
         {canEdit ? (
           <div className="flex items-center gap-3">
+            {checklistEditHref ? (
+              <a
+                href={checklistEditHref}
+                className="text-xs font-medium text-water hover:text-deep-2"
+              >
+                Edit list
+              </a>
+            ) : null}
             <button
               type="button"
               onClick={() => setArranging((v) => !v)}
@@ -112,6 +126,12 @@ export function SectionCard({
           ) : null}
         </h3>
       )}
+
+      {stayChecklist ? (
+        <div className="mt-3 rounded-lh border border-sand-line bg-mist/60 p-3">
+          {stayChecklist}
+        </div>
+      ) : null}
 
       {arranging ? (
         <div className="mt-2 flex items-center gap-2">
