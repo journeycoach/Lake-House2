@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { asc, desc, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
+import { fmtRange, todayISO } from "@/lib/dates";
+import { allStays } from "@/lib/queries";
 import { approveRequest, declineRequest } from "./request-actions";
 import { clearHistory } from "./storage-actions";
 import { storageReport } from "@/lib/backup";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
 import { ROLES, roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
+import { AdminTabs } from "@/components/admin-tabs";
+import { CollapsibleCard } from "@/components/collapsible-card";
 import { StayChecklistTemplates } from "./stay-checklist-templates";
 import {
   addUser,
@@ -32,7 +37,16 @@ function fmtStamp(iso: string): string {
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
-  const [users, households, mails, requests, storage, stayTemplates] = await Promise.all([
+  const [
+    users,
+    households,
+    mails,
+    requests,
+    storage,
+    stayTemplates,
+    stays,
+    stayChecklistItems,
+  ] = await Promise.all([
     getDb()
       .select()
       .from(schema.users)
@@ -53,6 +67,14 @@ export default async function AdminPage() {
         asc(schema.stayChecklistTemplates.phase),
         asc(schema.stayChecklistTemplates.position)
       ),
+    allStays(),
+    getDb()
+      .select()
+      .from(schema.stayChecklistItems)
+      .orderBy(
+        asc(schema.stayChecklistItems.phase),
+        asc(schema.stayChecklistItems.position)
+      ),
   ]);
   const householdsById = new Map(
     households.map((household) => [household.id, household])
@@ -69,10 +91,20 @@ export default async function AdminPage() {
   const orderedUsers = currentUser
     ? [currentUser, ...users.filter((user) => user.id !== admin.id)]
     : users;
+  const pastStays = stays
+    .filter((stay) => stay.end < todayISO())
+    .reverse();
+  const checklistItemsByStay = new Map<number, typeof stayChecklistItems>();
+  for (const item of stayChecklistItems) {
+    const items = checklistItemsByStay.get(item.stayId) ?? [];
+    items.push(item);
+    checklistItemsByStay.set(item.stayId, items);
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Admin" action={<span className="chip chip-whenever">Admin only</span>} />
+      <AdminTabs active="admin" />
 
       <section className="card mb-6 p-6">
         <p className="section-label">House status</p>
@@ -96,14 +128,61 @@ export default async function AdminPage() {
 
       <StayChecklistTemplates templates={stayTemplates} />
 
+      <CollapsibleCard
+        label="Visit records"
+        title="Past check-in and check-out progress"
+        description="Open a past visit to see which tasks were completed, by whom, and when."
+      >
+        <ul className="divide-y divide-sand-line">
+          {pastStays.map((stay) => {
+            const items = checklistItemsByStay.get(stay.id) ?? [];
+            const done = items.filter((item) => item.checkedAt).length;
+            return (
+              <li
+                key={`record-${stay.id}`}
+                className="flex flex-wrap items-center gap-3 py-3 first:pt-0"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{stay.label}</p>
+                  <p className="text-xs text-ink-soft">
+                    {fmtRange(stay.start, stay.end)}
+                  </p>
+                </div>
+                <span
+                  className={`chip ${
+                    items.length > 0 && done === items.length
+                      ? "chip-ready"
+                      : "chip-whenever"
+                  }`}
+                >
+                  {done} of {items.length}
+                </span>
+                <Link
+                  href={`/calendar/${stay.id}/checklist`}
+                  className="text-sm font-semibold text-water hover:text-deep-2"
+                >
+                  View record
+                </Link>
+              </li>
+            );
+          })}
+          {pastStays.length === 0 ? (
+            <li className="py-3 text-sm text-ink-soft">No past visits yet.</li>
+          ) : null}
+        </ul>
+      </CollapsibleCard>
+
       {/* Pending access requests. Only rendered when someone is waiting, so
           the page stays quiet the rest of the time. */}
       {requests.length > 0 ? (
-        <section id="requests" className="card mb-6 border-rust p-6">
-          <p className="section-label">Waiting on you</p>
-          <h2 className="font-display text-2xl mt-1">
-            {requests.length} {requests.length === 1 ? "person wants" : "people want"} in
-          </h2>
+        <CollapsibleCard
+          id="requests"
+          className="border-rust"
+          label="Waiting on you"
+          title={`${requests.length} ${
+            requests.length === 1 ? "person wants" : "people want"
+          } in`}
+        >
           <ul className="mt-4">
             {requests.map((r) => (
               <li
@@ -154,19 +233,15 @@ export default async function AdminPage() {
             Approving creates the account and emails them a link to set their
             own password.
           </p>
-        </section>
+        </CollapsibleCard>
       ) : null}
 
       {/* Family accounts */}
-      <section className="card p-6">
-        <p className="section-label">People</p>
-        <h2 className="font-display text-2xl mt-1">
-          Family accounts and calendar colors
-        </h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Add or remove people, control their access, and choose the color that
-          identifies each person on the calendar.
-        </p>
+      <CollapsibleCard
+        label="People"
+        title="Family accounts and calendar colors"
+        description="Add or remove people, control their access, and choose the color that identifies each person on the calendar."
+      >
         <ul className="mt-4">
           {orderedUsers.map((u) => {
             const household = u.householdId
@@ -343,24 +418,16 @@ export default async function AdminPage() {
             </button>
           </form>
         </div>
-      </section>
+      </CollapsibleCard>
 
       {/* Storage and backups */}
-      <section className={`card mt-6 p-6 ${storage.nearlyFull ? "border-amber" : ""}`}>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="section-label">Storage</p>
-            <h2 className="font-display text-2xl mt-1">
-              {storage.nearlyFull
-                ? "Filling up, worth clearing"
-                : "Plenty of room"}
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              {storage.totalRows.toLocaleString()} entries stored.{" "}
-              {storage.historyRows.toLocaleString()} of those are history that
-              can be cleared.
-            </p>
-          </div>
+      <CollapsibleCard
+        label="Storage"
+        title={storage.nearlyFull ? "Filling up, worth clearing" : "Plenty of room"}
+        description={`${storage.totalRows.toLocaleString()} entries stored. ${storage.historyRows.toLocaleString()} of those are history that can be cleared.`}
+        className={storage.nearlyFull ? "border-amber" : ""}
+      >
+        <div className="flex justify-end">
           <a href="/api/backup" className="btn btn-primary shrink-0">
             Download a backup
           </a>
@@ -401,16 +468,14 @@ export default async function AdminPage() {
             </button>
           </form>
         </div>
-      </section>
+      </CollapsibleCard>
 
       {/* Outbox */}
-      <div className="mt-6 grid gap-6">
-        <section className="card p-6">
-          <p className="section-label">Mail outbox</p>
-          <h2 className="font-display text-2xl mt-1">What the app has sent</h2>
-          <p className="mt-1 text-xs text-ink-faint">
-            Without a mail key set, messages are logged here instead of sent.
-          </p>
+      <CollapsibleCard
+        label="Mail outbox"
+        title="What the app has sent"
+        description="Without a mail key set, messages are logged here instead of sent."
+      >
           <ul className="mt-4 space-y-2">
             {mails.map((m) => (
               <li key={m.id} className="text-sm">
@@ -429,8 +494,7 @@ export default async function AdminPage() {
               <li className="text-sm text-ink-soft">Nothing sent yet.</li>
             ) : null}
           </ul>
-        </section>
-      </div>
+      </CollapsibleCard>
     </div>
   );
 }

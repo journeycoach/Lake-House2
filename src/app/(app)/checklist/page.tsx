@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { addItem, toggleItem, removeItem, moveItem } from "./actions";
 
-export const metadata: Metadata = { title: "Checklist · Paine Pointe" };
+export const metadata: Metadata = { title: "Shopping List · Paine Pointe" };
 
 export default async function ChecklistPage() {
   const user = await requireUser();
@@ -150,10 +150,10 @@ export default async function ChecklistPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Checklist" />
+      <PageHeader title="Shopping List" />
 
       <section className="card p-6">
-        <p className="section-label">Checklist</p>
+        <p className="section-label">Shopping List</p>
         <h2 className="font-display text-2xl mt-1">
           Pickup before the next trip
         </h2>

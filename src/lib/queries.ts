@@ -6,6 +6,7 @@ import { todayISO } from "./dates";
 export type StayRow = {
   id: number;
   label: string;
+  householdId: number | null;
   start: string;
   end: string;
   adults: number;
@@ -21,6 +22,7 @@ export async function allStays(): Promise<StayRow[]> {
     .select({
       id: schema.stays.id,
       label: schema.stays.label,
+      householdId: schema.stays.householdId,
       start: schema.stays.start,
       end: schema.stays.end,
       adults: schema.stays.adults,

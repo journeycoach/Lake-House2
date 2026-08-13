@@ -28,10 +28,12 @@ function checkedDetails(item: StayChecklistEntry) {
 export function StayChecklistPhase({
   label,
   items,
+  canToggle,
   showStatus = false,
 }: {
   label: string;
   items: StayChecklistEntry[];
+  canToggle: boolean;
   showStatus?: boolean;
 }) {
   return (
@@ -46,10 +48,14 @@ export function StayChecklistPhase({
               <input type="hidden" name="itemId" value={item.id} />
               <button
                 type="submit"
+                disabled={!canToggle}
                 aria-label={`${item.done ? "Uncheck" : "Check"} ${item.title}`}
                 aria-pressed={item.done}
+                title={canToggle ? undefined : "Available to the current resident during this stay"}
                 className={`flex h-6 w-6 items-center justify-center rounded-[5px] border transition-colors ${
-                  item.done
+                  !canToggle
+                    ? "cursor-not-allowed border-sand-line bg-mist text-ink-faint opacity-60"
+                    : item.done
                     ? "border-sage bg-sage text-white"
                     : "border-sand-line bg-white hover:border-water"
                 }`}
@@ -91,9 +97,11 @@ export function StayChecklistPhase({
 export function StayChecklist({
   stayId,
   items,
+  canToggle,
 }: {
   stayId: number;
   items: StayChecklistEntry[];
+  canToggle: boolean;
 }) {
   const [open, setOpen] = useState(false);
   if (items.length === 0) return null;
@@ -131,9 +139,14 @@ export function StayChecklist({
       {open ? (
         <div className="mt-3 border-t border-sand-line pt-3">
           <div className="grid gap-4 sm:grid-cols-2">
-            <StayChecklistPhase label="Check in" items={checkin} />
-            <StayChecklistPhase label="Check out" items={checkout} />
+            <StayChecklistPhase label="Check in" items={checkin} canToggle={canToggle} />
+            <StayChecklistPhase label="Check out" items={checkout} canToggle={canToggle} />
           </div>
+          {!canToggle ? (
+            <p className="mt-3 text-xs text-ink-faint">
+              View only. Checkboxes open for the resident household during its stay.
+            </p>
+          ) : null}
           <Link
             href={`/calendar/${stayId}/checklist`}
             className="mt-3 inline-block text-sm font-semibold text-water hover:text-deep-2"

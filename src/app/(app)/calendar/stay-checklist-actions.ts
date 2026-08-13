@@ -6,6 +6,7 @@ import { getDb, schema } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { readText } from "@/lib/forms";
+import { canUpdateStayChecklist } from "@/lib/stay-checklist-access";
 
 function phaseValue(value: unknown) {
   return String(value) === "checkout" ? "checkout" : "checkin";
@@ -112,6 +113,7 @@ export async function toggleStayChecklistItem(formData: FormData) {
     where: eq(schema.stays.id, item.stayId),
   });
   if (!stay) return;
+  if (!canUpdateStayChecklist(user, stay)) return;
 
   await getDb()
     .update(schema.stayChecklistItems)

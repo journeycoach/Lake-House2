@@ -38,6 +38,84 @@ export function EquipmentSection({
 
   return (
     <section className="mt-8 border-t border-sand-line pt-7">
+      {editor ? (
+        <details className="group mb-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m3 5.5 6-3 6 3v7l-6 3-6-3v-7Z" />
+                  <path d="m3 5.5 6 3 6-3M9 8.5v7" />
+                </svg>
+              </span>
+              <div>
+                <p className="section-label text-water">Add equipment</p>
+                <h3 className="font-display mt-0.5 text-xl">Record a house system</h3>
+              </div>
+            </div>
+            <span className="flex items-center gap-2 text-sm font-semibold text-water">
+              Add Equipment
+              <svg
+                aria-hidden
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-open:rotate-180"
+              >
+                <path d="m3 5 4 4 4-4" />
+              </svg>
+            </span>
+          </summary>
+          <form
+            action={addEquipment}
+            className="mt-4 hidden gap-3 border-t border-sand-line pt-4 group-open:grid sm:grid-cols-2 lg:grid-cols-3"
+          >
+            <input aria-label="Equipment name" name="name" required maxLength={200} className="field" placeholder="Water heater" />
+            <input aria-label="Equipment category" name="category" maxLength={120} className="field" placeholder="Category" />
+            <input aria-label="Equipment location" name="location" maxLength={200} className="field" placeholder="Location" />
+            <input aria-label="Equipment manufacturer" name="manufacturer" maxLength={200} className="field" placeholder="Manufacturer" />
+            <input aria-label="Equipment model" name="model" maxLength={200} className="field" placeholder="Model" />
+            <input aria-label="Equipment serial number" name="serialNumber" maxLength={200} className="field" placeholder="Serial number" />
+            <label>
+              <span className="flabel">Installed</span>
+              <input name="installedOn" type="date" className="field" />
+            </label>
+            <label>
+              <span className="flabel">Warranty through</span>
+              <input name="warrantyUntil" type="date" className="field" />
+            </label>
+            <textarea
+              aria-label="Equipment notes"
+              name="notes"
+              rows={2}
+              maxLength={4000}
+              className="field sm:col-span-2 lg:col-span-3"
+              placeholder="Filter sizes, service notes, or anything else worth keeping"
+            />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <SubmitButton>Add equipment</SubmitButton>
+            </div>
+          </form>
+        </details>
+      ) : null}
+
       <p className="section-label">Equipment &amp; service records</p>
       <h2 className="font-display mt-1 text-2xl">Know the history of the house</h2>
       <p className="mt-1 max-w-3xl text-sm text-ink-soft">
@@ -216,38 +294,6 @@ export function EquipmentSection({
         ) : null}
       </div>
 
-      {editor ? (
-        <div className="card mt-6 p-6">
-          <p className="section-label">Add equipment</p>
-          <form action={addEquipment} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <input aria-label="Equipment name" name="name" required maxLength={200} className="field" placeholder="Water heater" />
-            <input aria-label="Equipment category" name="category" maxLength={120} className="field" placeholder="Category" />
-            <input aria-label="Equipment location" name="location" maxLength={200} className="field" placeholder="Location" />
-            <input aria-label="Equipment manufacturer" name="manufacturer" maxLength={200} className="field" placeholder="Manufacturer" />
-            <input aria-label="Equipment model" name="model" maxLength={200} className="field" placeholder="Model" />
-            <input aria-label="Equipment serial number" name="serialNumber" maxLength={200} className="field" placeholder="Serial number" />
-            <label>
-              <span className="flabel">Installed</span>
-              <input name="installedOn" type="date" className="field" />
-            </label>
-            <label>
-              <span className="flabel">Warranty through</span>
-              <input name="warrantyUntil" type="date" className="field" />
-            </label>
-            <textarea
-              aria-label="Equipment notes"
-              name="notes"
-              rows={2}
-              maxLength={4000}
-              className="field sm:col-span-2 lg:col-span-3"
-              placeholder="Filter sizes, service notes, or anything else worth keeping"
-            />
-            <div className="sm:col-span-2 lg:col-span-3">
-              <SubmitButton>Add equipment</SubmitButton>
-            </div>
-          </form>
-        </div>
-      ) : null}
     </section>
   );
 }

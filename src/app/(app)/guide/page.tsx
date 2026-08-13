@@ -7,6 +7,7 @@ import { canEdit, meetsRole } from "@/lib/roles";
 import { todayISO } from "@/lib/dates";
 import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
+import { canUpdateStayChecklist } from "@/lib/stay-checklist-access";
 import { StayChecklistPhase } from "../calendar/stay-checklist";
 import { SectionCard } from "./section-card";
 import { AddSection } from "./add-section";
@@ -98,6 +99,7 @@ export default async function GuidePage() {
                         <StayChecklistPhase
                           label="Arrival steps"
                           items={arrivalItems}
+                          canToggle={canUpdateStayChecklist(user, checklistStay, today)}
                         />
                         <Link
                           href={`/calendar/${checklistStay.id}/checklist`}

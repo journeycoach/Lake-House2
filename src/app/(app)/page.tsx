@@ -15,6 +15,7 @@ import {
   staysUpcoming,
 } from "@/lib/queries";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
+import { toggleItem } from "./checklist/actions";
 
 export default async function HomePage() {
   const user = await requireUser();
@@ -64,9 +65,17 @@ export default async function HomePage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canEdit(user.effectiveRole) ? (
-            <Link href="/calendar#plan" className="btn btn-primary">
-              Plan a stay
-            </Link>
+            <>
+              <Link href="/calendar#plan" className="btn btn-primary">
+                Plan a stay
+              </Link>
+              <Link
+                href="/upkeep?tab=fixit#report-an-issue"
+                className="btn bg-water text-white hover:bg-deep-2"
+              >
+                Report an Issue
+              </Link>
+            </>
           ) : null}
           <Link
             href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
@@ -200,10 +209,15 @@ export default async function HomePage() {
                   key={check.id}
                   className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
                 >
-                  <span
-                    aria-hidden
-                    className="h-7 w-7 shrink-0 rounded-md border border-sand-line bg-white"
-                  />
+                  <form action={toggleItem} className="shrink-0">
+                    <input type="hidden" name="id" value={check.id} />
+                    <button
+                      type="submit"
+                      aria-label={`Mark "${check.title}" done`}
+                      aria-pressed="false"
+                      className="flex h-7 w-7 items-center justify-center rounded-md border border-sand-line bg-white transition-colors hover:border-water hover:bg-mist"
+                    />
+                  </form>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{check.title}</p>
                     {check.details ? (
@@ -231,23 +245,28 @@ export default async function HomePage() {
                   key={check.id}
                   className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
                 >
-                  <span
-                    aria-hidden
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-sage bg-sage text-white"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                  <form action={toggleItem} className="shrink-0">
+                    <input type="hidden" name="id" value={check.id} />
+                    <button
+                      type="submit"
+                      aria-label={`Mark "${check.title}" not done`}
+                      aria-pressed="true"
+                      className="flex h-7 w-7 items-center justify-center rounded-md border border-sage bg-sage text-white transition-colors hover:bg-deep"
                     >
-                      <path d="M1.5 5.5L4 8l4.5-6" />
-                    </svg>
-                  </span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1.5 5.5L4 8l4.5-6" />
+                      </svg>
+                    </button>
+                  </form>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <p className="font-semibold text-ink-faint line-through">

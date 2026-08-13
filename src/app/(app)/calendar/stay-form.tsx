@@ -179,6 +179,7 @@ export function StayListItem({
   meta,
   color,
   checklist,
+  canToggleChecklist,
   canEdit = true,
 }: {
   stay: EditableStay;
@@ -187,6 +188,7 @@ export function StayListItem({
   meta: string;
   color: string;
   checklist: StayChecklistEntry[];
+  canToggleChecklist: boolean;
   canEdit?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
@@ -274,7 +276,11 @@ export function StayListItem({
       </div>
       </div>
       <div className="ml-13">
-        <StayChecklist stayId={stay.id} items={checklist} />
+        <StayChecklist
+          stayId={stay.id}
+          items={checklist}
+          canToggle={canToggleChecklist}
+        />
       </div>
     </li>
   );
