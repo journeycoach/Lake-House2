@@ -19,10 +19,58 @@ export default async function NotesPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Family notes" />
 
-      <section className={`card p-6 ${editor ? "" : "hidden"}`}>
-        <p className="section-label">Share a note</p>
-        <h2 className="font-display text-2xl mt-1 mb-4">FYI everyone</h2>
-        <form action={addNote} className="space-y-4">
+      <details
+        className={`group rounded-lh border border-water/30 border-l-4 bg-water-tint p-4 ${
+          editor ? "" : "hidden"
+        }`}
+      >
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 17 17"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L6 12l-3 .8.8-3 7.7-7.3Z" />
+                <path d="m10 4 3 3" />
+              </svg>
+            </span>
+            <div>
+              <p className="section-label text-water">Share a note</p>
+              <h2 className="font-display mt-0.5 text-xl">FYI everyone</h2>
+            </div>
+          </div>
+          <span className="flex items-center gap-2 text-sm font-semibold text-water">
+            Write a note
+            <svg
+              aria-hidden
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform group-open:rotate-180"
+            >
+              <path d="m3 5 4 4 4-4" />
+            </svg>
+          </span>
+        </summary>
+        <form
+          action={addNote}
+          className="mt-4 hidden space-y-3 border-t border-sand-line pt-4 group-open:block"
+        >
           <div>
             <label htmlFor="body" className="flabel">
               The note
@@ -31,18 +79,18 @@ export default async function NotesPage() {
               id="body"
               name="body"
               required
-              rows={3}
+              rows={2}
               maxLength={4000}
-              className="field"
+              className="field py-2"
               placeholder="The lake is high this week, tie everything down."
             />
           </div>
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="w-full sm:w-64">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="w-full sm:w-56">
               <label htmlFor="tag" className="flabel">
                 Tag
               </label>
-              <select id="tag" name="tag" className="field">
+              <select id="tag" name="tag" className="field py-2">
                 {TAGS.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -50,10 +98,10 @@ export default async function NotesPage() {
                 ))}
               </select>
             </div>
-            <SubmitButton>Share note</SubmitButton>
+            <SubmitButton className="btn btn-primary py-2">Share note</SubmitButton>
           </div>
         </form>
-      </section>
+      </details>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {notes.map((n) => (

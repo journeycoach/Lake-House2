@@ -14,6 +14,7 @@ import {
 import { getFeedToken } from "@/lib/feed-token";
 import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
+import { canUpdateStayChecklist } from "@/lib/stay-checklist-access";
 import {
   MonthGrid,
   MiniMonthGrid,
@@ -96,7 +97,6 @@ export default async function CalendarPage({
       .filter((other) => stay.start <= other.end && other.start <= stay.end)
       .map((other) => ({ stay, other }))
   );
-  const pastStays = stays.filter((stay) => stay.end < today).reverse();
   const checklistItemsByStay = new Map<number, typeof stayChecklistItems>();
   for (const item of stayChecklistItems) {
     const items = checklistItemsByStay.get(item.stayId) ?? [];
@@ -110,61 +110,79 @@ export default async function CalendarPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader
-        title="Calendar"
-        action={(
-          <section className="card w-full p-3 md:min-w-[32rem] md:max-w-2xl md:flex-1">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <div>
-                <p className="section-label">Upcoming stays</p>
-                <h2 className="font-display mt-0.5 text-lg">Who is using Paine Pointe</h2>
-              </div>
-              {editor ? (
-                <Link href="#plan" className="text-xs font-semibold text-water hover:text-deep-2">
-                  Plan a stay
-                </Link>
-              ) : null}
-            </div>
-            <ul className="mt-1">
-              {upcoming.map((s) => (
-                <StayListItem
-                  key={s.id}
-                  stay={s}
-                  households={households}
-                  color={householdVar(s.color)}
-                  checklist={(checklistItemsByStay.get(s.id) ?? []).map((item) => ({
-                    id: item.id,
-                    phase: item.phase,
-                    title: item.title,
-                    done: Boolean(item.checkedAt),
-                    checkedBy: item.checkedBy,
-                    checkedAt: item.checkedAt,
-                  }))}
-                  dateBadge={fmtDay(s.start)}
-                  meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
-                  canEdit={editor}
-                />
-              ))}
-              {upcoming.length === 0 ? (
-                <li className="pt-1 text-sm text-ink-soft">
-                  Nothing scheduled yet.
-                </li>
-              ) : null}
-            </ul>
-          </section>
-        )}
-      />
+      <PageHeader title="Calendar" />
+
+      <section className="card mb-5 p-3 md:p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <div>
+            <p className="section-label">Upcoming stays</p>
+            <h2 className="font-display mt-0.5 text-lg">Who is using Paine Pointe</h2>
+          </div>
+          {editor ? (
+            <Link href="#plan" className="text-xs font-semibold text-water hover:text-deep-2">
+              Plan a stay
+            </Link>
+          ) : null}
+        </div>
+        <ul className="mt-1">
+          {upcoming.map((s) => (
+            <StayListItem
+              key={s.id}
+              stay={s}
+              households={households}
+              color={householdVar(s.color)}
+              checklist={(checklistItemsByStay.get(s.id) ?? []).map((item) => ({
+                id: item.id,
+                phase: item.phase,
+                title: item.title,
+                done: Boolean(item.checkedAt),
+                checkedBy: item.checkedBy,
+                checkedAt: item.checkedAt,
+              }))}
+              canToggleChecklist={canUpdateStayChecklist(user, s, today)}
+              dateBadge={fmtDay(s.start)}
+              meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
+              canEdit={editor}
+            />
+          ))}
+          {upcoming.length === 0 ? (
+            <li className="pt-1 text-sm text-ink-soft">
+              Nothing scheduled yet.
+            </li>
+          ) : null}
+        </ul>
+      </section>
 
       {editor ? (
         <details
           id="plan"
           open={Boolean(selectedStart)}
-          className="card group mb-5 scroll-mt-6 p-4"
+          className="group mb-5 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
-            <div>
-              <p className="section-label">Plan a stay</p>
-              <h2 className="font-display mt-0.5 text-xl">Put it on the calendar</h2>
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 17 17"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="3.5" width="13" height="11.5" rx="1.5" />
+                  <path d="M5 2v3M12 2v3M2 7h13M8.5 9v4M6.5 11h4" />
+                </svg>
+              </span>
+              <div>
+                <p className="section-label text-water">Plan a stay</p>
+                <h2 className="font-display mt-0.5 text-xl">Put it on the calendar</h2>
+              </div>
             </div>
             <span className="flex items-center gap-2 text-sm font-semibold text-water">
               Add a stay
@@ -334,23 +352,27 @@ export default async function CalendarPage({
           {monthMaintenance.map((item) => (
             <li
               key={`mobile-maintenance-${item.id}`}
-              className="flex items-start gap-3 py-3 first:pt-0"
+              className="py-3 first:pt-0"
             >
-              <span
-                aria-hidden
-                className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-care"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">{item.task}</p>
-                <p className="text-xs text-ink-soft">
-                  {fmtDay(item.nextDue!)} · Preventive care
-                </p>
-              </div>
               <Link
-                href="/upkeep?tab=maintenance"
-                className="text-xs font-semibold text-water hover:text-deep-2"
+                href={`/upkeep?tab=maintenance#maintenance-${item.id}`}
+                className="group flex items-start gap-3 rounded-lh transition-colors hover:bg-water-tint"
               >
-                Open
+                <span
+                  aria-hidden
+                  className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-care"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold transition-colors group-hover:text-water">
+                    {item.task}
+                  </p>
+                  <p className="text-xs text-ink-soft">
+                    {fmtDay(item.nextDue!)} · Preventive care
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-water group-hover:text-deep-2">
+                  Open
+                </span>
               </Link>
             </li>
           ))}
@@ -369,23 +391,27 @@ export default async function CalendarPage({
           {datedMaintenance.map((item) => (
             <li
               key={item.id}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0"
+              className="py-1 first:pt-0 last:pb-0"
             >
-              <span className="chip chip-care shrink-0">
-                {fmtDay(item.nextDue!)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">{item.task}</p>
-                <p className="text-xs text-ink-soft">
-                  {item.cadence ?? "No cadence"}
-                  {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : ""}
-                </p>
-              </div>
               <Link
-                href="/upkeep?tab=maintenance"
-                className="text-sm font-medium text-water hover:text-deep-2"
+                href={`/upkeep?tab=maintenance#maintenance-${item.id}`}
+                className="group flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lh px-2 py-2 transition-colors hover:bg-water-tint"
               >
-                Open
+                <span className="chip chip-care shrink-0">
+                  {fmtDay(item.nextDue!)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold transition-colors group-hover:text-water">
+                    {item.task}
+                  </p>
+                  <p className="text-xs text-ink-soft">
+                    {item.cadence ?? "No cadence"}
+                    {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : ""}
+                  </p>
+                </div>
+                <span className="text-sm font-medium text-water group-hover:text-deep-2">
+                  Open
+                </span>
               </Link>
             </li>
           ))}
@@ -422,40 +448,6 @@ export default async function CalendarPage({
           </ul>
         </section>
       ) : null}
-
-      <section className="card mt-6 p-6">
-        <p className="section-label">Visit records</p>
-        <h2 className="font-display mt-1 text-2xl">Past check-in and check-out progress</h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Open a past visit to see which tasks were completed, by whom, and when.
-        </p>
-        <ul className="mt-4 divide-y divide-sand-line">
-          {pastStays.map((stay) => {
-            const items = checklistItemsByStay.get(stay.id) ?? [];
-            const done = items.filter((item) => item.checkedAt).length;
-            return (
-              <li key={`record-${stay.id}`} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{stay.label}</p>
-                  <p className="text-xs text-ink-soft">{fmtRange(stay.start, stay.end)}</p>
-                </div>
-                <span className={`chip ${items.length > 0 && done === items.length ? "chip-ready" : "chip-whenever"}`}>
-                  {done} of {items.length}
-                </span>
-                <Link
-                  href={`/calendar/${stay.id}/checklist`}
-                  className="text-sm font-semibold text-water hover:text-deep-2"
-                >
-                  View record
-                </Link>
-              </li>
-            );
-          })}
-          {pastStays.length === 0 ? (
-            <li className="py-3 text-sm text-ink-soft">No past visits yet.</li>
-          ) : null}
-        </ul>
-      </section>
 
       {/* Subscribe */}
       <section className="card mt-6 p-6">

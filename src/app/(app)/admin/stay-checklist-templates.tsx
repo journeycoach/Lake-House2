@@ -4,6 +4,7 @@ import {
   removeStayChecklistTemplate,
   updateStayChecklistTemplate,
 } from "../calendar/stay-checklist-actions";
+import { CollapsibleCard } from "@/components/collapsible-card";
 
 type Template = {
   id: number;
@@ -14,13 +15,13 @@ type Template = {
 
 export function StayChecklistTemplates({ templates }: { templates: Template[] }) {
   return (
-    <section id="stay-checklist-templates" className="card mb-6 scroll-mt-4 p-6">
-      <p className="section-label">Stay checklist templates</p>
-      <h2 className="font-display mt-1 text-2xl">Check In and Check Out</h2>
-      <p className="mt-1 text-sm text-ink-soft">
-        These steps are copied into each new reservation. Editing them will not change existing or past visit records.
-      </p>
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+    <CollapsibleCard
+      id="stay-checklist-templates"
+      label="Stay checklist templates"
+      title="Check In and Check Out"
+      description="These steps are copied into each new reservation. Editing them will not change existing or past visit records."
+    >
+      <div className="grid gap-6 lg:grid-cols-2">
         {[
           { phase: "checkin", label: "Check In" },
           { phase: "checkout", label: "Check Out" },
@@ -99,6 +100,6 @@ export function StayChecklistTemplates({ templates }: { templates: Template[] })
           );
         })}
       </div>
-    </section>
+    </CollapsibleCard>
   );
 }

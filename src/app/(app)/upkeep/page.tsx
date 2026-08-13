@@ -79,6 +79,61 @@ export default async function UpkeepPage({
       {activeTab === "fixit" ? (
         <>
 
+      {/* Report an issue */}
+      <details
+        id="report-an-issue"
+        className={`group mb-6 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint ${
+          editor ? "" : "hidden"
+        }`}
+      >
+        <summary className="flex w-full cursor-pointer list-none items-center justify-between gap-4 rounded-lh p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water [&::-webkit-details-marker]:hidden">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 2.5 16 15H2L9 2.5Z" />
+                <path d="M9 6.5v4M9 13h.01" />
+              </svg>
+            </span>
+            <div>
+              <p className="section-label text-water">Report an issue</p>
+              <h2 className="font-display mt-0.5 text-xl">What needs fixing</h2>
+            </div>
+          </div>
+          <span className="flex items-center gap-2 text-sm font-semibold text-water">
+            Report an Issue
+            <svg
+              aria-hidden
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform group-open:rotate-180"
+            >
+              <path d="m3 5 4 4 4-4" />
+            </svg>
+          </span>
+        </summary>
+        <div className="mx-4 mb-4 hidden border-t border-sand-line pt-4 group-open:block">
+          <ReportIssueForm />
+        </div>
+      </details>
+
       {/* Fix-it list */}
       <section className="card p-6">
         <p className="section-label">Fix-it list</p>
@@ -145,13 +200,6 @@ export default async function UpkeepPage({
         </ul>
       </section>
 
-      {/* Report an issue */}
-      <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
-        <p className="section-label">Report an issue</p>
-        <h2 className="font-display text-2xl mt-1 mb-4">What needs fixing</h2>
-        <ReportIssueForm />
-      </section>
-
       {done.length > 0 ? (
         <section className="card mt-6 p-6">
           <p className="section-label">Done</p>
@@ -198,6 +246,113 @@ export default async function UpkeepPage({
         <>
       {/* Maintenance schedules */}
       <section>
+        <details
+          className={`group mb-6 rounded-lh border border-water/30 border-l-4 bg-water-tint ${
+            editor ? "" : "hidden"
+          }`}
+        >
+          <summary className="flex w-full cursor-pointer list-none items-center justify-between gap-4 rounded-lh p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water [&::-webkit-details-marker]:hidden">
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2.5" y="3.5" width="13" height="12" rx="1.5" />
+                  <path d="M5.5 2v3M12.5 2v3M2.5 7h13M9 9v4M7 11h4" />
+                </svg>
+              </span>
+              <div>
+                <p className="section-label text-water">Add a maintenance item</p>
+                <h2 className="font-display mt-0.5 text-xl">Put it on a schedule</h2>
+              </div>
+            </div>
+            <span className="flex items-center gap-2 text-sm font-semibold text-water">
+              Add Maintenance
+              <svg
+                aria-hidden
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-open:rotate-180"
+              >
+                <path d="m3 5 4 4 4-4" />
+              </svg>
+            </span>
+          </summary>
+          <div className="mx-4 mb-4 hidden border-t border-sand-line pt-4 group-open:block">
+            <form action={addSchedule} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div>
+                  <label htmlFor="task" className="flabel">
+                    Task
+                  </label>
+                  <input id="task" name="task" required maxLength={200} className="field" placeholder="Clean gutters" />
+                </div>
+                <div>
+                  <label htmlFor="cadence" className="flabel">
+                    How often
+                  </label>
+                  <input id="cadence" name="cadence" maxLength={200} className="field" placeholder="Every spring and fall" />
+                </div>
+                <div>
+                  <label htmlFor="nextDue" className="flabel">
+                    Next due
+                  </label>
+                  <input id="nextDue" name="nextDue" type="date" className="field" />
+                </div>
+                <div>
+                  <label htmlFor="assignedTo2" className="flabel">
+                    Assigned to
+                  </label>
+                  <input id="assignedTo2" name="assignedTo" maxLength={200} className="field" placeholder="Unassigned" />
+                </div>
+                <div>
+                  <label htmlFor="equipmentId" className="flabel">
+                    Equipment
+                  </label>
+                  <select id="equipmentId" name="equipmentId" className="field" defaultValue="">
+                    <option value="">General house task</option>
+                    {equipment.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="details2" className="flabel">
+                  Details
+                </label>
+                <textarea
+                  id="details2"
+                  name="details"
+                  rows={2}
+                  maxLength={4000}
+                  className="field"
+                  placeholder="Steps, service provider, supplies, or anything else to remember"
+                />
+              </div>
+              <SubmitButton>Add schedule</SubmitButton>
+            </form>
+          </div>
+        </details>
+
         <p className="section-label text-care">Preventive care</p>
         <h2 className="font-display text-2xl mt-1">
           Keep recurring work from being forgotten
@@ -207,7 +362,11 @@ export default async function UpkeepPage({
             const overdue = m.nextDue && m.nextDue < today;
             const dueSoon = m.nextDue && !overdue && m.nextDue <= soon;
             return (
-              <article key={m.id} className="card flex flex-col p-5">
+              <article
+                key={m.id}
+                id={`maintenance-${m.id}`}
+                className="card flex scroll-mt-6 flex-col p-5"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <span
                     className={`chip ${overdue ? "chip-urgent" : dueSoon ? "chip-soon" : "chip-whenever"}`}
@@ -270,68 +429,6 @@ export default async function UpkeepPage({
         </div>
       </section>
 
-      {/* Add a schedule */}
-      <section className={`card mt-6 p-6 ${editor ? "" : "hidden"}`}>
-        <p className="section-label">Add a maintenance item</p>
-        <h2 className="font-display text-2xl mt-1 mb-4">
-          Put it on a schedule
-        </h2>
-        <form action={addSchedule} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <div>
-              <label htmlFor="task" className="flabel">
-                Task
-              </label>
-              <input id="task" name="task" required maxLength={200} className="field" placeholder="Clean gutters" />
-            </div>
-            <div>
-              <label htmlFor="cadence" className="flabel">
-                How often
-              </label>
-              <input id="cadence" name="cadence" maxLength={200} className="field" placeholder="Every spring and fall" />
-            </div>
-            <div>
-              <label htmlFor="nextDue" className="flabel">
-                Next due
-              </label>
-              <input id="nextDue" name="nextDue" type="date" className="field" />
-            </div>
-            <div>
-              <label htmlFor="assignedTo2" className="flabel">
-                Assigned to
-              </label>
-              <input id="assignedTo2" name="assignedTo" maxLength={200} className="field" placeholder="Unassigned" />
-            </div>
-            <div>
-              <label htmlFor="equipmentId" className="flabel">
-                Equipment
-              </label>
-              <select id="equipmentId" name="equipmentId" className="field" defaultValue="">
-                <option value="">General house task</option>
-                {equipment.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label htmlFor="details2" className="flabel">
-              Details
-            </label>
-            <textarea
-              id="details2"
-              name="details"
-              rows={2}
-              maxLength={4000}
-              className="field"
-              placeholder="Steps, service provider, supplies, or anything else to remember"
-            />
-          </div>
-          <SubmitButton>Add schedule</SubmitButton>
-        </form>
-      </section>
       <EquipmentSection
         equipment={equipment}
         records={serviceRecords}

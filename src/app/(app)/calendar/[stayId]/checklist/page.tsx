@@ -4,22 +4,15 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { fmtRange } from "@/lib/dates";
 import { getDb, schema } from "@/lib/db";
+import { canUpdateStayChecklist } from "@/lib/stay-checklist-access";
 import { StayChecklistPhase, type StayChecklistEntry } from "../../stay-checklist";
-
-function tabClass(active: boolean) {
-  return `rounded-lh px-4 py-2 text-sm font-semibold transition-colors ${
-    active ? "bg-deep text-white" : "text-ink-soft hover:text-ink"
-  }`;
-}
 
 export default async function VisitChecklistPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ stayId: string }>;
-  searchParams: Promise<{ phase?: string }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
   const { stayId: rawStayId } = await params;
   const stayId = Number(rawStayId);
   if (!Number.isInteger(stayId) || stayId < 1) notFound();
@@ -36,25 +29,34 @@ export default async function VisitChecklistPage({
       ),
   ]);
   if (!stay) notFound();
+  const canToggle = canUpdateStayChecklist(user, stay);
 
-  const requested = (await searchParams).phase;
-  const phase = requested === "checkout" ? "checkout" : "checkin";
-  const phaseItems: StayChecklistEntry[] = rows
-    .filter((item) => item.phase === phase)
-    .map((item) => ({
-      id: item.id,
-      phase: item.phase,
-      title: item.title,
-      done: Boolean(item.checkedAt),
-      checkedBy: item.checkedBy,
-      checkedAt: item.checkedAt,
-    }));
-  const completed = phaseItems.filter((item) => item.done).length;
-  const phaseComplete = phaseItems.length > 0 && completed === phaseItems.length;
+  const checklistItems: StayChecklistEntry[] = rows.map((item) => ({
+    id: item.id,
+    phase: item.phase,
+    title: item.title,
+    done: Boolean(item.checkedAt),
+    checkedBy: item.checkedBy,
+    checkedAt: item.checkedAt,
+  }));
+  const phases = [
+    {
+      phase: "checkin" as const,
+      label: "Check In",
+      title: "Arrival tasks",
+      items: checklistItems.filter((item) => item.phase === "checkin"),
+    },
+    {
+      phase: "checkout" as const,
+      label: "Check Out",
+      title: "Departure tasks",
+      items: checklistItems.filter((item) => item.phase === "checkout"),
+    },
+  ];
   const totalCompleted = rows.filter((item) => item.checkedAt).length;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-5">
         <Link href="/calendar" className="text-sm font-semibold text-water hover:text-deep-2">
           ← Back to calendar
@@ -72,51 +74,48 @@ export default async function VisitChecklistPage({
       </div>
 
       <section className="card p-4 md:p-6">
-        <div className="flex items-center gap-1 rounded-lh border border-sand-line p-1">
-          <Link
-            href={`/calendar/${stay.id}/checklist?phase=checkin`}
-            className={tabClass(phase === "checkin")}
-          >
-            Check In
-          </Link>
-          <Link
-            href={`/calendar/${stay.id}/checklist?phase=checkout`}
-            className={tabClass(phase === "checkout")}
-          >
-            Check Out
-          </Link>
+        <p className="text-sm text-ink-soft">
+          {canToggle
+            ? "You can update this visit’s progress while your household is at the lake."
+            : "Everyone can view these lists. Checkboxes are available only to the resident household during its stay."}
+        </p>
+
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          {phases.map(({ phase, label, title, items }) => {
+            const completed = items.filter((item) => item.done).length;
+            const complete = items.length > 0 && completed === items.length;
+
+            return (
+              <section key={phase} className="rounded-lh border border-sand-line p-4">
+                <div className="flex items-center justify-between gap-3 border-b border-sand-line pb-4">
+                  <h2 className="font-display text-2xl">{title}</h2>
+                  <span className={`chip shrink-0 ${complete ? "chip-ready" : "chip-whenever"}`}>
+                    {complete ? "Complete" : `${completed} of ${items.length}`}
+                  </span>
+                </div>
+
+                {items.length > 0 ? (
+                  <div className="mt-4">
+                    <StayChecklistPhase
+                      label={label}
+                      items={items}
+                      canToggle={canToggle}
+                      showStatus
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-ink-soft">
+                    This reservation does not have any {phase === "checkin" ? "check-in" : "check-out"} tasks.
+                  </p>
+                )}
+              </section>
+            );
+          })}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-b border-sand-line pb-4">
-          <div>
-            <h2 className="font-display text-2xl">
-              {phase === "checkin" ? "Arrival tasks" : "Departure tasks"}
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Anyone in the family can update this visit’s progress.
-            </p>
-          </div>
-          <span className={`chip ${phaseComplete ? "chip-ready" : "chip-whenever"}`}>
-            {phaseComplete ? "Complete" : `${completed} of ${phaseItems.length}`}
-          </span>
-        </div>
-
-        {phaseItems.length > 0 ? (
-          <div className="mt-4">
-            <StayChecklistPhase
-              label={phase === "checkin" ? "Check In" : "Check Out"}
-              items={phaseItems}
-              showStatus
-            />
-            <p className="mt-4 border-t border-sand-line pt-3 text-xs text-ink-faint">
-              Unchecked items remain part of this visit’s permanent record as not completed.
-            </p>
-          </div>
-        ) : (
-          <p className="mt-5 text-sm text-ink-soft">
-            This reservation does not have any {phase === "checkin" ? "check-in" : "check-out"} tasks.
-          </p>
-        )}
+        <p className="mt-5 border-t border-sand-line pt-3 text-xs text-ink-faint">
+          Unchecked items remain part of this visit’s permanent record as not completed.
+        </p>
       </section>
     </div>
   );

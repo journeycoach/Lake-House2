@@ -3,6 +3,7 @@ import { desc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { PageHeader } from "@/components/page-header";
+import { AdminTabs } from "@/components/admin-tabs";
 
 export const metadata: Metadata = { title: "Activity · Paine Pointe" };
 
@@ -35,9 +36,10 @@ export default async function ActivityPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        title="Activity"
+        title="Site Activity"
         action={<span className="chip chip-whenever">Admin only</span>}
       />
+      <AdminTabs active="activity" />
 
       <section className="card p-6">
         <p className="section-label">Recent activity</p>

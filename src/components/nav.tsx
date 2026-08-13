@@ -16,23 +16,17 @@ const LINKS: {
 }[] = [
   { href: "/", label: "Home", icon: "🏠" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
-  { href: "/upkeep", label: "Fix It List", icon: "🛠️" },
-  {
-    href: "/upkeep?tab=maintenance",
-    label: "Maintenance",
-    icon: "🔧",
-  },
-  { href: "/checklist", label: "Check List", icon: "✅" },
+  { href: "/upkeep", label: "Property Care", icon: "🛠️" },
+  { href: "/checklist", label: "Shopping List", icon: "✅" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
   { href: "/guide", label: "House guide", icon: "📖" },
   {
-    href: "/activity",
-    label: "Site Activity",
-    icon: "🕘",
+    href: "/admin",
+    label: "Admin",
+    icon: "⚙️",
     adminOnly: true,
     separatorBefore: true,
   },
-  { href: "/admin", label: "Admin", icon: "⚙️", adminOnly: true },
 ];
 
 function NavLinks({
