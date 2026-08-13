@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, gte, lte, ne } from "drizzle-orm";
+import { and, asc, eq, gte, lte, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireEditor } from "@/lib/auth";
@@ -111,11 +111,35 @@ export async function createStay(
     };
   }
 
-  await getDb().insert(schema.stays).values({
+  const [createdStay] = await getDb().insert(schema.stays).values({
     ...stay,
     createdBy: user.id,
     createdAt: new Date().toISOString(),
-  });
+  }).returning({ id: schema.stays.id });
+  const templates = await getDb()
+    .select()
+    .from(schema.stayChecklistTemplates)
+    .where(eq(schema.stayChecklistTemplates.active, 1))
+    .orderBy(
+      asc(schema.stayChecklistTemplates.phase),
+      asc(schema.stayChecklistTemplates.position)
+  );
+  if (createdStay && templates.length > 0) {
+    const positions = new Map<string, number>();
+    await getDb().insert(schema.stayChecklistItems).values(
+      templates.map((template) => {
+        const position = (positions.get(template.phase) ?? 0) + 1;
+        positions.set(template.phase, position);
+        return {
+          stayId: createdStay.id,
+          templateId: template.id,
+          phase: template.phase,
+          title: template.title,
+          position,
+        };
+      })
+    );
+  }
   await logActivity(user, "booked a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");

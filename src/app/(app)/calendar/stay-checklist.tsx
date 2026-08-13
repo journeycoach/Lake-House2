@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toggleStayChecklistItem } from "./stay-checklist-actions";
 
 export type StayChecklistEntry = {
@@ -9,16 +10,29 @@ export type StayChecklistEntry = {
   title: string;
   done: boolean;
   checkedBy: string | null;
+  checkedAt: string | null;
 };
+
+function checkedDetails(item: StayChecklistEntry) {
+  if (!item.checkedBy) return null;
+  if (!item.checkedAt) return `Checked by ${item.checkedBy}`;
+  return `Checked by ${item.checkedBy} · ${new Date(item.checkedAt).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Chicago",
+  })}`;
+}
 
 export function StayChecklistPhase({
   label,
-  stayId,
   items,
+  showStatus = false,
 }: {
   label: string;
-  stayId: number;
   items: StayChecklistEntry[];
+  showStatus?: boolean;
 }) {
   return (
     <div>
@@ -29,8 +43,7 @@ export function StayChecklistPhase({
         {items.map((item) => (
           <li key={item.id} className="flex items-start gap-2 py-1.5">
             <form action={toggleStayChecklistItem} className="shrink-0">
-              <input type="hidden" name="stayId" value={stayId} />
-              <input type="hidden" name="templateId" value={item.id} />
+              <input type="hidden" name="itemId" value={item.id} />
               <button
                 type="submit"
                 aria-label={`${item.done ? "Uncheck" : "Check"} ${item.title}`}
@@ -63,7 +76,9 @@ export function StayChecklistPhase({
                 {item.title}
               </p>
               {item.done && item.checkedBy ? (
-                <p className="text-xs text-ink-faint">Checked by {item.checkedBy}</p>
+                <p className="text-xs text-ink-faint">{checkedDetails(item)}</p>
+              ) : showStatus ? (
+                <p className="text-xs text-ink-faint">Not completed</p>
               ) : null}
             </div>
           </li>
@@ -114,9 +129,17 @@ export function StayChecklist({
         </span>
       </button>
       {open ? (
-        <div className="mt-3 grid gap-4 border-t border-sand-line pt-3 sm:grid-cols-2">
-          <StayChecklistPhase label="Check in" stayId={stayId} items={checkin} />
-          <StayChecklistPhase label="Check out" stayId={stayId} items={checkout} />
+        <div className="mt-3 border-t border-sand-line pt-3">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StayChecklistPhase label="Check in" items={checkin} />
+            <StayChecklistPhase label="Check out" items={checkout} />
+          </div>
+          <Link
+            href={`/calendar/${stayId}/checklist`}
+            className="mt-3 inline-block text-sm font-semibold text-water hover:text-deep-2"
+          >
+            Open visit checklist and record
+          </Link>
         </div>
       ) : null}
     </div>

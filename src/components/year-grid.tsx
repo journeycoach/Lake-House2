@@ -17,11 +17,13 @@ export function YearGrid({
   stays,
   maintenance,
   today,
+  planningEnabled = false,
 }: {
   year: number;
   stays: StayRow[];
   maintenance: MaintenanceRow[];
   today: string;
+  planningEnabled?: boolean;
 }) {
   const maintenanceByDate = new Map(
     maintenance.flatMap((item) =>
@@ -53,37 +55,37 @@ export function YearGrid({
                 const stay = stayOn(dayIso);
                 const care = maintenanceByDate.get(dayIso);
                 const isToday = dayIso === today;
-                return (
-                  <span
+                const dayClassName = `flex h-5 items-center justify-center rounded-[4px] text-[10px] ${
+                  isToday
+                    ? "font-bold text-rust ring-1 ring-rust"
+                    : stay
+                      ? "font-medium text-white"
+                      : care
+                        ? "font-semibold text-care"
+                        : "text-ink-faint"
+                } ${care ? "border-b-2 border-care" : ""}`;
+                const dayStyle = stay && !isToday
+                  ? { background: householdVar(stay.color) }
+                  : care && !isToday
+                    ? { background: "color-mix(in srgb, var(--care) 12%, transparent)" }
+                    : undefined;
+                const title = [
+                  stay?.label,
+                  care ? `Preventive care: ${care.task}` : null,
+                ].filter(Boolean).join(" · ") || undefined;
+                return planningEnabled ? (
+                  <Link
                     key={dayIso}
-                    title={
-                      [
-                        stay?.label,
-                        care ? `Preventive care: ${care.task}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ") || undefined
-                    }
-                    className={`flex h-5 items-center justify-center rounded-[4px] text-[10px] ${
-                      isToday
-                        ? "font-bold text-rust ring-1 ring-rust"
-                        : stay
-                          ? "font-medium text-white"
-                          : care
-                            ? "font-semibold text-care"
-                            : "text-ink-faint"
-                    } ${care ? "border-b-2 border-care" : ""}`}
-                    style={
-                      stay && !isToday
-                        ? { background: householdVar(stay.color) }
-                        : care && !isToday
-                          ? {
-                              background:
-                                "color-mix(in srgb, var(--care) 12%, transparent)",
-                            }
-                        : undefined
-                    }
+                    href={`/calendar?view=year&y=${year}&start=${dayIso}#plan`}
+                    aria-label={`Plan a stay beginning ${dayIso}`}
+                    title={title}
+                    className={dayClassName}
+                    style={dayStyle}
                   >
+                    {day}
+                  </Link>
+                ) : (
+                  <span key={dayIso} title={title} className={dayClassName} style={dayStyle}>
                     {day}
                   </span>
                 );

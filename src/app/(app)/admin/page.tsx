@@ -8,6 +8,7 @@ import { storageReport } from "@/lib/backup";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
 import { ROLES, roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
+import { StayChecklistTemplates } from "./stay-checklist-templates";
 import {
   addUser,
   resetPassword,
@@ -31,7 +32,7 @@ function fmtStamp(iso: string): string {
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
-  const [users, households, mails, requests, storage] = await Promise.all([
+  const [users, households, mails, requests, storage, stayTemplates] = await Promise.all([
     getDb()
       .select()
       .from(schema.users)
@@ -44,6 +45,14 @@ export default async function AdminPage() {
       .where(eq(schema.accessRequests.status, "pending"))
       .orderBy(asc(schema.accessRequests.id)),
     storageReport(),
+    getDb()
+      .select()
+      .from(schema.stayChecklistTemplates)
+      .where(eq(schema.stayChecklistTemplates.active, 1))
+      .orderBy(
+        asc(schema.stayChecklistTemplates.phase),
+        asc(schema.stayChecklistTemplates.position)
+      ),
   ]);
   const householdsById = new Map(
     households.map((household) => [household.id, household])
@@ -84,6 +93,8 @@ export default async function AdminPage() {
           Keep it short: Ready, Winterized, Water off, Under repair.
         </p>
       </section>
+
+      <StayChecklistTemplates templates={stayTemplates} />
 
       {/* Pending access requests. Only rendered when someone is waiting, so
           the page stays quiet the rest of the time. */}
