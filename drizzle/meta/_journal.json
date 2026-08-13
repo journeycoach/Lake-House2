@@ -29,6 +29,13 @@
       "when": 1786489819048,
       "tag": "0003_lakehouse_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786635000262,
+      "tag": "0004_stay_checklist_progress",
+      "breakpoints": true
     }
   ]
 }

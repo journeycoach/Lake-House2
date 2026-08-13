@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { householdVar } from "@/lib/colors";
 import { fmtDay, fmtRange, monthName, parseISO, todayISO } from "@/lib/dates";
@@ -35,12 +35,15 @@ function tab(active: boolean) {
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ m?: string; y?: string; view?: string }>;
+  searchParams: Promise<{ m?: string; y?: string; view?: string; start?: string }>;
 }) {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const params = await searchParams;
   const view = params.view === "year" ? "year" : "month";
+  const selectedStart = /^\d{4}-\d{2}-\d{2}$/.test(params.start ?? "")
+    ? params.start
+    : undefined;
   const today = todayISO();
   const t = parseISO(today);
   let y = t.y;
@@ -56,7 +59,7 @@ export default async function CalendarPage({
   const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
 
-  const [stays, maintenance, households, stayTemplates, stayCompletions] = await Promise.all([
+  const [stays, maintenance, households, stayChecklistItems] = await Promise.all([
     allStays(),
     maintenanceItems(),
     getDb()
@@ -65,13 +68,11 @@ export default async function CalendarPage({
       .orderBy(asc(schema.households.name)),
     getDb()
       .select()
-      .from(schema.stayChecklistTemplates)
-      .where(eq(schema.stayChecklistTemplates.active, 1))
+      .from(schema.stayChecklistItems)
       .orderBy(
-        asc(schema.stayChecklistTemplates.phase),
-        asc(schema.stayChecklistTemplates.position)
+        asc(schema.stayChecklistItems.phase),
+        asc(schema.stayChecklistItems.position)
       ),
-    getDb().select().from(schema.stayChecklistCompletions),
   ]);
   const monthKey = `${y}-${String(m).padStart(2, "0")}`;
   const monthStays = stays.filter(
@@ -95,12 +96,13 @@ export default async function CalendarPage({
       .filter((other) => stay.start <= other.end && other.start <= stay.end)
       .map((other) => ({ stay, other }))
   );
-  const completionByStayAndTemplate = new Map(
-    stayCompletions.map((completion) => [
-      `${completion.stayId}:${completion.templateId}`,
-      completion,
-    ])
-  );
+  const pastStays = stays.filter((stay) => stay.end < today).reverse();
+  const checklistItemsByStay = new Map<number, typeof stayChecklistItems>();
+  for (const item of stayChecklistItems) {
+    const items = checklistItemsByStay.get(item.stayId) ?? [];
+    items.push(item);
+    checklistItemsByStay.set(item.stayId, items);
+  }
 
   const token = await getFeedToken();
   const host = (await headers()).get("host") ?? "localhost:3000";
@@ -108,7 +110,85 @@ export default async function CalendarPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Calendar" action={<span />} />
+      <PageHeader
+        title="Calendar"
+        action={(
+          <section className="card w-full p-3 md:min-w-[32rem] md:max-w-2xl md:flex-1">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <div>
+                <p className="section-label">Upcoming stays</p>
+                <h2 className="font-display mt-0.5 text-lg">Who is using Paine Pointe</h2>
+              </div>
+              {editor ? (
+                <Link href="#plan" className="text-xs font-semibold text-water hover:text-deep-2">
+                  Plan a stay
+                </Link>
+              ) : null}
+            </div>
+            <ul className="mt-1">
+              {upcoming.map((s) => (
+                <StayListItem
+                  key={s.id}
+                  stay={s}
+                  households={households}
+                  color={householdVar(s.color)}
+                  checklist={(checklistItemsByStay.get(s.id) ?? []).map((item) => ({
+                    id: item.id,
+                    phase: item.phase,
+                    title: item.title,
+                    done: Boolean(item.checkedAt),
+                    checkedBy: item.checkedBy,
+                    checkedAt: item.checkedAt,
+                  }))}
+                  dateBadge={fmtDay(s.start)}
+                  meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
+                  canEdit={editor}
+                />
+              ))}
+              {upcoming.length === 0 ? (
+                <li className="pt-1 text-sm text-ink-soft">
+                  Nothing scheduled yet.
+                </li>
+              ) : null}
+            </ul>
+          </section>
+        )}
+      />
+
+      {editor ? (
+        <details
+          id="plan"
+          open={Boolean(selectedStart)}
+          className="card group mb-5 scroll-mt-6 p-4"
+        >
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+            <div>
+              <p className="section-label">Plan a stay</p>
+              <h2 className="font-display mt-0.5 text-xl">Put it on the calendar</h2>
+            </div>
+            <span className="flex items-center gap-2 text-sm font-semibold text-water">
+              Add a stay
+              <svg
+                aria-hidden
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-open:rotate-180"
+              >
+                <path d="m3 5 4 4 4-4" />
+              </svg>
+            </span>
+          </summary>
+          <div className="mt-4 border-t border-sand-line pt-4">
+            <StayForm households={households} defaultDate={selectedStart} />
+          </div>
+        </details>
+      ) : null}
 
       <section className="card p-4 md:p-6">
         <div className="flex items-center justify-between gap-3 md:hidden">
@@ -141,6 +221,7 @@ export default async function CalendarPage({
             stays={monthStays}
             maintenance={monthMaintenance}
             today={today}
+            planningEnabled={editor}
           />
         </div>
 
@@ -198,6 +279,7 @@ export default async function CalendarPage({
               stays={monthStays}
               maintenance={monthMaintenance}
               today={today}
+              planningEnabled={editor}
             />
           ) : (
             <YearGrid
@@ -205,6 +287,7 @@ export default async function CalendarPage({
               stays={yearStays}
               maintenance={yearMaintenance}
               today={today}
+              planningEnabled={editor}
             />
           )}
         </div>
@@ -340,53 +423,39 @@ export default async function CalendarPage({
         </section>
       ) : null}
 
-      {/* Stays list */}
       <section className="card mt-6 p-6">
-        <p className="section-label">Upcoming stays</p>
-        <h2 className="font-display text-2xl mt-1">Who is using Paine Pointe</h2>
+        <p className="section-label">Visit records</p>
+        <h2 className="font-display mt-1 text-2xl">Past check-in and check-out progress</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Conflicting dates are flagged before saving.
+          Open a past visit to see which tasks were completed, by whom, and when.
         </p>
-        <ul className="mt-4">
-          {upcoming.map((s) => (
-            <StayListItem
-              key={s.id}
-              stay={s}
-              households={households}
-              color={householdVar(s.color)}
-              checklist={stayTemplates.map((template) => {
-                const completion = completionByStayAndTemplate.get(
-                  `${s.id}:${template.id}`
-                );
-                return {
-                  id: template.id,
-                  phase: template.phase,
-                  title: template.title,
-                  done: Boolean(completion),
-                  checkedBy: completion?.checkedBy ?? null,
-                };
-              })}
-              dateBadge={fmtDay(s.start)}
-              meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
-              canEdit={editor}
-            />
-          ))}
-          {upcoming.length === 0 ? (
-            <li className="py-4 text-sm text-ink-soft">
-              Nothing on the calendar yet. Plan the first stay below.
-            </li>
+        <ul className="mt-4 divide-y divide-sand-line">
+          {pastStays.map((stay) => {
+            const items = checklistItemsByStay.get(stay.id) ?? [];
+            const done = items.filter((item) => item.checkedAt).length;
+            return (
+              <li key={`record-${stay.id}`} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{stay.label}</p>
+                  <p className="text-xs text-ink-soft">{fmtRange(stay.start, stay.end)}</p>
+                </div>
+                <span className={`chip ${items.length > 0 && done === items.length ? "chip-ready" : "chip-whenever"}`}>
+                  {done} of {items.length}
+                </span>
+                <Link
+                  href={`/calendar/${stay.id}/checklist`}
+                  className="text-sm font-semibold text-water hover:text-deep-2"
+                >
+                  View record
+                </Link>
+              </li>
+            );
+          })}
+          {pastStays.length === 0 ? (
+            <li className="py-3 text-sm text-ink-soft">No past visits yet.</li>
           ) : null}
         </ul>
       </section>
-
-      {/* Plan a stay */}
-      {editor ? (
-        <section id="plan" className="card mt-6 p-6 scroll-mt-6">
-          <p className="section-label">Plan a stay</p>
-          <h2 className="font-display text-2xl mt-1 mb-4">Put it on the calendar</h2>
-          <StayForm households={households} />
-        </section>
-      ) : null}
 
       {/* Subscribe */}
       <section className="card mt-6 p-6">

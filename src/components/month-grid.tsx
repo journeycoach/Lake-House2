@@ -11,12 +11,14 @@ export function MiniMonthGrid({
   stays,
   maintenance,
   today,
+  planningEnabled = false,
 }: {
   year: number;
   month: number;
   stays: StayRow[];
   maintenance: MaintenanceRow[];
   today: string;
+  planningEnabled?: boolean;
 }) {
   const cells = monthGrid(year, month);
 
@@ -84,7 +86,17 @@ export function MiniMonthGrid({
             </>
           );
 
-          return hasEvents ? (
+          return planningEnabled ? (
+            <Link
+              key={dayIso}
+              href={`/calendar?view=month&m=${year}-${String(month).padStart(2, "0")}&start=${dayIso}#plan`}
+              aria-label={`Plan a stay beginning ${dayIso}`}
+              className={className}
+              style={style}
+            >
+              {content}
+            </Link>
+          ) : hasEvents ? (
             <Link
               key={dayIso}
               href="#calendar-details"
@@ -102,7 +114,7 @@ export function MiniMonthGrid({
         })}
       </div>
       <div className="mt-3 flex items-center justify-between gap-3 text-xs text-ink-soft">
-        <span>Tap a marked day for details.</span>
+        <span>{planningEnabled ? "Tap a day to plan a stay." : "Tap a marked day for details."}</span>
         <Link
           href="#calendar-details"
           className="shrink-0 font-semibold text-water hover:text-deep-2"
@@ -121,12 +133,14 @@ export function MonthGrid({
   stays,
   maintenance,
   today,
+  planningEnabled = false,
 }: {
   year: number;
   month: number;
   stays: StayRow[];
   maintenance: MaintenanceRow[];
   today: string;
+  planningEnabled?: boolean;
 }) {
   const cells = monthGrid(year, month);
   const maintenanceByDate = new Map<string, MaintenanceRow[]>();
@@ -166,28 +180,8 @@ export function MonthGrid({
             visibleMaintenance.length;
           const first = dayStays[0];
           const isToday = dayIso === today;
-          return (
-            <div
-              key={dayIso}
-              className={`min-h-20 rounded-lh border p-1.5 ${
-                isToday ? "border-rust" : "border-transparent"
-              }`}
-              style={
-                first
-                  ? {
-                      background: `color-mix(in srgb, ${householdVar(first.color)} 14%, transparent)`,
-                    }
-                  : dayMaintenance.length > 0
-                    ? {
-                        background:
-                          "color-mix(in srgb, var(--care) 10%, transparent)",
-                      }
-                    : {
-                        background:
-                          "color-mix(in srgb, var(--sand) 35%, transparent)",
-                      }
-              }
-            >
+          const dayContent = (
+            <>
               <span
                 className={`text-sm ${isToday ? "font-bold text-rust" : "text-ink-soft"}`}
               >
@@ -224,6 +218,31 @@ export function MonthGrid({
                   +{hiddenCount} more
                 </span>
               ) : null}
+            </>
+          );
+          const cellClassName = `min-h-20 rounded-lh border p-1.5 transition-colors hover:border-water ${
+            isToday ? "border-rust" : "border-transparent"
+          }`;
+          const cellStyle = first
+            ? {
+                background: `color-mix(in srgb, ${householdVar(first.color)} 14%, transparent)`,
+              }
+            : dayMaintenance.length > 0
+              ? { background: "color-mix(in srgb, var(--care) 10%, transparent)" }
+              : { background: "color-mix(in srgb, var(--sand) 35%, transparent)" };
+          return planningEnabled ? (
+            <Link
+              key={dayIso}
+              href={`/calendar?view=month&m=${year}-${String(month).padStart(2, "0")}&start=${dayIso}#plan`}
+              aria-label={`Plan a stay beginning ${dayIso}`}
+              className={cellClassName}
+              style={cellStyle}
+            >
+              {dayContent}
+            </Link>
+          ) : (
+            <div key={dayIso} className={cellClassName} style={cellStyle}>
+              {dayContent}
             </div>
           );
         })}

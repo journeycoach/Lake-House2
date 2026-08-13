@@ -17,6 +17,7 @@ const ORDER = [
   "users",
   "stays",
   "stayChecklistTemplates",
+  "stayChecklistItems",
   "stayChecklistCompletions",
   "notes",
   "fixit",

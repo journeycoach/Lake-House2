@@ -27,10 +27,12 @@ export function StayForm({
   households,
   stay,
   onDone,
+  defaultDate,
 }: {
   households: Household[];
   stay?: EditableStay;
   onDone?: () => void;
+  defaultDate?: string;
 }) {
   const action = stay ? updateStay : createStay;
   const [state, formAction, pending] = useActionState(
@@ -87,7 +89,7 @@ export function StayForm({
             name="start"
             type="date"
             required
-            defaultValue={stay?.start}
+            defaultValue={stay?.start ?? defaultDate}
             className="field"
           />
         </div>
@@ -100,7 +102,7 @@ export function StayForm({
             name="end"
             type="date"
             required
-            defaultValue={stay?.end}
+            defaultValue={stay?.end ?? defaultDate}
             className="field"
           />
         </div>
@@ -203,10 +205,10 @@ export function StayListItem({
   }
 
   return (
-    <li className="border-t border-sand-line py-4 first:border-0">
-      <div className="flex items-center gap-4">
+    <li className="border-t border-sand-line py-3 first:border-0 first:pt-1">
+      <div className="flex items-center gap-3">
       <span
-        className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lh text-white"
+        className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lh text-white"
         style={{ background: color }}
       >
         <span className="text-base font-bold leading-none">
@@ -271,7 +273,7 @@ export function StayListItem({
         )}
       </div>
       </div>
-      <div className="ml-16">
+      <div className="ml-13">
         <StayChecklist stayId={stay.id} items={checklist} />
       </div>
     </li>

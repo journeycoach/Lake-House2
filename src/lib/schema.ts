@@ -48,8 +48,7 @@ export const stays = pgTable("stays", {
   createdAt: text("created_at").notNull(),
 });
 
-/* The same arrival/departure templates appear for every reservation, while
-   completions are stored against one stay so every visit starts fresh. */
+/* Admin-managed arrival/departure templates are copied into each new stay. */
 export const stayChecklistTemplates = pgTable("stay_checklist_templates", {
   id: serial("id").primaryKey(),
   phase: text("phase").notNull(), // checkin | checkout
@@ -76,6 +75,34 @@ export const stayChecklistCompletions = pgTable(
     uniqueIndex("stay_checklist_completion_unique").on(
       table.stayId,
       table.templateId
+    ),
+  ]
+);
+
+/* A frozen copy of the template for one reservation. Template edits affect
+   future reservations only, while these rows preserve each visit's record. */
+export const stayChecklistItems = pgTable(
+  "stay_checklist_items",
+  {
+    id: serial("id").primaryKey(),
+    stayId: integer("stay_id")
+      .notNull()
+      .references(() => stays.id, { onDelete: "cascade" }),
+    templateId: integer("template_id").references(
+      () => stayChecklistTemplates.id,
+      { onDelete: "set null" }
+    ),
+    phase: text("phase").notNull(), // checkin | checkout
+    title: text("title").notNull(),
+    position: integer("position").notNull(),
+    checkedBy: text("checked_by"),
+    checkedAt: text("checked_at"),
+  },
+  (table) => [
+    uniqueIndex("stay_checklist_item_position_unique").on(
+      table.stayId,
+      table.phase,
+      table.position
     ),
   ]
 );

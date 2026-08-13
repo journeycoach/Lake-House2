@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { canEdit, meetsRole } from "@/lib/roles";
@@ -10,7 +10,6 @@ import { PageHeader } from "@/components/page-header";
 import { StayChecklistPhase } from "../calendar/stay-checklist";
 import { SectionCard } from "./section-card";
 import { AddSection } from "./add-section";
-import { StayChecklistSetup } from "./stay-checklist-setup";
 
 export const metadata: Metadata = { title: "House guide · Paine Pointe" };
 
@@ -19,7 +18,7 @@ export default async function GuidePage() {
   const editor = canEdit(user.effectiveRole);
   const admin = user.effectiveRole === "admin";
 
-  const [sections, blocks, stays, stayTemplates, stayCompletions] = await Promise.all([
+  const [sections, blocks, stays, stayChecklistItems] = await Promise.all([
     getDb()
       .select()
       .from(schema.guideSections)
@@ -31,13 +30,11 @@ export default async function GuidePage() {
     allStays(),
     getDb()
       .select()
-      .from(schema.stayChecklistTemplates)
-      .where(eq(schema.stayChecklistTemplates.active, 1))
+      .from(schema.stayChecklistItems)
       .orderBy(
-        asc(schema.stayChecklistTemplates.phase),
-        asc(schema.stayChecklistTemplates.position)
+        asc(schema.stayChecklistItems.phase),
+        asc(schema.stayChecklistItems.position)
       ),
-    getDb().select().from(schema.stayChecklistCompletions),
   ]);
 
   const today = todayISO();
@@ -45,23 +42,16 @@ export default async function GuidePage() {
     ...staysNow(stays, today),
     ...staysUpcoming(stays, today),
   ][0] ?? null;
-  const completionByTemplate = new Map(
-    stayCompletions
-      .filter((completion) => completion.stayId === checklistStay?.id)
-      .map((completion) => [completion.templateId, completion])
-  );
-  const arrivalItems = stayTemplates
-    .filter((template) => template.phase === "checkin")
-    .map((template) => {
-      const completion = completionByTemplate.get(template.id);
-      return {
-        id: template.id,
-        phase: template.phase,
-        title: template.title,
-        done: Boolean(completion),
-        checkedBy: completion?.checkedBy ?? null,
-      };
-    });
+  const arrivalItems = stayChecklistItems
+    .filter((item) => item.stayId === checklistStay?.id && item.phase === "checkin")
+    .map((item) => ({
+      id: item.id,
+      phase: item.phase,
+      title: item.title,
+      done: Boolean(item.checkedAt),
+      checkedBy: item.checkedBy,
+      checkedAt: item.checkedAt,
+    }));
 
   /* Restricted content is filtered out here, on the server, so anything a
      person is not allowed to see is never sent to their browser at all. */
@@ -81,8 +71,6 @@ export default async function GuidePage() {
           the house. {editor ? "Family and admins can add to it." : null}
         </p>
 
-        {admin ? <StayChecklistSetup templates={stayTemplates} /> : null}
-
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleSections.map((s, i) => {
             const isArrivalChecklist =
@@ -98,7 +86,7 @@ export default async function GuidePage() {
                 isLast={i === visibleSections.length - 1}
                 anchorId={isArrivalChecklist ? "arrival-check-list" : undefined}
                 checklistEditHref={
-                  isArrivalChecklist && admin ? "#stay-checklist-setup" : undefined
+                  isArrivalChecklist && admin ? "/admin#stay-checklist-templates" : undefined
                 }
                 stayChecklist={
                   isArrivalChecklist ? (
@@ -109,9 +97,14 @@ export default async function GuidePage() {
                         </p>
                         <StayChecklistPhase
                           label="Arrival steps"
-                          stayId={checklistStay.id}
                           items={arrivalItems}
                         />
+                        <Link
+                          href={`/calendar/${checklistStay.id}/checklist`}
+                          className="mt-3 inline-block text-sm font-semibold text-water hover:text-deep-2"
+                        >
+                          Open full check-in and check-out record
+                        </Link>
                       </div>
                     ) : (
                       <div>

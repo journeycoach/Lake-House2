@@ -32,6 +32,7 @@ export default async function HomePage() {
 
   const here = staysNow(stays, today);
   const next = staysUpcoming(stays, today)[0];
+  const checklistStay = here[0] ?? next;
   const status = statusRow?.value ?? "Ready";
   const { y, m } = (() => {
     const t = parseISO(today);
@@ -68,7 +69,7 @@ export default async function HomePage() {
             </Link>
           ) : null}
           <Link
-            href="/guide#arrival-check-list"
+            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
             className="btn bg-sage text-white hover:bg-deep"
           >
             Check-in list
