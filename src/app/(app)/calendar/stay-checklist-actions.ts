@@ -9,7 +9,8 @@ import { readText } from "@/lib/forms";
 import { canUpdateStayChecklist } from "@/lib/stay-checklist-access";
 
 function phaseValue(value: unknown) {
-  return String(value) === "checkout" ? "checkout" : "checkin";
+  const phase = String(value);
+  return phase === "checkout" || phase === "boat" ? phase : "checkin";
 }
 
 export async function addStayChecklistTemplate(formData: FormData) {

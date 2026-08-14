@@ -47,6 +47,12 @@ export default async function VisitChecklistPage({
       items: checklistItems.filter((item) => item.phase === "checkin"),
     },
     {
+      phase: "boat" as const,
+      label: "Boat",
+      title: "Boat tasks",
+      items: checklistItems.filter((item) => item.phase === "boat"),
+    },
+    {
       phase: "checkout" as const,
       label: "Check Out",
       title: "Departure tasks",
@@ -80,7 +86,7 @@ export default async function VisitChecklistPage({
             : "Everyone can view these lists. Checkboxes are available only to the resident household during its stay."}
         </p>
 
-        <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {phases.map(({ phase, label, title, items }) => {
             const completed = items.filter((item) => item.done).length;
             const complete = items.length > 0 && completed === items.length;
@@ -105,7 +111,7 @@ export default async function VisitChecklistPage({
                   </div>
                 ) : (
                   <p className="mt-4 text-sm text-ink-soft">
-                    This reservation does not have any {phase === "checkin" ? "check-in" : "check-out"} tasks.
+                    This reservation does not have any {phase === "checkin" ? "check-in" : phase === "checkout" ? "check-out" : "boat"} tasks.
                   </p>
                 )}
               </section>

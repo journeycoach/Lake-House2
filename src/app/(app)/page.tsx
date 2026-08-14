@@ -15,6 +15,7 @@ import {
   staysUpcoming,
 } from "@/lib/queries";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
+import { RichNote } from "@/components/rich-note";
 import { toggleItem } from "./checklist/actions";
 
 export default async function HomePage() {
@@ -354,7 +355,7 @@ export default async function HomePage() {
           <ul className="mt-4 space-y-4">
             {notes.map((n) => (
               <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
-                <p className="text-sm">{n.body}</p>
+                <RichNote body={n.body} />
                 <p className="mt-1 text-xs text-ink-faint">
                   {n.authorName} · {n.tag}
                 </p>

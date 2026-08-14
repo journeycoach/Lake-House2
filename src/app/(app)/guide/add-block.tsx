@@ -7,6 +7,7 @@ import { addBlock } from "./actions";
 
 const KINDS = [
   { value: "text", label: "Notes", placeholder: "Anything worth writing down" },
+  { value: "list", label: "List", placeholder: "One item per line" },
   { value: "secret", label: "Code or password", placeholder: "The code itself" },
   { value: "photo", label: "Photo", placeholder: "" },
   { value: "contact", label: "Phone number", placeholder: "512 555 0134" },
@@ -15,6 +16,7 @@ const KINDS = [
 
 const LABEL_HINT: Record<string, string> = {
   text: "Heading (optional)",
+  list: "List heading (optional)",
   secret: "What is it? Wi-Fi password, door code",
   photo: "Caption (optional)",
   contact: "Whose number? Tom's Repair",
@@ -34,7 +36,7 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 self-start text-xs font-medium text-water hover:text-deep-2"
+        className="btn btn-quiet mt-3 self-start px-3 py-2 text-xs"
       >
         Add to this section
       </button>
@@ -112,10 +114,10 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
           accept="image/*"
           className="field text-sm"
         />
-      ) : kind === "text" ? (
+      ) : kind === "text" || kind === "list" ? (
         <textarea
           name="value"
-          rows={3}
+          rows={kind === "list" ? 5 : 3}
           maxLength={4000}
           required
           placeholder={current.placeholder}

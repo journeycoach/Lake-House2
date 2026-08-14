@@ -18,12 +18,13 @@ export function StayChecklistTemplates({ templates }: { templates: Template[] })
     <CollapsibleCard
       id="stay-checklist-templates"
       label="Stay checklist templates"
-      title="Check In and Check Out"
+      title="Arrival, Boat, and Departure"
       description="These steps are copied into each new reservation. Editing them will not change existing or past visit records."
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {[
           { phase: "checkin", label: "Check In" },
+          { phase: "boat", label: "Boat" },
           { phase: "checkout", label: "Check Out" },
         ].map((group) => {
           const items = templates.filter((template) => template.phase === group.phase);

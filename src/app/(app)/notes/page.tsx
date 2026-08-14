@@ -3,12 +3,11 @@ import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
 import { latestNotes } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { SubmitButton } from "@/components/submit-button";
-import { addNote, removeNote } from "./actions";
+import { RichNote } from "@/components/rich-note";
+import { removeNote } from "./actions";
+import { NoteComposer } from "./note-composer";
 
 export const metadata: Metadata = { title: "Family notes · Paine Pointe" };
-
-const TAGS = ["local tip", "house update", "for the next visit"];
 
 export default async function NotesPage() {
   const user = await requireUser();
@@ -67,47 +66,14 @@ export default async function NotesPage() {
             </svg>
           </span>
         </summary>
-        <form
-          action={addNote}
-          className="mt-4 hidden space-y-3 border-t border-sand-line pt-4 group-open:block"
-        >
-          <div>
-            <label htmlFor="body" className="flabel">
-              The note
-            </label>
-            <textarea
-              id="body"
-              name="body"
-              required
-              rows={2}
-              maxLength={4000}
-              className="field py-2"
-              placeholder="The lake is high this week, tie everything down."
-            />
-          </div>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="w-full sm:w-56">
-              <label htmlFor="tag" className="flabel">
-                Tag
-              </label>
-              <select id="tag" name="tag" className="field py-2">
-                {TAGS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <SubmitButton className="btn btn-primary py-2">Share note</SubmitButton>
-          </div>
-        </form>
+        <NoteComposer />
       </details>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {notes.map((n) => (
           <article key={n.id} className="card flex flex-col p-5">
             <p className="section-label">{n.tag}</p>
-            <p className="mt-2 flex-1 text-sm">{n.body}</p>
+            <RichNote body={n.body} className="mt-2 flex-1" />
             <div className="mt-4 flex items-center justify-between border-t border-sand-line pt-3">
               <p className="text-xs text-ink-faint">{n.authorName}</p>
               {editor && (n.authorId === user.id || user.effectiveRole === "admin") ? (

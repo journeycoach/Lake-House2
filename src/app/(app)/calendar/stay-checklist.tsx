@@ -107,6 +107,7 @@ export function StayChecklist({
   if (items.length === 0) return null;
   const completed = items.filter((item) => item.done).length;
   const checkin = items.filter((item) => item.phase === "checkin");
+  const boat = items.filter((item) => item.phase === "boat");
   const checkout = items.filter((item) => item.phase === "checkout");
 
   return (
@@ -138,8 +139,11 @@ export function StayChecklist({
       </button>
       {open ? (
         <div className="mt-3 border-t border-sand-line pt-3">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StayChecklistPhase label="Check in" items={checkin} canToggle={canToggle} />
+            {boat.length > 0 ? (
+              <StayChecklistPhase label="Boat" items={boat} canToggle={canToggle} />
+            ) : null}
             <StayChecklistPhase label="Check out" items={checkout} canToggle={canToggle} />
           </div>
           {!canToggle ? (

@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "db:migrate": "drizzle-kit migrate",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "start": "next start",
-    "db:push": "dotenv -e .env.local -- drizzle-kit push",
-    "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
+    "db:push": "dotenv -e .env.development.local -- drizzle-kit push",
+    "seed": "dotenv -e .env.development.local -- tsx scripts/seed.ts",
     "ship": "vercel deploy --prod",
-    "restore": "dotenv -e .env.local -- tsx scripts/restore.ts"
+    "restore": "dotenv -e .env.development.local -- tsx scripts/restore.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -20,6 +22,7 @@
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "sanitize-html": "^2.17.7",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
@@ -27,8 +30,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.1",
     "dotenv-cli": "^10.0.0",
     "drizzle-kit": "^0.31.8",
+    "pg": "^8.23.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
     "typescript": "^5"

@@ -134,6 +134,31 @@ export function GuideBlock({ block }: { block: Block }) {
   if (block.kind === "secret") return <Secret block={block} />;
   if (block.kind === "photo") return <Photo block={block} />;
 
+  if (block.kind === "list") {
+    const items = block.value
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    return (
+      <div className="border-t border-sand-line py-3 first:border-0">
+        {block.label ? (
+          <p className="text-xs font-medium text-ink-faint">
+            {block.label}
+            <Restricted minRole={block.minRole} />
+          </p>
+        ) : null}
+        <ul
+          className={`${block.label ? "mt-2" : ""} list-disc space-y-1 pl-5 text-sm text-ink-soft`}
+        >
+          {items.map((item, index) => (
+            <li key={`${item}-${index}`}>{item}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   if (block.kind === "contact") {
     const tel = block.value.replace(/[^\d+]/g, "");
     return (

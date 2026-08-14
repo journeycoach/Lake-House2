@@ -12,9 +12,9 @@ The repo is the only channel between them. Rules:
 - Branch names say whose agent did the work: `claude/<topic>` or `codex/<topic>`.
 - Never push directly to `main`. Open a PR and say in the description what
   changed and why. The other side reads PRs to catch up - write for them.
-- The repo lives in the Paines-com organization; Jeff and John are both
+- The repo lives in the journeycoach account; Jeff and John are both
   owners, so either can manage settings, integrations, and access.
-- Hosting is Jeff's Vercel, serving paines.com, connected to this repo:
+- Hosting is the journeycoach Vercel project, serving paines.com and connected to this repo:
   merging to `main` deploys production automatically and every PR gets its own
   preview URL. `npm run ship` still works for a manual deploy. John owns the
   domain registration and the Neon database.

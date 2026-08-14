@@ -263,7 +263,7 @@ await db.insert(schema.guideSections).values([
   },
   {
     position: 2,
-    title: "Boat",
+    title: "Boat Check List",
     body: "Add life jacket locations, boat keys, fuel instructions, dock lines, weather rules, and marina contacts here.",
   },
   {
@@ -273,12 +273,12 @@ await db.insert(schema.guideSections).values([
   },
   {
     position: 4,
-    title: "Safety & emergencies",
+    title: "Emergency Information",
     body: "Add the property address, nearest urgent care, first-aid location, fire extinguishers, and emergency contacts here.",
   },
   {
     position: 5,
-    title: "Departure checklist",
+    title: "Departure Check List",
     body: "Ensure the doors and windows are closed and locked. Set the thermostat to 85 degrees. Throw linens in dryer before leaving. Take out trash. Other checkout steps here.",
   },
   {

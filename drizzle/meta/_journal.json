@@ -36,6 +36,13 @@
       "when": 1786635000262,
       "tag": "0004_stay_checklist_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786736103076,
+      "tag": "0005_boat_checklist",
+      "breakpoints": true
     }
   ]
 }

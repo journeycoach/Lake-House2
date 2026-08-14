@@ -6,10 +6,9 @@ import { GuideBlock, type Block } from "@/components/guide-block";
 import { AddBlock } from "./add-block";
 import {
   saveSection,
+  saveBlock,
   removeSection,
-  moveSection,
   removeBlock,
-  moveBlock,
 } from "./actions";
 
 export type Section = {
@@ -19,12 +18,20 @@ export type Section = {
   minRole: string;
 };
 
+type ManageMode = "heading" | "editItems" | "deleteItems";
+
+function manageButtonClass(active: boolean) {
+  return `rounded-lh px-3 py-1.5 text-xs font-medium transition-colors ${
+    active
+      ? "bg-deep text-white"
+      : "bg-white text-water hover:bg-water-tint hover:text-deep-2"
+  }`;
+}
+
 export function SectionCard({
   section,
   blocks,
   canEdit = false,
-  isFirst,
-  isLast,
   stayChecklist,
   checklistEditHref,
   anchorId,
@@ -32,14 +39,19 @@ export function SectionCard({
   section: Section;
   blocks: Block[];
   canEdit?: boolean;
-  isFirst: boolean;
-  isLast: boolean;
   stayChecklist?: ReactNode;
   checklistEditHref?: string;
   anchorId?: string;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [arranging, setArranging] = useState(false);
+  const [managing, setManaging] = useState(false);
+  const [manageMode, setManageMode] = useState<ManageMode | null>(null);
+  const editing = manageMode === "heading";
+  const editingContent = manageMode === "editItems";
+  const deletingContent = manageMode === "deleteItems";
+
+  function toggleMode(mode: ManageMode) {
+    setManageMode((current) => (current === mode ? null : mode));
+  }
 
   return (
     <article id={anchorId} className="card flex scroll-mt-4 flex-col p-5">
@@ -48,30 +60,17 @@ export function SectionCard({
           {String(section.position).padStart(2, "0")}
         </p>
         {canEdit ? (
-          <div className="flex items-center gap-3">
-            {checklistEditHref ? (
-              <a
-                href={checklistEditHref}
-                className="text-xs font-medium text-water hover:text-deep-2"
-              >
-                Edit list
-              </a>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setArranging((v) => !v)}
-              className="text-xs font-medium text-water hover:text-deep-2"
-            >
-              {arranging ? "Done" : "Arrange"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditing((v) => !v)}
-              className="text-xs font-medium text-water hover:text-deep-2"
-            >
-              {editing ? "Cancel" : "Edit"}
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-expanded={managing}
+            onClick={() => {
+              setManaging((current) => !current);
+              setManageMode(null);
+            }}
+            className="rounded-lh border border-sand-line px-3 py-1.5 text-xs font-semibold text-water hover:border-water hover:bg-water-tint"
+          >
+            {managing ? "Done" : "Manage"}
+          </button>
         ) : null}
       </div>
 
@@ -79,7 +78,7 @@ export function SectionCard({
         <form
           action={async (formData) => {
             await saveSection(formData);
-            setEditing(false);
+            setManageMode(null);
           }}
           className="mt-2 space-y-3"
         >
@@ -127,77 +126,140 @@ export function SectionCard({
         </h3>
       )}
 
+      {managing ? (
+        <div className="mt-3 rounded-lh border border-sand-line bg-mist/60 p-3">
+          <p className="section-label">Manage this card</p>
+          <div className="flex flex-wrap items-start gap-2 [&>form]:w-full [&>form]:basis-full">
+            <AddBlock key={manageMode ?? "add"} sectionId={section.id} />
+            <button
+              type="button"
+              onClick={() => toggleMode("heading")}
+              className={`mt-3 ${manageButtonClass(editing)}`}
+            >
+              Edit heading
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleMode("editItems")}
+              disabled={blocks.length === 0}
+              className={`mt-3 disabled:cursor-default disabled:opacity-40 ${manageButtonClass(editingContent)}`}
+            >
+              Edit items
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleMode("deleteItems")}
+              disabled={blocks.length === 0}
+              className={`mt-3 disabled:cursor-default disabled:opacity-40 ${manageButtonClass(deletingContent)}`}
+            >
+              Delete items
+            </button>
+            {checklistEditHref ? (
+              <a
+                href={checklistEditHref}
+                className={`mt-3 ${manageButtonClass(false)}`}
+              >
+                Edit checklist setup
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       {stayChecklist ? (
         <div className="mt-3 rounded-lh border border-sand-line bg-mist/60 p-3">
           {stayChecklist}
         </div>
       ) : null}
 
-      {arranging ? (
-        <div className="mt-2 flex items-center gap-2">
-          <form action={moveSection}>
-            <input type="hidden" name="id" value={section.id} />
-            <input type="hidden" name="dir" value="up" />
-            <button
-              type="submit"
-              disabled={isFirst}
-              className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-            >
-              Move up
-            </button>
-          </form>
-          <form action={moveSection}>
-            <input type="hidden" name="id" value={section.id} />
-            <input type="hidden" name="dir" value="down" />
-            <button
-              type="submit"
-              disabled={isLast}
-              className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-            >
-              Move down
-            </button>
-          </form>
-        </div>
-      ) : null}
-
       <div className="mt-1">
-        {blocks.map((b, i) => (
+        {blocks.map((b) => (
           <div key={b.id}>
-            <GuideBlock block={b} />
-            {arranging ? (
-              <div className="flex items-center gap-2 pb-2">
-                <form action={moveBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <input type="hidden" name="dir" value="up" />
-                  <button
-                    type="submit"
-                    disabled={i === 0}
-                    className="btn btn-quiet py-1 text-xs disabled:opacity-30"
+            {editingContent ? (
+              <form
+                action={saveBlock}
+                className="space-y-3 border-t border-sand-line py-3 first:border-0"
+              >
+                <input type="hidden" name="id" value={b.id} />
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                    Label
+                  </span>
+                  <input
+                    name="label"
+                    defaultValue={b.label ?? ""}
+                    maxLength={200}
+                    className="field text-sm"
+                    placeholder="Optional heading"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                    {b.kind === "list"
+                      ? "Items (one per line)"
+                      : b.kind === "text"
+                        ? "Text"
+                        : "Value"}
+                  </span>
+                  {b.kind === "text" || b.kind === "list" ? (
+                    <textarea
+                      name="value"
+                      defaultValue={b.value}
+                      rows={b.kind === "list" ? 5 : 4}
+                      maxLength={4000}
+                      required
+                      className="field text-sm"
+                    />
+                  ) : (
+                    <input
+                      name="value"
+                      defaultValue={b.value}
+                      maxLength={4000}
+                      required
+                      className="field text-sm"
+                    />
+                  )}
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    name="minRole"
+                    defaultValue={b.minRole}
+                    className="field w-56 py-2 text-sm"
                   >
-                    Up
+                    {VISIBILITY.map((v) => (
+                      <option key={v.value} value={v.value}>
+                        Visible to {v.label.toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className="btn btn-primary py-2">
+                    Save changes
                   </button>
-                </form>
-                <form action={moveBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <input type="hidden" name="dir" value="down" />
-                  <button
-                    type="submit"
-                    disabled={i === blocks.length - 1}
-                    className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-                  >
-                    Down
-                  </button>
-                </form>
-                <form action={removeBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-ink-faint hover:text-rust"
-                  >
-                    Remove
-                  </button>
-                </form>
-              </div>
+                </div>
+              </form>
+            ) : (
+              <GuideBlock block={b} />
+            )}
+            {deletingContent ? (
+              <form
+                action={removeBlock}
+                onSubmit={(event) => {
+                  const itemName = b.label || b.value.split("\n")[0] || "this item";
+                  const confirmed = window.confirm(
+                    `Delete “${itemName}” from this card? This cannot be undone.`
+                  );
+                  if (!confirmed) event.preventDefault();
+                }}
+                className="pb-2"
+              >
+                <input type="hidden" name="id" value={b.id} />
+                <button
+                  type="submit"
+                  className="text-xs font-medium text-rust hover:text-rust-dark"
+                >
+                  Delete this item
+                </button>
+              </form>
             ) : null}
           </div>
         ))}
@@ -206,7 +268,6 @@ export function SectionCard({
         ) : null}
       </div>
 
-      {canEdit ? <AddBlock sectionId={section.id} /> : null}
     </article>
   );
 }

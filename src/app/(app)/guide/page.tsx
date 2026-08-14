@@ -53,6 +53,26 @@ export default async function GuidePage() {
       checkedBy: item.checkedBy,
       checkedAt: item.checkedAt,
     }));
+  const departureItems = stayChecklistItems
+    .filter((item) => item.stayId === checklistStay?.id && item.phase === "checkout")
+    .map((item) => ({
+      id: item.id,
+      phase: item.phase,
+      title: item.title,
+      done: Boolean(item.checkedAt),
+      checkedBy: item.checkedBy,
+      checkedAt: item.checkedAt,
+    }));
+  const boatItems = stayChecklistItems
+    .filter((item) => item.stayId === checklistStay?.id && item.phase === "boat")
+    .map((item) => ({
+      id: item.id,
+      phase: item.phase,
+      title: item.title,
+      done: Boolean(item.checkedAt),
+      checkedBy: item.checkedBy,
+      checkedAt: item.checkedAt,
+    }));
 
   /* Restricted content is filtered out here, on the server, so anything a
      person is not allowed to see is never sent to their browser at all. */
@@ -73,45 +93,69 @@ export default async function GuidePage() {
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleSections.map((s, i) => {
-            const isArrivalChecklist =
-              s.title.toLowerCase().replace(/[^a-z]/g, "") ===
-              "arrivalchecklist";
+          {visibleSections.map((s) => {
+            const normalizedTitle = s.title.toLowerCase().replace(/[^a-z]/g, "");
+            const isArrivalChecklist = normalizedTitle === "arrivalchecklist";
+            const isDepartureChecklist =
+              normalizedTitle === "departure" ||
+              normalizedTitle === "departurechecklist";
+            const isBoatChecklist =
+              normalizedTitle === "boat" || normalizedTitle === "boatchecklist";
+            const hasStayChecklist =
+              isArrivalChecklist || isDepartureChecklist || isBoatChecklist;
+            const showStayChecklist =
+              hasStayChecklist &&
+              (!isBoatChecklist || !checklistStay || boatItems.length > 0);
+            const checklistType = isDepartureChecklist
+              ? "departure"
+              : isBoatChecklist
+                ? "boat"
+                : "arrival";
+            const guideChecklistItems = isDepartureChecklist
+              ? departureItems
+              : isBoatChecklist
+                ? boatItems
+                : arrivalItems;
+            const sectionBlocks = visibleBlocks.filter(
+              (block) =>
+                block.sectionId === s.id &&
+                // The original Boat list is retained in the database for history,
+                // but its items now appear as visit-specific checkboxes instead.
+                !(showStayChecklist && isBoatChecklist && block.kind === "list")
+            );
             return (
               <SectionCard
                 key={s.id}
                 section={s}
-                blocks={visibleBlocks.filter((b) => b.sectionId === s.id)}
+                blocks={sectionBlocks}
                 canEdit={editor}
-                isFirst={i === 0}
-                isLast={i === visibleSections.length - 1}
                 anchorId={isArrivalChecklist ? "arrival-check-list" : undefined}
                 checklistEditHref={
-                  isArrivalChecklist && admin ? "/admin#stay-checklist-templates" : undefined
+                  hasStayChecklist && admin ? "/admin#stay-checklist-templates" : undefined
                 }
                 stayChecklist={
-                  isArrivalChecklist ? (
+                  showStayChecklist ? (
                     checklistStay ? (
                       <div>
                         <p className="mb-2 text-xs text-ink-soft">
                           For <span className="font-semibold">{checklistStay.label}</span>. These check-offs reset for every reservation.
                         </p>
                         <StayChecklistPhase
-                          label="Arrival steps"
-                          items={arrivalItems}
+                          label={`${checklistType[0].toUpperCase()}${checklistType.slice(1)} steps`}
+                          items={guideChecklistItems}
                           canToggle={canUpdateStayChecklist(user, checklistStay, today)}
                         />
                         <Link
                           href={`/calendar/${checklistStay.id}/checklist`}
                           className="mt-3 inline-block text-sm font-semibold text-water hover:text-deep-2"
                         >
-                          Open full check-in and check-out record
+                          Open full visit checklist record
                         </Link>
                       </div>
                     ) : (
                       <div>
                         <p className="text-sm text-ink-soft">
-                          Schedule a stay to start a fresh arrival checklist.
+                          Schedule a stay to start a fresh {checklistType} checklist.
                         </p>
                         <Link
                           href="/calendar#plan"
@@ -134,7 +178,14 @@ export default async function GuidePage() {
           </p>
         ) : null}
 
-        {editor ? <AddSection /> : null}
+        {editor ? (
+          <AddSection
+            sections={visibleSections.map((section) => ({
+              id: section.id,
+              title: section.title,
+            }))}
+          />
+        ) : null}
       </section>
     </div>
   );
