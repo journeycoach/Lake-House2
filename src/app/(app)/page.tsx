@@ -67,7 +67,7 @@ export default async function HomePage() {
         <div className="flex flex-wrap items-center gap-2">
           {canEdit(user.effectiveRole) ? (
             <>
-              <Link href="/calendar#plan" className="btn btn-primary">
+              <Link href="/calendar?plan=open#plan" className="btn btn-primary">
                 Plan a stay
               </Link>
               <Link

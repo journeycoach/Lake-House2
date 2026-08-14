@@ -36,7 +36,13 @@ function tab(active: boolean) {
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ m?: string; y?: string; view?: string; start?: string }>;
+  searchParams: Promise<{
+    m?: string;
+    y?: string;
+    view?: string;
+    start?: string;
+    plan?: string;
+  }>;
 }) {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
@@ -45,6 +51,7 @@ export default async function CalendarPage({
   const selectedStart = /^\d{4}-\d{2}-\d{2}$/.test(params.start ?? "")
     ? params.start
     : undefined;
+  const shouldOpenPlan = Boolean(selectedStart) || params.plan === "open";
   const today = todayISO();
   const t = parseISO(today);
   let y = t.y;
@@ -156,7 +163,7 @@ export default async function CalendarPage({
       {editor ? (
         <details
           id="plan"
-          open={Boolean(selectedStart)}
+          open={shouldOpenPlan}
           className="group mb-5 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
