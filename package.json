@@ -33,6 +33,7 @@
     "@types/sanitize-html": "^2.16.1",
     "dotenv-cli": "^10.0.0",
     "drizzle-kit": "^0.31.8",
+    "pg": "^8.23.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
     "typescript": "^5"
