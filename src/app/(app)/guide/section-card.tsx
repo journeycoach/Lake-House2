@@ -8,9 +8,7 @@ import {
   saveSection,
   saveBlock,
   removeSection,
-  moveSection,
   removeBlock,
-  moveBlock,
 } from "./actions";
 
 export type Section = {
@@ -20,7 +18,7 @@ export type Section = {
   minRole: string;
 };
 
-type ManageMode = "heading" | "arrange" | "editItems" | "deleteItems";
+type ManageMode = "heading" | "editItems" | "deleteItems";
 
 function manageButtonClass(active: boolean) {
   return `rounded-lh px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -34,8 +32,6 @@ export function SectionCard({
   section,
   blocks,
   canEdit = false,
-  isFirst,
-  isLast,
   stayChecklist,
   checklistEditHref,
   anchorId,
@@ -43,8 +39,6 @@ export function SectionCard({
   section: Section;
   blocks: Block[];
   canEdit?: boolean;
-  isFirst: boolean;
-  isLast: boolean;
   stayChecklist?: ReactNode;
   checklistEditHref?: string;
   anchorId?: string;
@@ -54,7 +48,6 @@ export function SectionCard({
   const editing = manageMode === "heading";
   const editingContent = manageMode === "editItems";
   const deletingContent = manageMode === "deleteItems";
-  const arranging = manageMode === "arrange";
 
   function toggleMode(mode: ManageMode) {
     setManageMode((current) => (current === mode ? null : mode));
@@ -147,13 +140,6 @@ export function SectionCard({
             </button>
             <button
               type="button"
-              onClick={() => toggleMode("arrange")}
-              className={`mt-3 ${manageButtonClass(arranging)}`}
-            >
-              Reorder
-            </button>
-            <button
-              type="button"
               onClick={() => toggleMode("editItems")}
               disabled={blocks.length === 0}
               className={`mt-3 disabled:cursor-default disabled:opacity-40 ${manageButtonClass(editingContent)}`}
@@ -186,35 +172,8 @@ export function SectionCard({
         </div>
       ) : null}
 
-      {arranging ? (
-        <div className="mt-2 flex items-center gap-2">
-          <form action={moveSection}>
-            <input type="hidden" name="id" value={section.id} />
-            <input type="hidden" name="dir" value="up" />
-            <button
-              type="submit"
-              disabled={isFirst}
-              className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-            >
-              Move up
-            </button>
-          </form>
-          <form action={moveSection}>
-            <input type="hidden" name="id" value={section.id} />
-            <input type="hidden" name="dir" value="down" />
-            <button
-              type="submit"
-              disabled={isLast}
-              className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-            >
-              Move down
-            </button>
-          </form>
-        </div>
-      ) : null}
-
       <div className="mt-1">
-        {blocks.map((b, i) => (
+        {blocks.map((b) => (
           <div key={b.id}>
             {editingContent ? (
               <form
@@ -301,32 +260,6 @@ export function SectionCard({
                   Delete this item
                 </button>
               </form>
-            ) : null}
-            {arranging ? (
-              <div className="flex items-center gap-2 pb-2">
-                <form action={moveBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <input type="hidden" name="dir" value="up" />
-                  <button
-                    type="submit"
-                    disabled={i === 0}
-                    className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-                  >
-                    Up
-                  </button>
-                </form>
-                <form action={moveBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <input type="hidden" name="dir" value="down" />
-                  <button
-                    type="submit"
-                    disabled={i === blocks.length - 1}
-                    className="btn btn-quiet py-1 text-xs disabled:opacity-30"
-                  >
-                    Down
-                  </button>
-                </form>
-              </div>
             ) : null}
           </div>
         ))}

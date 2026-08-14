@@ -93,7 +93,7 @@ export default async function GuidePage() {
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleSections.map((s, i) => {
+          {visibleSections.map((s) => {
             const normalizedTitle = s.title.toLowerCase().replace(/[^a-z]/g, "");
             const isArrivalChecklist = normalizedTitle === "arrivalchecklist";
             const isDepartureChecklist =
@@ -129,8 +129,6 @@ export default async function GuidePage() {
                 section={s}
                 blocks={sectionBlocks}
                 canEdit={editor}
-                isFirst={i === 0}
-                isLast={i === visibleSections.length - 1}
                 anchorId={isArrivalChecklist ? "arrival-check-list" : undefined}
                 checklistEditHref={
                   hasStayChecklist && admin ? "/admin#stay-checklist-templates" : undefined

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { VISIBILITY } from "@/lib/roles";
-import { addSection, removeSection } from "./actions";
+import { addSection, moveSection, removeSection } from "./actions";
 
 type SectionOption = {
   id: number;
@@ -10,7 +10,7 @@ type SectionOption = {
 };
 
 export function AddSection({ sections }: { sections: SectionOption[] }) {
-  const [mode, setMode] = useState<"add" | "delete" | null>(null);
+  const [mode, setMode] = useState<"add" | "delete" | "reorder" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
@@ -36,6 +36,17 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
           className="btn border border-rust/40 bg-white text-rust hover:border-rust hover:bg-rust/5 disabled:cursor-default disabled:opacity-40"
         >
           Delete a Section
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "reorder"}
+          onClick={() =>
+            setMode((current) => (current === "reorder" ? null : "reorder"))
+          }
+          disabled={sections.length < 2}
+          className="btn btn-quiet disabled:cursor-default disabled:opacity-40"
+        >
+          Reorder Sections
         </button>
       </div>
 
@@ -131,6 +142,57 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             Deleting a section also removes every item inside it.
           </p>
         </form>
+      ) : null}
+
+      {mode === "reorder" ? (
+        <div className="card mt-3 p-4">
+          <p className="section-label">Reorder sections</p>
+          <div className="mt-2 divide-y divide-sand-line">
+            {sections.map((section, index) => (
+              <div
+                key={section.id}
+                className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
+              >
+                <span className="min-w-0 flex-1 text-sm font-semibold">
+                  {section.title}
+                </span>
+                <form action={moveSection}>
+                  <input type="hidden" name="id" value={section.id} />
+                  <input type="hidden" name="dir" value="up" />
+                  <button
+                    type="submit"
+                    disabled={index === 0}
+                    aria-label={`Move ${section.title} up`}
+                    title="Move up"
+                    className="btn btn-quiet min-w-10 px-3 py-1.5 text-base disabled:cursor-default disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                </form>
+                <form action={moveSection}>
+                  <input type="hidden" name="id" value={section.id} />
+                  <input type="hidden" name="dir" value="down" />
+                  <button
+                    type="submit"
+                    disabled={index === sections.length - 1}
+                    aria-label={`Move ${section.title} down`}
+                    title="Move down"
+                    className="btn btn-quiet min-w-10 px-3 py-1.5 text-base disabled:cursor-default disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setMode(null)}
+            className="mt-3 text-xs font-medium text-ink-faint hover:text-rust"
+          >
+            Done
+          </button>
+        </div>
       ) : null}
     </div>
   );
