@@ -52,6 +52,26 @@ export async function addItem(formData: FormData) {
   refresh();
 }
 
+export async function updateItem(formData: FormData) {
+  const user = await requireEditor();
+  const id = Number(formData.get("id"));
+  const title = readText(formData.get("title"), 200);
+  if (!id || !title) return;
+  const item = await getDb().query.checklist.findFirst({
+    where: eq(schema.checklist.id, id),
+  });
+  if (!item) return;
+  await getDb()
+    .update(schema.checklist)
+    .set({
+      title,
+      details: readText(formData.get("details"), 4000) || null,
+    })
+    .where(eq(schema.checklist.id, id));
+  await logActivity(user, "updated a checklist item", title);
+  refresh();
+}
+
 /* Everyone signed in can check things off, family tier included. Clearing
    items out (remove, reorder, add) stays with household and admin. */
 export async function toggleItem(formData: FormData) {

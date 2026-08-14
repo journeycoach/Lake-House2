@@ -20,10 +20,11 @@ export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
 export default async function UpkeepPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; report?: string }>;
 }) {
   const params = await searchParams;
   const activeTab = params.tab === "maintenance" ? "maintenance" : "fixit";
+  const shouldOpenReport = activeTab === "fixit" && params.report === "open";
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const [open, done, items, equipment, serviceRecords] = await Promise.all([
@@ -82,6 +83,7 @@ export default async function UpkeepPage({
       {/* Report an issue */}
       <details
         id="report-an-issue"
+        open={shouldOpenReport}
         className={`group mb-6 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint ${
           editor ? "" : "hidden"
         }`}
@@ -135,7 +137,7 @@ export default async function UpkeepPage({
       </details>
 
       {/* Fix-it list */}
-      <section className="card p-6">
+      <section className="card p-4 sm:p-6">
         <p className="section-label">Fix-it list</p>
         <h2 className="font-display text-2xl mt-1">Keep the place cared for</h2>
         <ul className="mt-4">
@@ -201,7 +203,7 @@ export default async function UpkeepPage({
       </section>
 
       {done.length > 0 ? (
-        <section className="card mt-6 p-6">
+        <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
           <p className="section-label">Done</p>
           <ul className="mt-2">
             {done.map((f) => (
@@ -365,7 +367,7 @@ export default async function UpkeepPage({
               <article
                 key={m.id}
                 id={`maintenance-${m.id}`}
-                className="card flex scroll-mt-6 flex-col p-5"
+                className="card flex scroll-mt-6 flex-col p-4 sm:p-5"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span
@@ -374,15 +376,51 @@ export default async function UpkeepPage({
                     {overdue ? "Overdue" : dueSoon ? "Due soon" : "Upcoming"}
                   </span>
                   {editor ? (
-                    <form action={removeSchedule}>
+                    <>
+                    <details className="relative sm:hidden">
+                      <summary
+                        aria-label={`Actions for ${m.task}`}
+                        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-sand-line bg-white text-lg font-bold tracking-widest text-water [&::-webkit-details-marker]:hidden"
+                      >
+                        ⋯
+                      </summary>
+                      <div className="absolute right-0 top-12 z-30 w-64 rounded-lh border border-sand-line bg-white p-3 shadow-lg">
+                        <form action={updateDue} className="space-y-2">
+                          <input type="hidden" name="id" value={m.id} />
+                          <label className="block text-xs font-semibold text-ink-soft">
+                            Next due
+                          </label>
+                          <input
+                            type="date"
+                            name="nextDue"
+                            defaultValue={m.nextDue ?? ""}
+                            className="field py-2"
+                          />
+                          <button type="submit" className="btn btn-quiet w-full">
+                            Set next due
+                          </button>
+                        </form>
+                        <form action={removeSchedule} className="mt-2 border-t border-sand-line pt-2">
+                          <input type="hidden" name="id" value={m.id} />
+                          <button
+                            type="submit"
+                            className="flex min-h-11 w-full items-center rounded-md px-3 text-left text-sm font-semibold text-rust hover:bg-rust/5"
+                          >
+                            Remove maintenance item
+                          </button>
+                        </form>
+                      </div>
+                    </details>
+                    <form action={removeSchedule} className="hidden sm:block">
                       <input type="hidden" name="id" value={m.id} />
                       <button
                         type="submit"
-                        className="text-xs font-medium text-ink-faint hover:text-rust"
+                        className="inline-flex min-h-11 items-center text-xs font-medium text-ink-faint hover:text-rust"
                       >
                         Remove
                       </button>
                     </form>
+                    </>
                   ) : null}
                 </div>
                 <h3 className="font-display text-xl mt-3">
@@ -407,7 +445,7 @@ export default async function UpkeepPage({
                 </p>
                 <form
                   action={updateDue}
-                  className={`mt-3 items-center gap-2 border-t border-sand-line pt-3 ${editor ? "flex" : "hidden"}`}
+                  className={`mt-3 items-center gap-2 border-t border-sand-line pt-3 ${editor ? "hidden sm:flex" : "hidden"}`}
                 >
                   <input type="hidden" name="id" value={m.id} />
                   <input

@@ -41,7 +41,7 @@ export default async function ActivityPage() {
       />
       <AdminTabs active="activity" />
 
-      <section className="card p-6">
+      <section className="card p-4 sm:p-6">
         <p className="section-label">Recent activity</p>
         <h2 className="font-display text-2xl mt-1">Who did what, when</h2>
         <ul className="mt-4 space-y-2">
@@ -68,7 +68,7 @@ export default async function ActivityPage() {
         </ul>
       </section>
 
-      <section className="card mt-6 p-6">
+      <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
         <p className="section-label">Sign-in activity</p>
         <h2 className="font-display text-2xl mt-1">Last 50 attempts</h2>
         <ul className="mt-4 space-y-2">

@@ -64,15 +64,18 @@ export default async function HomePage() {
             Good morning, {user.name}
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
           {canEdit(user.effectiveRole) ? (
             <>
-              <Link href="/calendar#plan" className="btn btn-primary">
+              <Link
+                href="/calendar?plan=open#plan"
+                className="btn btn-primary min-w-0 px-2 text-[11px] sm:px-3 sm:text-xs"
+              >
                 Plan a stay
               </Link>
               <Link
-                href="/upkeep?tab=fixit#report-an-issue"
-                className="btn bg-water text-white hover:bg-deep-2"
+                href="/upkeep?tab=fixit&report=open#report-an-issue"
+                className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
               >
                 Report an Issue
               </Link>
@@ -80,7 +83,7 @@ export default async function HomePage() {
           ) : null}
           <Link
             href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
-            className="btn bg-sage text-white hover:bg-deep"
+            className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
           >
             Check-in list
           </Link>
@@ -88,7 +91,7 @@ export default async function HomePage() {
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
-      <section className="card p-5 lg:p-6">
+      <section className="card p-4 sm:p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">
           <p className="section-label">Who is at the lake</p>
           <span className="chip chip-ready">House is {status.toLowerCase()}</span>
@@ -132,11 +135,11 @@ export default async function HomePage() {
         ) : null}
       </section>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-5">
+      <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
         <Link
           href="/calendar"
-          className="card group block p-6 transition-colors hover:border-water/40 lg:col-span-3"
+          className="card group block p-4 transition-colors hover:border-water/40 sm:p-6 lg:col-span-3"
         >
           <div className="flex items-baseline justify-between gap-4">
             <div>
@@ -184,7 +187,7 @@ export default async function HomePage() {
         </Link>
 
         {/* Checklist */}
-        <section className="card p-6 lg:col-span-2">
+        <section className="card p-4 sm:p-6 lg:col-span-2">
           <div className="flex items-baseline justify-between gap-4">
             <div>
               <p className="section-label">Check List</p>
@@ -298,7 +301,7 @@ export default async function HomePage() {
         </section>
 
         {/* Fix-it */}
-        <section className="card p-6 lg:col-span-3">
+        <section className="card p-4 sm:p-6 lg:col-span-3">
           <div className="flex items-baseline justify-between gap-4">
             <div>
               <p className="section-label">Fix-it list</p>
@@ -335,7 +338,7 @@ export default async function HomePage() {
         </section>
 
         {/* Notes */}
-        <section className="card p-6 lg:col-span-2">
+        <section className="card p-4 sm:p-6 lg:col-span-2">
           <div className="flex items-baseline justify-between gap-4">
             <div>
               <Link
@@ -368,7 +371,7 @@ export default async function HomePage() {
       {/* Quick reference */}
       <Link
         href="/guide"
-        className="card mt-6 flex items-center justify-between gap-4 p-6 hover:border-water transition-colors"
+        className="card mt-4 flex items-center justify-between gap-4 p-4 transition-colors hover:border-water sm:mt-6 sm:p-6"
       >
         <div>
           <p className="section-label">Quick reference</p>

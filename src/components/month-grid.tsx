@@ -50,7 +50,7 @@ export function MiniMonthGrid({
             ...dayStays.map((stay) => stay.label),
             ...dayMaintenance.map((item) => `Maintenance: ${item.task}`),
           ];
-          const className = `flex h-10 flex-col items-center justify-center rounded-lg border text-xs transition-colors ${
+          const className = `flex h-11 flex-col items-center justify-center rounded-lg border text-xs transition-colors ${
             isToday ? "border-rust font-bold text-rust" : "border-transparent"
           } ${hasEvents ? "hover:border-water" : "text-ink-soft"}`;
           const style = firstStay

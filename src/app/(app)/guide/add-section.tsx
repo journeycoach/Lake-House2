@@ -9,47 +9,31 @@ type SectionOption = {
   title: string;
 };
 
+function menuButtonClass(
+  active: boolean,
+  tone: "water" | "sage" | "rust" = "water"
+) {
+  const colors = active
+    ? tone === "rust"
+      ? "border-rust bg-rust text-white"
+      : tone === "sage"
+        ? "border-sage bg-sage text-white"
+        : "border-water bg-water text-white"
+    : tone === "rust"
+      ? "border-rust/30 bg-white text-rust hover:border-rust hover:bg-rust/5"
+      : tone === "sage"
+        ? "border-sand-line bg-white text-sage hover:border-sage hover:bg-sage/5"
+        : "border-sand-line bg-white text-water hover:border-water hover:bg-water-tint";
+
+  return `btn min-w-0 border px-2 text-xs shadow-sm disabled:cursor-default disabled:opacity-40 sm:px-4 sm:text-sm ${colors}`;
+}
+
 export function AddSection({ sections }: { sections: SectionOption[] }) {
   const [mode, setMode] = useState<"add" | "delete" | "reorder" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <div className="mt-4">
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          aria-expanded={mode === "add"}
-          onClick={() =>
-            setMode((current) => (current === "add" ? null : "add"))
-          }
-          className="btn btn-quiet"
-        >
-          Add a Section
-        </button>
-        <button
-          type="button"
-          aria-expanded={mode === "delete"}
-          onClick={() =>
-            setMode((current) => (current === "delete" ? null : "delete"))
-          }
-          disabled={sections.length === 0}
-          className="btn border border-rust/40 bg-white text-rust hover:border-rust hover:bg-rust/5 disabled:cursor-default disabled:opacity-40"
-        >
-          Delete a Section
-        </button>
-        <button
-          type="button"
-          aria-expanded={mode === "reorder"}
-          onClick={() =>
-            setMode((current) => (current === "reorder" ? null : "reorder"))
-          }
-          disabled={sections.length < 2}
-          className="btn btn-quiet disabled:cursor-default disabled:opacity-40"
-        >
-          Reorder Sections
-        </button>
-      </div>
-
+    <div className="mt-6">
       {mode === "add" ? (
         <form
           ref={formRef}
@@ -58,16 +42,16 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             formRef.current?.reset();
             setMode(null);
           }}
-          className="card mt-3 flex flex-wrap items-center gap-2 p-4"
+          className="card mb-3 flex flex-wrap items-center gap-2 p-4"
         >
           <input
             name="title"
             required
             maxLength={200}
             placeholder="What is this section about?"
-            className="field min-w-48 flex-1"
+            className="field min-w-0 flex-1 basis-full sm:min-w-48 sm:basis-auto"
           />
-          <select name="minRole" defaultValue="family" className="field w-56">
+          <select name="minRole" defaultValue="family" className="field w-full sm:w-56">
             {VISIBILITY.map((v) => (
               <option key={v.value} value={v.value}>
                 Visible to {v.label.toLowerCase()}
@@ -104,7 +88,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             );
             if (!confirmed) event.preventDefault();
           }}
-          className="card mt-3 flex flex-wrap items-center gap-2 border-rust/30 bg-rust/5 p-4"
+          className="card mb-3 flex flex-wrap items-center gap-2 border-rust/30 bg-rust/5 p-4"
         >
           <label htmlFor="guide-section-to-delete" className="sr-only">
             Section to delete
@@ -114,7 +98,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             name="id"
             defaultValue=""
             required
-            className="field min-w-56 flex-1"
+            className="field min-w-0 flex-1 basis-full sm:min-w-56 sm:basis-auto"
           >
             <option value="" disabled>
               Choose a section to delete
@@ -145,7 +129,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
       ) : null}
 
       {mode === "reorder" ? (
-        <div className="card mt-3 p-4">
+        <div className="card mb-3 max-h-[60vh] overflow-y-auto p-4">
           <p className="section-label">Reorder sections</p>
           <div className="mt-2 divide-y divide-sand-line">
             {sections.map((section, index) => (
@@ -194,6 +178,45 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
           </button>
         </div>
       ) : null}
+
+      <div
+        role="toolbar"
+        aria-label="House Guide section actions"
+        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-sand-line bg-sand/95 p-2 shadow-[0_-8px_24px_rgba(17,51,53,0.12)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]"
+      >
+        <button
+          type="button"
+          aria-expanded={mode === "add"}
+          onClick={() =>
+            setMode((current) => (current === "add" ? null : "add"))
+          }
+          className={menuButtonClass(mode === "add", "sage")}
+        >
+          Add Section
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "reorder"}
+          onClick={() =>
+            setMode((current) => (current === "reorder" ? null : "reorder"))
+          }
+          disabled={sections.length < 2}
+          className={menuButtonClass(mode === "reorder")}
+        >
+          Reorder Sections
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "delete"}
+          onClick={() =>
+            setMode((current) => (current === "delete" ? null : "delete"))
+          }
+          disabled={sections.length === 0}
+          className={menuButtonClass(mode === "delete", "rust")}
+        >
+          Delete Section
+        </button>
+      </div>
     </div>
   );
 }

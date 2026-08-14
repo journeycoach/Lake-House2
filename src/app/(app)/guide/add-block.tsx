@@ -133,8 +133,8 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
         />
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <select name="minRole" defaultValue="family" className="field w-56 py-2 text-sm">
+      <div className="mobile-form-actions flex-wrap">
+        <select name="minRole" defaultValue="family" className="field w-full py-2 text-sm sm:w-56">
           {VISIBILITY.map((v) => (
             <option key={v.value} value={v.value}>
               Visible to {v.label.toLowerCase()}
@@ -150,7 +150,7 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
             setOpen(false);
             setError(null);
           }}
-          className="text-xs font-medium text-ink-faint hover:text-rust"
+          className="inline-flex min-h-11 items-center text-xs font-medium text-ink-faint hover:text-rust"
         >
           Cancel
         </button>

@@ -36,7 +36,13 @@ function tab(active: boolean) {
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ m?: string; y?: string; view?: string; start?: string }>;
+  searchParams: Promise<{
+    m?: string;
+    y?: string;
+    view?: string;
+    start?: string;
+    plan?: string;
+  }>;
 }) {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
@@ -45,6 +51,7 @@ export default async function CalendarPage({
   const selectedStart = /^\d{4}-\d{2}-\d{2}$/.test(params.start ?? "")
     ? params.start
     : undefined;
+  const shouldOpenPlan = Boolean(selectedStart) || params.plan === "open";
   const today = todayISO();
   const t = parseISO(today);
   let y = t.y;
@@ -156,7 +163,7 @@ export default async function CalendarPage({
       {editor ? (
         <details
           id="plan"
-          open={Boolean(selectedStart)}
+          open={shouldOpenPlan}
           className="group mb-5 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
@@ -322,12 +329,24 @@ export default async function CalendarPage({
 
       <section
         id="calendar-details"
-        className="card mt-4 scroll-mt-4 p-4 md:hidden"
+        className="card mt-4 scroll-mt-24 rounded-t-2xl border-water/30 p-4 shadow-[0_-8px_24px_rgba(17,51,53,0.1)] md:hidden"
       >
-        <p className="section-label">Month details</p>
-        <h2 className="font-display mt-1 text-xl">
-          Stays and maintenance
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="section-label">Month details</p>
+            <h2 className="font-display mt-1 text-xl">
+              Stays and maintenance
+            </h2>
+          </div>
+          {editor ? (
+            <Link
+              href="/calendar?plan=open#plan"
+              className="btn btn-primary shrink-0 px-3 text-xs"
+            >
+              Plan a stay
+            </Link>
+          ) : null}
+        </div>
         <ul className="mt-3 divide-y divide-sand-line">
           {monthStays.map((stay) => (
             <li key={`mobile-stay-${stay.id}`} className="py-3 first:pt-0">
@@ -384,7 +403,7 @@ export default async function CalendarPage({
         </ul>
       </section>
 
-      <section className="card mt-6 p-6">
+      <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
         <p className="section-label text-care">Preventive care</p>
         <h2 className="font-display text-2xl mt-1">Maintenance dates</h2>
         <ul className="mt-4 divide-y divide-sand-line">
@@ -424,7 +443,7 @@ export default async function CalendarPage({
       </section>
 
       {overlappingVisits.length > 0 ? (
-        <section className="card mt-6 border-amber p-6">
+        <section className="card mt-4 border-amber p-4 sm:mt-6 sm:p-6">
           <p className="section-label text-amber">Shared dates</p>
           <h2 className="font-display mt-1 text-2xl">
             Family visits overlap
@@ -450,7 +469,7 @@ export default async function CalendarPage({
       ) : null}
 
       {/* Subscribe */}
-      <section className="card mt-6 p-6">
+      <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
         <p className="section-label">Subscribe</p>
         <h2 className="font-display text-2xl mt-1">
           The lake schedule, on your own calendar

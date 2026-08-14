@@ -106,7 +106,7 @@ export default async function AdminPage() {
       <PageHeader title="Admin" action={<span className="chip chip-whenever">Admin only</span>} />
       <AdminTabs active="admin" />
 
-      <section className="card mb-6 p-6">
+      <section className="card mb-4 p-4 sm:mb-6 sm:p-6">
         <p className="section-label">House status</p>
         <h2 className="font-display text-2xl mt-1">Shown to everyone</h2>
         <form action={setHouseStatus} className="mt-4 flex items-center gap-2">
@@ -197,14 +197,14 @@ export default async function AdminPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <form action={approveRequest} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="id" value={r.id} />
-                    <select name="role" defaultValue="family" className="field w-44 py-2 text-sm">
+                    <select name="role" defaultValue="family" className="field w-full py-2 text-sm sm:w-44">
                       {ROLES.map((role) => (
                         <option key={role.value} value={role.value}>
                           {role.label}
                         </option>
                       ))}
                     </select>
-                    <select name="householdId" defaultValue="" className="field w-44 py-2 text-sm">
+                    <select name="householdId" defaultValue="" className="field w-full py-2 text-sm sm:w-44">
                       <option value="">No household</option>
                       {households.map((h) => (
                         <option key={h.id} value={h.id}>
@@ -339,7 +339,7 @@ export default async function AdminPage() {
                     <select
                       name="role"
                       defaultValue={u.role}
-                      className="field w-44 py-2 text-sm"
+                      className="field w-full py-2 text-sm sm:w-44"
                     >
                       {ROLES.map((r) => (
                         <option key={r.value} value={r.value}>
@@ -458,7 +458,7 @@ export default async function AdminPage() {
             Download a backup first.
           </p>
           <form action={clearHistory} className="mt-3 flex flex-wrap items-center gap-2">
-            <select name="keep" defaultValue="month" className="field w-56">
+            <select name="keep" defaultValue="month" className="field w-full sm:w-56">
               <option value="week">Keep the last week</option>
               <option value="month">Keep the last 30 days</option>
               <option value="quarter">Keep the last 90 days</option>
