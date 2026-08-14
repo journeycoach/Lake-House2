@@ -9,6 +9,18 @@ type SectionOption = {
   title: string;
 };
 
+function menuButtonClass(active: boolean, danger = false) {
+  const colors = active
+    ? danger
+      ? "border-rust bg-rust text-white"
+      : "border-water bg-water text-white"
+    : danger
+      ? "border-rust/30 bg-white text-rust hover:border-rust hover:bg-rust/5"
+      : "border-sand-line bg-white text-water hover:border-water hover:bg-water-tint";
+
+  return `btn min-w-0 border px-2 text-xs shadow-sm disabled:cursor-default disabled:opacity-40 sm:px-4 sm:text-sm ${colors}`;
+}
+
 export function AddSection({ sections }: { sections: SectionOption[] }) {
   const [mode, setMode] = useState<"add" | "delete" | "reorder" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -163,7 +175,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
       <div
         role="toolbar"
         aria-label="House Guide section actions"
-        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-white/15 bg-deep p-2 shadow-[0_-8px_24px_rgba(17,51,53,0.18)] [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] sm:flex sm:justify-center"
+        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-sand-line bg-sand/95 p-2 shadow-[0_-8px_24px_rgba(17,51,53,0.12)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]"
       >
         <button
           type="button"
@@ -171,20 +183,9 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
           onClick={() =>
             setMode((current) => (current === "add" ? null : "add"))
           }
-          className="btn min-w-0 border border-white/20 bg-white/10 px-2 text-xs text-white hover:bg-white/20 sm:min-w-44 sm:px-4 sm:text-sm"
+          className={menuButtonClass(mode === "add")}
         >
           Add Section
-        </button>
-        <button
-          type="button"
-          aria-expanded={mode === "delete"}
-          onClick={() =>
-            setMode((current) => (current === "delete" ? null : "delete"))
-          }
-          disabled={sections.length === 0}
-          className="btn min-w-0 border border-rust/70 bg-rust px-2 text-xs text-white hover:bg-rust-dark disabled:cursor-default disabled:opacity-40 sm:min-w-44 sm:px-4 sm:text-sm"
-        >
-          Delete Section
         </button>
         <button
           type="button"
@@ -193,9 +194,20 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             setMode((current) => (current === "reorder" ? null : "reorder"))
           }
           disabled={sections.length < 2}
-          className="btn min-w-0 border border-white/20 bg-white/10 px-2 text-xs text-white hover:bg-white/20 disabled:cursor-default disabled:opacity-40 sm:min-w-44 sm:px-4 sm:text-sm"
+          className={menuButtonClass(mode === "reorder")}
         >
           Reorder Sections
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "delete"}
+          onClick={() =>
+            setMode((current) => (current === "delete" ? null : "delete"))
+          }
+          disabled={sections.length === 0}
+          className={menuButtonClass(mode === "delete", true)}
+        >
+          Delete Section
         </button>
       </div>
     </div>
