@@ -14,42 +14,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <div className="mt-4">
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          aria-expanded={mode === "add"}
-          onClick={() =>
-            setMode((current) => (current === "add" ? null : "add"))
-          }
-          className="btn btn-quiet"
-        >
-          Add a Section
-        </button>
-        <button
-          type="button"
-          aria-expanded={mode === "delete"}
-          onClick={() =>
-            setMode((current) => (current === "delete" ? null : "delete"))
-          }
-          disabled={sections.length === 0}
-          className="btn border border-rust/40 bg-white text-rust hover:border-rust hover:bg-rust/5 disabled:cursor-default disabled:opacity-40"
-        >
-          Delete a Section
-        </button>
-        <button
-          type="button"
-          aria-expanded={mode === "reorder"}
-          onClick={() =>
-            setMode((current) => (current === "reorder" ? null : "reorder"))
-          }
-          disabled={sections.length < 2}
-          className="btn btn-quiet disabled:cursor-default disabled:opacity-40"
-        >
-          Reorder Sections
-        </button>
-      </div>
-
+    <div className="mt-6">
       {mode === "add" ? (
         <form
           ref={formRef}
@@ -58,7 +23,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             formRef.current?.reset();
             setMode(null);
           }}
-          className="card mt-3 flex flex-wrap items-center gap-2 p-4"
+          className="card mb-3 flex flex-wrap items-center gap-2 p-4"
         >
           <input
             name="title"
@@ -104,7 +69,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             );
             if (!confirmed) event.preventDefault();
           }}
-          className="card mt-3 flex flex-wrap items-center gap-2 border-rust/30 bg-rust/5 p-4"
+          className="card mb-3 flex flex-wrap items-center gap-2 border-rust/30 bg-rust/5 p-4"
         >
           <label htmlFor="guide-section-to-delete" className="sr-only">
             Section to delete
@@ -145,7 +110,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
       ) : null}
 
       {mode === "reorder" ? (
-        <div className="card mt-3 p-4">
+        <div className="card mb-3 max-h-[60vh] overflow-y-auto p-4">
           <p className="section-label">Reorder sections</p>
           <div className="mt-2 divide-y divide-sand-line">
             {sections.map((section, index) => (
@@ -194,6 +159,45 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
           </button>
         </div>
       ) : null}
+
+      <div
+        role="toolbar"
+        aria-label="House Guide section actions"
+        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-white/15 bg-deep p-2 shadow-[0_-8px_24px_rgba(17,51,53,0.18)] [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] sm:flex sm:justify-center"
+      >
+        <button
+          type="button"
+          aria-expanded={mode === "add"}
+          onClick={() =>
+            setMode((current) => (current === "add" ? null : "add"))
+          }
+          className="btn min-w-0 border border-white/20 bg-white/10 px-2 text-xs text-white hover:bg-white/20 sm:min-w-44 sm:px-4 sm:text-sm"
+        >
+          Add Section
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "delete"}
+          onClick={() =>
+            setMode((current) => (current === "delete" ? null : "delete"))
+          }
+          disabled={sections.length === 0}
+          className="btn min-w-0 border border-rust/70 bg-rust px-2 text-xs text-white hover:bg-rust-dark disabled:cursor-default disabled:opacity-40 sm:min-w-44 sm:px-4 sm:text-sm"
+        >
+          Delete Section
+        </button>
+        <button
+          type="button"
+          aria-expanded={mode === "reorder"}
+          onClick={() =>
+            setMode((current) => (current === "reorder" ? null : "reorder"))
+          }
+          disabled={sections.length < 2}
+          className="btn min-w-0 border border-white/20 bg-white/10 px-2 text-xs text-white hover:bg-white/20 disabled:cursor-default disabled:opacity-40 sm:min-w-44 sm:px-4 sm:text-sm"
+        >
+          Reorder Sections
+        </button>
+      </div>
     </div>
   );
 }
