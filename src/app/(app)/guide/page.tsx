@@ -180,7 +180,14 @@ export default async function GuidePage() {
           </p>
         ) : null}
 
-        {editor ? <AddSection /> : null}
+        {editor ? (
+          <AddSection
+            sections={visibleSections.map((section) => ({
+              id: section.id,
+              title: section.title,
+            }))}
+          />
+        ) : null}
       </section>
     </div>
   );
