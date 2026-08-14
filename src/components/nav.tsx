@@ -29,6 +29,62 @@ const LINKS: {
   },
 ];
 
+const MOBILE_PRIMARY_LINKS = LINKS.slice(0, 4);
+
+function MobileBottomNav({
+  open,
+  onMore,
+  onNavigate,
+}: {
+  open: boolean;
+  onMore: () => void;
+  onNavigate: () => void;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <nav
+      aria-label="Primary mobile navigation"
+      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/15 bg-deep/98 px-1 pt-1 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.25rem,env(safe-area-inset-bottom))] lg:hidden"
+    >
+      {MOBILE_PRIMARY_LINKS.map((link) => {
+        const active =
+          link.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[10px] font-semibold transition-colors ${
+              active ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
+            }`}
+          >
+            <span aria-hidden className="text-base leading-none">
+              {link.icon}
+            </span>
+            <span className="max-w-full truncate">{link.label}</span>
+          </Link>
+        );
+      })}
+      <button
+        type="button"
+        aria-label={open ? "Close more navigation" : "Open more navigation"}
+        aria-expanded={open}
+        onClick={onMore}
+        className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[10px] font-semibold transition-colors ${
+          open ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
+        }`}
+      >
+        <span aria-hidden className="text-lg leading-none">•••</span>
+        <span>More</span>
+      </button>
+    </nav>
+  );
+}
+
 function NavLinks({
   user,
   onNavigate,
@@ -127,6 +183,7 @@ export function MobileHeader({
 }) {
   const [open, setOpen] = useState(false);
   return (
+    <>
     <header className="lg:hidden sticky top-0 z-40 bg-deep">
       <div className="flex items-center justify-between p-4">
         <Mark />
@@ -135,7 +192,7 @@ export function MobileHeader({
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="h-10 w-10 rounded-lh border border-white/25 flex items-center justify-center text-white"
+          className="flex h-11 w-11 items-center justify-center rounded-lh border border-white/25 text-white"
         >
           <svg
             width="18"
@@ -183,5 +240,11 @@ export function MobileHeader({
         </div>
       ) : null}
     </header>
+    <MobileBottomNav
+      open={open}
+      onMore={() => setOpen((value) => !value)}
+      onNavigate={() => setOpen(false)}
+    />
+    </>
   );
 }

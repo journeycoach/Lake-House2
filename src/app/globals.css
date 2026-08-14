@@ -106,6 +106,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
   gap: 8px;
   border-radius: var(--radius-lh);
   font-weight: 600;
@@ -142,12 +143,31 @@ body {
 /* Inputs */
 .field {
   width: 100%;
+  min-height: 44px;
   background: #fff;
   border: 1px solid var(--sand-line);
   border-radius: var(--radius-lh);
   padding: 12px;
   font-size: 15px;
   color: var(--ink);
+}
+
+.mobile-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 639px) {
+  .mobile-form-actions {
+    position: sticky;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    z-index: 20;
+    margin-inline: -4px;
+    padding: 10px 4px;
+    background: color-mix(in srgb, var(--sand) 94%, transparent);
+    backdrop-filter: blur(8px);
+  }
 }
 .field:focus {
   outline: 2px solid var(--water);

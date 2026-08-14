@@ -26,7 +26,7 @@ export function NoteComposer() {
         <p className="flabel">The note</p>
         <RichTextEditor key={editorKey} />
       </div>
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="mobile-form-actions flex-wrap items-end">
         <div className="w-full sm:w-56">
           <label htmlFor="tag" className="flabel">
             Tag

@@ -158,7 +158,7 @@ export function StayForm({
           </label>
         </div>
       ) : null}
-      <div className="flex items-center gap-3">
+      <div className="mobile-form-actions">
         <button type="submit" disabled={pending} className="btn btn-primary">
           {pending ? "Saving" : stay ? "Save changes" : "Add to calendar"}
         </button>

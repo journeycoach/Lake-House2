@@ -71,7 +71,7 @@ export default async function NotesPage() {
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {notes.map((n) => (
-          <article key={n.id} className="card flex flex-col p-5">
+          <article key={n.id} className="card flex flex-col p-4 sm:p-5">
             <p className="section-label">{n.tag}</p>
             <RichNote body={n.body} className="mt-2 flex-1" />
             <div className="mt-4 flex items-center justify-between border-t border-sand-line pt-3">

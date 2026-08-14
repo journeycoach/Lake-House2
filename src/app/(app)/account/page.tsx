@@ -18,13 +18,13 @@ export default async function AccountPage() {
         action={<span className="chip chip-whenever">{roleLabel(user.role)}</span>}
       />
 
-      <section className="card p-6">
+      <section className="card p-4 sm:p-6">
         <p className="section-label">Your details</p>
         <h2 className="font-display text-2xl mt-1">How you appear to family</h2>
         <ProfileForm name={user.name} email={user.email} />
       </section>
 
-      <section className="card mt-6 p-6">
+      <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
         <p className="section-label">Password</p>
         <h2 className="font-display text-2xl mt-1">Change your password</h2>
         <p className="mt-1 text-sm text-ink-soft">

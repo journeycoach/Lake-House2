@@ -49,9 +49,9 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             required
             maxLength={200}
             placeholder="What is this section about?"
-            className="field min-w-48 flex-1"
+            className="field min-w-0 flex-1 basis-full sm:min-w-48 sm:basis-auto"
           />
-          <select name="minRole" defaultValue="family" className="field w-56">
+          <select name="minRole" defaultValue="family" className="field w-full sm:w-56">
             {VISIBILITY.map((v) => (
               <option key={v.value} value={v.value}>
                 Visible to {v.label.toLowerCase()}
@@ -98,7 +98,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             name="id"
             defaultValue=""
             required
-            className="field min-w-56 flex-1"
+            className="field min-w-0 flex-1 basis-full sm:min-w-56 sm:basis-auto"
           >
             <option value="" disabled>
               Choose a section to delete

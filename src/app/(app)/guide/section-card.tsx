@@ -54,7 +54,7 @@ export function SectionCard({
   }
 
   return (
-    <article id={anchorId} className="card flex scroll-mt-4 flex-col p-5">
+    <article id={anchorId} className="card flex scroll-mt-4 flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="font-display text-2xl text-amber">
           {String(section.position).padStart(2, "0")}
@@ -220,11 +220,11 @@ export function SectionCard({
                     />
                   )}
                 </label>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="mobile-form-actions flex-wrap">
                   <select
                     name="minRole"
                     defaultValue={b.minRole}
-                    className="field w-56 py-2 text-sm"
+                    className="field w-full py-2 text-sm sm:w-56"
                   >
                     {VISIBILITY.map((v) => (
                       <option key={v.value} value={v.value}>

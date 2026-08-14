@@ -4,7 +4,13 @@ import { canEdit } from "@/lib/roles";
 import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
-import { addItem, toggleItem, removeItem, moveItem } from "./actions";
+import {
+  addItem,
+  updateItem,
+  toggleItem,
+  removeItem,
+  moveItem,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Shopping List · Paine Pointe" };
 
@@ -33,7 +39,7 @@ export default async function ChecklistPage() {
             type="submit"
             aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
             aria-pressed={Boolean(item.done)}
-            className={`flex h-7 w-7 items-center justify-center rounded-md border transition-colors ${
+            className={`flex h-11 w-11 items-center justify-center rounded-md border transition-colors sm:h-9 sm:w-9 ${
               item.done
                 ? "border-sage bg-sage text-white hover:bg-deep"
                 : "border-sand-line bg-white hover:border-water hover:bg-mist"
@@ -79,9 +85,69 @@ export default async function ChecklistPage() {
           ) : null}
           <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
         </div>
+        {editor ? (
+          <input
+            id={`edit-item-${item.id}`}
+            type="checkbox"
+            className="peer sr-only"
+          />
+        ) : null}
+        <div
+          className={`w-full justify-end sm:hidden ${editor ? "flex" : "hidden"}`}
+        >
+          <details className="relative">
+            <summary
+              aria-label={`Actions for ${item.title}`}
+              className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-sand-line bg-white text-lg font-bold tracking-widest text-water [&::-webkit-details-marker]:hidden"
+            >
+              ⋯
+            </summary>
+            <div className="absolute right-0 top-12 z-30 w-56 rounded-lh border border-sand-line bg-white p-2 shadow-lg">
+              <div className="grid grid-cols-2 gap-2">
+                <form action={moveItem}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <input type="hidden" name="dir" value="up" />
+                  <button
+                    type="submit"
+                    disabled={i === 0}
+                    className="flex min-h-11 w-full items-center justify-center rounded-md border border-sand-line text-sm font-semibold text-water disabled:opacity-30"
+                  >
+                    ↑ Move up
+                  </button>
+                </form>
+                <form action={moveItem}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <input type="hidden" name="dir" value="down" />
+                  <button
+                    type="submit"
+                    disabled={i === rows.length - 1}
+                    className="flex min-h-11 w-full items-center justify-center rounded-md border border-sand-line text-sm font-semibold text-water disabled:opacity-30"
+                  >
+                    ↓ Move down
+                  </button>
+                </form>
+              </div>
+              <label
+                htmlFor={`edit-item-${item.id}`}
+                className="mt-2 flex min-h-11 cursor-pointer items-center rounded-md px-3 text-sm font-semibold text-water hover:bg-water-tint"
+              >
+                Edit item
+              </label>
+              <form action={removeItem}>
+                <input type="hidden" name="id" value={item.id} />
+                <button
+                  type="submit"
+                  className="flex min-h-11 w-full items-center rounded-md px-3 text-left text-sm font-semibold text-rust hover:bg-rust/5"
+                >
+                  Remove item
+                </button>
+              </form>
+            </div>
+          </details>
+        </div>
         <div
           className={`w-full items-center justify-end gap-2 sm:w-auto ${
-            editor ? "flex" : "hidden"
+            editor ? "hidden sm:flex" : "hidden"
           }`}
         >
           <form action={moveItem}>
@@ -92,7 +158,7 @@ export default async function ChecklistPage() {
               disabled={i === 0}
               aria-label={`Move "${item.title}" up`}
               title="Move up"
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
             >
               <svg
                 aria-hidden
@@ -117,7 +183,7 @@ export default async function ChecklistPage() {
               disabled={i === rows.length - 1}
               aria-label={`Move "${item.title}" down`}
               title="Move down"
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
             >
               <svg
                 aria-hidden
@@ -134,16 +200,64 @@ export default async function ChecklistPage() {
               </svg>
             </button>
           </form>
+          <label
+            htmlFor={`edit-item-${item.id}`}
+            className="inline-flex min-h-11 cursor-pointer items-center text-xs font-medium text-water hover:text-deep-2"
+          >
+            Edit
+          </label>
           <form action={removeItem}>
             <input type="hidden" name="id" value={item.id} />
             <button
               type="submit"
-              className="text-xs font-medium text-ink-faint hover:text-rust"
+              className="inline-flex min-h-11 items-center text-xs font-medium text-ink-faint hover:text-rust"
             >
               Remove
             </button>
           </form>
         </div>
+        {editor ? (
+          <form
+            action={updateItem}
+            className="hidden w-full gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 peer-checked:grid sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto]"
+          >
+            <input type="hidden" name="id" value={item.id} />
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                Item
+              </span>
+              <input
+                name="title"
+                required
+                maxLength={200}
+                defaultValue={item.title}
+                className="field"
+              />
+            </label>
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                Details
+              </span>
+              <input
+                name="details"
+                maxLength={4000}
+                defaultValue={item.details ?? ""}
+                className="field"
+              />
+            </label>
+            <div className="flex items-end gap-3">
+              <SubmitButton className="btn btn-primary whitespace-nowrap">
+                Save changes
+              </SubmitButton>
+              <label
+                htmlFor={`edit-item-${item.id}`}
+                className="cursor-pointer pb-2 text-xs font-medium text-ink-faint hover:text-rust"
+              >
+                Cancel
+              </label>
+            </div>
+          </form>
+        ) : null}
       </li>
     ));
   }
@@ -152,13 +266,13 @@ export default async function ChecklistPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader title="Shopping List" />
 
-      <section className="card p-6">
+      <section className="card p-4 sm:p-6">
         <p className="section-label">Shopping List</p>
         <h2 className="font-display text-2xl mt-1">
           Pickup before the next trip
         </h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Everyone can check items off. Family and admins can add,
+          Everyone can check items off. Family and admins can add, edit,
           remove, and reorder them.
         </p>
 

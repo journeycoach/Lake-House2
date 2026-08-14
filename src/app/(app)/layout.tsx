@@ -107,7 +107,7 @@ export default async function AppLayout({
             isRealAdmin && !user.viewingAs ? <PreviewControl /> : null
           }
         />
-        <main className="flex-1 min-w-0 p-4 pb-12 lg:p-10">{children}</main>
+        <main className="min-w-0 flex-1 p-4 pb-28 lg:p-10">{children}</main>
       </div>
     </div>
   );
