@@ -48,10 +48,10 @@ export const stays = pgTable("stays", {
   createdAt: text("created_at").notNull(),
 });
 
-/* Admin-managed arrival/departure templates are copied into each new stay. */
+/* Admin-managed arrival/boat/departure templates are copied into each new stay. */
 export const stayChecklistTemplates = pgTable("stay_checklist_templates", {
   id: serial("id").primaryKey(),
-  phase: text("phase").notNull(), // checkin | checkout
+  phase: text("phase").notNull(), // checkin | boat | checkout
   title: text("title").notNull(),
   position: integer("position").notNull(),
   active: integer("active").notNull().default(1),
@@ -92,7 +92,7 @@ export const stayChecklistItems = pgTable(
       () => stayChecklistTemplates.id,
       { onDelete: "set null" }
     ),
-    phase: text("phase").notNull(), // checkin | checkout
+    phase: text("phase").notNull(), // checkin | boat | checkout
     title: text("title").notNull(),
     position: integer("position").notNull(),
     checkedBy: text("checked_by"),

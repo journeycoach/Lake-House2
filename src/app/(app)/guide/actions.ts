@@ -7,7 +7,7 @@ import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { readText } from "@/lib/forms";
 
-const KINDS = ["text", "secret", "photo", "contact", "address"];
+const KINDS = ["text", "list", "secret", "photo", "contact", "address"];
 
 function readRole(value: unknown): string {
   const v = String(value);

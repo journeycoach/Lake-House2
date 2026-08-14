@@ -7,12 +7,13 @@ import { getEffectiveUser, requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { canEdit } from "@/lib/roles";
 import { readText } from "@/lib/forms";
+import { notePlainText, sanitizeNoteForStorage } from "@/lib/note-rich-text";
 
 export async function addNote(formData: FormData) {
   const user = await requireEditor();
-  const body = readText(formData.get("body"), 4000);
+  const body = sanitizeNoteForStorage(readText(formData.get("body"), 16000));
   const tag = String(formData.get("tag") ?? "house update");
-  if (!body) return;
+  if (!body) return false;
   await getDb().insert(schema.notes).values({
     authorName: user.name,
     authorId: user.id,
@@ -20,9 +21,10 @@ export async function addNote(formData: FormData) {
     tag,
     createdAt: new Date().toISOString(),
   });
-  await logActivity(user, "shared a note", body.slice(0, 80));
+  await logActivity(user, "shared a note", notePlainText(body).slice(0, 80));
   revalidatePath("/notes");
   revalidatePath("/");
+  return true;
 }
 
 export async function removeNote(formData: FormData) {
@@ -35,7 +37,7 @@ export async function removeNote(formData: FormData) {
   if (!note) return;
   if (note.authorId !== user.id && user.effectiveRole !== "admin") return;
   await getDb().delete(schema.notes).where(eq(schema.notes.id, id));
-  await logActivity(user, "removed a note", note.body.slice(0, 80));
+  await logActivity(user, "removed a note", notePlainText(note.body).slice(0, 80));
   revalidatePath("/notes");
   revalidatePath("/");
 }

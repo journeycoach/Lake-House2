@@ -197,4 +197,46 @@ body {
   background: color-mix(in srgb, var(--ink-soft) 10%, transparent);
 }
 
+/* Safe rich-text notes share the same readable rhythm in the editor and cards. */
+.rich-note p + p,
+.rich-note div + div {
+  margin-top: 0.5rem;
+}
+.rich-note h2,
+.rich-note h3 {
+  margin-top: 0.5rem;
+  font-family: var(--font-display), Georgia, serif;
+  line-height: 1.15;
+}
+.rich-note h2 {
+  font-size: 1.5rem;
+}
+.rich-note h3 {
+  font-size: 1.25rem;
+}
+.rich-note ul,
+.rich-note ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+.rich-note ul {
+  list-style: disc;
+}
+.rich-note ol {
+  list-style: decimal;
+}
+.rich-note blockquote {
+  margin: 0.5rem 0;
+  border-left: 3px solid var(--water);
+  padding-left: 0.75rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.rich-note a {
+  color: var(--water);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 } /* end @layer components */
