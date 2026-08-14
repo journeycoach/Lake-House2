@@ -9,14 +9,21 @@ type SectionOption = {
   title: string;
 };
 
-function menuButtonClass(active: boolean, danger = false) {
+function menuButtonClass(
+  active: boolean,
+  tone: "water" | "sage" | "rust" = "water"
+) {
   const colors = active
-    ? danger
+    ? tone === "rust"
       ? "border-rust bg-rust text-white"
-      : "border-water bg-water text-white"
-    : danger
+      : tone === "sage"
+        ? "border-sage bg-sage text-white"
+        : "border-water bg-water text-white"
+    : tone === "rust"
       ? "border-rust/30 bg-white text-rust hover:border-rust hover:bg-rust/5"
-      : "border-sand-line bg-white text-water hover:border-water hover:bg-water-tint";
+      : tone === "sage"
+        ? "border-sand-line bg-white text-sage hover:border-sage hover:bg-sage/5"
+        : "border-sand-line bg-white text-water hover:border-water hover:bg-water-tint";
 
   return `btn min-w-0 border px-2 text-xs shadow-sm disabled:cursor-default disabled:opacity-40 sm:px-4 sm:text-sm ${colors}`;
 }
@@ -183,7 +190,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
           onClick={() =>
             setMode((current) => (current === "add" ? null : "add"))
           }
-          className={menuButtonClass(mode === "add")}
+          className={menuButtonClass(mode === "add", "sage")}
         >
           Add Section
         </button>
@@ -205,7 +212,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
             setMode((current) => (current === "delete" ? null : "delete"))
           }
           disabled={sections.length === 0}
-          className={menuButtonClass(mode === "delete", true)}
+          className={menuButtonClass(mode === "delete", "rust")}
         >
           Delete Section
         </button>
