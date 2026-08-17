@@ -278,7 +278,7 @@ export default async function ChecklistPage() {
 
         <form
           action={addItem}
-          className={`mt-4 gap-3 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
+          className={`mt-4 gap-3 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
             editor ? "grid" : "hidden"
           }`}
         >

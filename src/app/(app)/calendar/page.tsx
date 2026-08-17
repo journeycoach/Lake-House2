@@ -42,6 +42,7 @@ export default async function CalendarPage({
     view?: string;
     start?: string;
     plan?: string;
+    stays?: string;
   }>;
 }) {
   const user = await requireUser();
@@ -98,6 +99,18 @@ export default async function CalendarPage({
   const datedMaintenance = maintenance.filter((item) => item.nextDue);
 
   const upcoming = [...staysNow(stays, today), ...staysUpcoming(stays, today)];
+  const showAllUpcoming = params.stays === "all";
+  const visibleUpcoming = showAllUpcoming ? upcoming : upcoming.slice(0, 3);
+  const upcomingLinkParams = new URLSearchParams();
+  for (const key of ["m", "y", "view", "start", "plan"] as const) {
+    const value = params[key];
+    if (value) upcomingLinkParams.set(key, value);
+  }
+  if (!showAllUpcoming) upcomingLinkParams.set("stays", "all");
+  const upcomingQuery = upcomingLinkParams.toString();
+  const upcomingToggleHref = `/calendar${
+    upcomingQuery ? `?${upcomingQuery}` : ""
+  }#upcoming-stays`;
   const overlappingVisits = upcoming.flatMap((stay, index) =>
     upcoming
       .slice(index + 1)
@@ -119,7 +132,7 @@ export default async function CalendarPage({
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Calendar" />
 
-      <section className="card mb-5 p-3 md:p-4">
+      <section id="upcoming-stays" className="card mb-5 scroll-mt-6 p-3 md:p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <div>
             <p className="section-label">Upcoming stays</p>
@@ -132,7 +145,7 @@ export default async function CalendarPage({
           ) : null}
         </div>
         <ul className="mt-1">
-          {upcoming.map((s) => (
+          {visibleUpcoming.map((s) => (
             <StayListItem
               key={s.id}
               stay={s}
@@ -158,6 +171,16 @@ export default async function CalendarPage({
             </li>
           ) : null}
         </ul>
+        {upcoming.length > 3 ? (
+          <div className="mt-2 border-t border-sand-line pt-3 text-center">
+            <Link
+              href={upcomingToggleHref}
+              className="inline-flex min-h-11 items-center justify-center px-3 text-sm font-semibold text-water hover:text-deep-2"
+            >
+              {showAllUpcoming ? "Show less" : "Show more"}
+            </Link>
+          </div>
+        ) : null}
       </section>
 
       {editor ? (
