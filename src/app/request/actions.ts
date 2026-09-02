@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { sendTemplateMail } from "@/lib/mail";
 import { siteUrl } from "@/lib/email-template";
@@ -8,9 +8,22 @@ import { readText } from "@/lib/forms";
 
 export type RequestState = { sent?: boolean; error?: string };
 
+// A family generates a handful of these, ever. A burst past this in a short
+// window is a bot, not a cousin.
+const BURST_WINDOW_MINUTES = 10;
+const BURST_LIMIT = 5;
+
 /*
   Anyone can ask. Nothing is created but a row an admin has to act on: no
   account, no access, no email to the requester until someone approves.
+
+  Two quiet defenses, both against automated submissions, both failing the
+  same way a real success does (sent: true, nothing stored or emailed) so a
+  bot gets no signal telling it what tripped:
+  - "company" is a honeypot input, present in the form but hidden from real
+    people by CSS. A script that fills every field walks into it.
+  - A burst of requests in a short window gets dropped rather than paging
+    every admin for each one.
 */
 export async function requestAccess(
   _prev: RequestState,
@@ -19,7 +32,18 @@ export async function requestAccess(
   const name = readText(formData.get("name"), 200);
   const email = readText(formData.get("email"), 254).toLowerCase();
   const message = readText(formData.get("message"), 4000);
+  const honeypot = readText(formData.get("company"), 200);
   if (!name || !email) return { error: "Name and email are both needed." };
+  if (honeypot) return { sent: true };
+
+  const windowStart = new Date(
+    Date.now() - BURST_WINDOW_MINUTES * 60 * 1000
+  ).toISOString();
+  const recent = await getDb()
+    .select({ id: schema.accessRequests.id })
+    .from(schema.accessRequests)
+    .where(gte(schema.accessRequests.createdAt, windowStart));
+  if (recent.length >= BURST_LIMIT) return { sent: true };
 
   const existingUser = await getDb().query.users.findFirst({
     where: eq(schema.users.email, email),

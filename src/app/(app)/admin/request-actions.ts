@@ -51,32 +51,40 @@ export async function approveRequest(formData: FormData) {
     userId = created.id;
   }
 
-  await getDb()
-    .update(schema.accessRequests)
-    .set({
-      status: "approved",
-      decidedBy: admin.name,
-      decidedAt: new Date().toISOString(),
-    })
-    .where(eq(schema.accessRequests.id, id));
+  try {
+    await getDb()
+      .update(schema.accessRequests)
+      .set({
+        status: "approved",
+        decidedBy: admin.name,
+        decidedAt: new Date().toISOString(),
+      })
+      .where(eq(schema.accessRequests.id, id));
 
-  if (userId) {
-    const token = await createToken(userId, "invite", 72);
-    await sendTemplateMail({
-      to: req.email,
-      kind: "invite",
-      subject: "You are in: Paine Pointe",
-      heading: "Welcome to Paine Pointe",
-      preview: "Set a password and you are in.",
-      blocks: [
-        { type: "text", text: `Hi ${req.name}, ${admin.name} let you in to Paine Pointe. Pick a password and you can see the calendar, notes, and house guide.` },
-        { type: "button", label: "Set your password", href: `${siteUrl()}/reset/${token}` },
-        { type: "quiet", text: "This link works once and lasts three days. If it expires, use the forgot-password link on the sign-in page." },
-      ],
-    });
+    if (userId) {
+      const token = await createToken(userId, "invite", 72);
+      await sendTemplateMail({
+        to: req.email,
+        kind: "invite",
+        subject: "You are in: Paine Pointe",
+        heading: "Welcome to Paine Pointe",
+        preview: "Set a password and you are in.",
+        blocks: [
+          { type: "text", text: `Hi ${req.name}, ${admin.name} let you in to Paine Pointe. Pick a password and you can see the calendar, notes, and house guide.` },
+          { type: "button", label: "Set your password", href: `${siteUrl()}/reset/${token}` },
+          { type: "quiet", text: "This link works once and lasts three days. If it expires, use the forgot-password link on the sign-in page." },
+        ],
+      });
+    }
+
+    await logActivity(admin, "approved an access request", req.email);
+  } catch (error) {
+    // The account may already be created above even if a later step here
+    // failed. Log it instead of crashing the Admin page so the admin can
+    // see what actually happened and retry or fix it by hand.
+    console.error("approveRequest failed", { id, error });
+    return;
   }
-
-  await logActivity(admin, "approved an access request", req.email);
   revalidatePath("/admin");
 }
 
@@ -89,17 +97,22 @@ export async function declineRequest(formData: FormData) {
   });
   if (!req || req.status !== "pending") return;
 
-  await getDb()
-    .update(schema.accessRequests)
-    .set({
-      status: "declined",
-      decidedBy: admin.name,
-      decidedAt: new Date().toISOString(),
-    })
-    .where(eq(schema.accessRequests.id, id));
+  try {
+    await getDb()
+      .update(schema.accessRequests)
+      .set({
+        status: "declined",
+        decidedBy: admin.name,
+        decidedAt: new Date().toISOString(),
+      })
+      .where(eq(schema.accessRequests.id, id));
 
-  // Deliberately silent: nobody gets an email telling them they were turned
-  // down. An admin who wants to explain can do it in person.
-  await logActivity(admin, "declined an access request", req.email);
+    // Deliberately silent: nobody gets an email telling them they were
+    // turned down. An admin who wants to explain can do it in person.
+    await logActivity(admin, "declined an access request", req.email);
+  } catch (error) {
+    console.error("declineRequest failed", { id, error });
+    return;
+  }
   revalidatePath("/admin");
 }
