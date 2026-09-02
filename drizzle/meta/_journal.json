@@ -43,6 +43,13 @@
       "when": 1786736103076,
       "tag": "0005_boat_checklist",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788384273839,
+      "tag": "0006_allow_user_removal_with_history",
+      "breakpoints": true
     }
   ]
 }

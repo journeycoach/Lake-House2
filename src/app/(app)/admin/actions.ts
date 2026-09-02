@@ -100,7 +100,15 @@ export async function removeUser(formData: FormData) {
   const admin = await requireAdmin();
   const id = Number(formData.get("id"));
   if (!id || id === admin.id) return;
-  await getDb().delete(schema.users).where(eq(schema.users.id, id));
+  try {
+    await getDb().delete(schema.users).where(eq(schema.users.id, id));
+  } catch {
+    // A foreign key we didn't anticipate is still pointing at this user.
+    // The schema keeps their history (login, activity, notes, stays,
+    // password tokens) so this shouldn't happen, but fail quietly rather
+    // than crash the Admin page.
+    return;
+  }
   refresh();
 }
 
