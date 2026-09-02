@@ -21,6 +21,15 @@ export function RequestForm() {
 
   return (
     <form action={action} className="card p-6 space-y-4">
+      {/* Honeypot: invisible to a real person, so any submission with it
+          filled in is treated as spam and dropped silently. */}
+      <div
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="company">Company</label>
+        <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
       <div>
         <label htmlFor="name" className="flabel">
           Your name
