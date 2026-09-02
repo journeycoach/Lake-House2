@@ -44,7 +44,11 @@ export const stays = pgTable("stays", {
   adults: integer("adults").notNull().default(0),
   kids: integer("kids").notNull().default(0),
   note: text("note"),
-  createdBy: integer("created_by").references(() => users.id),
+  // A stay outlives whoever booked it; removing that person keeps the
+  // reservation and just clears who created it.
+  createdBy: integer("created_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
   createdAt: text("created_at").notNull(),
 });
 
@@ -110,7 +114,10 @@ export const stayChecklistItems = pgTable(
 export const notes = pgTable("notes", {
   id: serial("id").primaryKey(),
   authorName: text("author_name").notNull(),
-  authorId: integer("author_id").references(() => users.id),
+  // authorName keeps the note attributed even after the account is gone.
+  authorId: integer("author_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   body: text("body").notNull(),
   tag: text("tag").notNull(), // local tip | house update | for the next visit
   createdAt: text("created_at").notNull(),
@@ -213,7 +220,10 @@ export const settings = pgTable("settings", {
 export const loginEvents = pgTable("login_events", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
-  userId: integer("user_id").references(() => users.id),
+  // email keeps the row meaningful after the account is removed.
+  userId: integer("user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   success: integer("success").notNull(),
   at: text("at").notNull(),
 });
@@ -221,7 +231,10 @@ export const loginEvents = pgTable("login_events", {
 /* Who did what, when: bookings, check-offs, edits. Shown on Admin. */
 export const activityLog = pgTable("activity_log", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  // userName keeps the entry readable after the account is removed.
+  userId: integer("user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   userName: text("user_name").notNull(),
   action: text("action").notNull(), // short verb phrase
   detail: text("detail"), // what it applied to
@@ -233,9 +246,10 @@ export const activityLog = pgTable("activity_log", {
    Only the hash is stored, so a leaked database row cannot be used as a link. */
 export const passwordTokens = pgTable("password_tokens", {
   id: serial("id").primaryKey(),
+  // A token is meaningless once its account is gone, so it goes with it.
   userId: integer("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   tokenHash: text("token_hash").notNull(),
   purpose: text("purpose").notNull(), // reset | invite
   expiresAt: text("expires_at").notNull(),

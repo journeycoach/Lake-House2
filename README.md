@@ -31,8 +31,10 @@ Merging to `main` deploys production on its own, and every pull request gets
 its own preview URL. The command above is for deploying without waiting on a
 merge.
 
-Every account starts with the password `lakehouse` until it is changed on the
-Admin page. Admins can add people, reset passwords, and see sign-in activity.
+An admin sets each new account's first password directly on the Admin page
+(at least 8 characters); someone who requests access instead gets a one-time
+invite link by email and picks their own password. Admins can add people,
+reset passwords, and see sign-in activity.
 
 ## How it is put together
 
