@@ -188,23 +188,13 @@ export default async function HomePage() {
 
         {/* Checklist */}
         <section className="card p-4 sm:p-6 lg:col-span-2">
-          <div className="flex items-baseline justify-between gap-4">
-            <div>
-              <p className="section-label">Check List</p>
-              <Link
-                href="/checklist"
-                className="font-display text-2xl hover:text-water transition-colors"
-              >
-                Pickup before the next trip
-              </Link>
-            </div>
-            <Link
-              href="/checklist"
-              className="text-sm font-medium text-water hover:text-deep-2"
-            >
-              {canEdit(user.effectiveRole) ? "Add or edit" : "See the list"}
-            </Link>
-          </div>
+          <p className="section-label">Check List</p>
+          <Link
+            href="/checklist"
+            className="font-display text-2xl hover:text-water transition-colors"
+          >
+            Pickup before the next trip
+          </Link>
           <div className="mt-4">
             <p className="section-label">Current</p>
             <ul className="mt-2">
