@@ -6,6 +6,7 @@ import {
   addServiceRecord,
   removeEquipment,
   removeServiceRecord,
+  updateEquipment,
 } from "./equipment-actions";
 import { EquipmentCard } from "./equipment-card";
 
@@ -147,6 +148,115 @@ export function EquipmentSection({
                       </button>
                     </form>
                   </div>
+                ) : null}
+
+                {editor ? (
+                  <details className="group mb-3 rounded-lh border border-sand-line bg-mist/40 p-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold text-water [&::-webkit-details-marker]:hidden">
+                      Edit details
+                      <svg
+                        aria-hidden
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="shrink-0 transition-transform group-open:rotate-180"
+                      >
+                        <path d="m3 5 4 4 4-4" />
+                      </svg>
+                    </summary>
+                    <form
+                      action={updateEquipment}
+                      className="mt-3 grid gap-2 sm:grid-cols-2"
+                    >
+                      <input type="hidden" name="id" value={item.id} />
+                      <input
+                        aria-label="Equipment name"
+                        name="name"
+                        required
+                        maxLength={200}
+                        defaultValue={item.name}
+                        className="field py-2"
+                        placeholder="Name"
+                      />
+                      <input
+                        aria-label="Equipment category"
+                        name="category"
+                        maxLength={120}
+                        defaultValue={item.category ?? ""}
+                        className="field py-2"
+                        placeholder="Category"
+                      />
+                      <input
+                        aria-label="Equipment location"
+                        name="location"
+                        maxLength={200}
+                        defaultValue={item.location ?? ""}
+                        className="field py-2"
+                        placeholder="Location"
+                      />
+                      <input
+                        aria-label="Equipment manufacturer"
+                        name="manufacturer"
+                        maxLength={200}
+                        defaultValue={item.manufacturer ?? ""}
+                        className="field py-2"
+                        placeholder="Manufacturer"
+                      />
+                      <input
+                        aria-label="Equipment model"
+                        name="model"
+                        maxLength={200}
+                        defaultValue={item.model ?? ""}
+                        className="field py-2"
+                        placeholder="Model"
+                      />
+                      <input
+                        aria-label="Equipment serial number"
+                        name="serialNumber"
+                        maxLength={200}
+                        defaultValue={item.serialNumber ?? ""}
+                        className="field py-2"
+                        placeholder="Serial number"
+                      />
+                      <label>
+                        <span className="flabel">Installed</span>
+                        <input
+                          name="installedOn"
+                          type="date"
+                          defaultValue={item.installedOn ?? ""}
+                          className="field py-2"
+                        />
+                      </label>
+                      <label>
+                        <span className="flabel">Warranty through</span>
+                        <input
+                          name="warrantyUntil"
+                          type="date"
+                          defaultValue={item.warrantyUntil ?? ""}
+                          className="field py-2"
+                        />
+                      </label>
+                      <textarea
+                        aria-label="Equipment notes"
+                        name="notes"
+                        rows={2}
+                        maxLength={4000}
+                        defaultValue={item.notes ?? ""}
+                        className="field sm:col-span-2"
+                        placeholder="Filter sizes, service notes, or anything else worth keeping"
+                      />
+                      <div className="sm:col-span-2">
+                        <SubmitButton className="btn btn-quiet py-2">
+                          Save changes
+                        </SubmitButton>
+                      </div>
+                    </form>
+                  </details>
                 ) : null}
 
               <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">

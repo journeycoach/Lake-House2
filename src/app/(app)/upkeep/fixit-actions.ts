@@ -47,6 +47,31 @@ export async function reportIssue(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function updateFixit(formData: FormData) {
+  const user = await requireEditor();
+  const id = Number(formData.get("id"));
+  if (!id) return;
+  const title = readText(formData.get("title"), 200);
+  if (!title) return;
+  const requestedPriority = String(formData.get("priority") ?? "whenever");
+  const priority = ["urgent", "soon", "whenever"].includes(requestedPriority)
+    ? requestedPriority
+    : "whenever";
+  await getDb()
+    .update(schema.fixit)
+    .set({
+      title,
+      location: readText(formData.get("location"), 200) || null,
+      priority,
+      assignedTo: readText(formData.get("assignedTo"), 200) || null,
+      details: readText(formData.get("details"), 4000) || null,
+    })
+    .where(eq(schema.fixit.id, id));
+  await logActivity(user, "updated a repair", title);
+  revalidatePath("/upkeep");
+  revalidatePath("/");
+}
+
 export async function setFixitStatus(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));

@@ -8,12 +8,35 @@ import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { maintenanceItems, openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
-import { setFixitStatus, removeFixit } from "./fixit-actions";
-import { addSchedule, updateDue, removeSchedule } from "./maintenance-actions";
+import { setFixitStatus, removeFixit, updateFixit } from "./fixit-actions";
+import {
+  addSchedule,
+  updateMaintenance,
+  removeSchedule,
+} from "./maintenance-actions";
 import { EquipmentSection } from "./equipment-section";
 import { ReportIssueForm } from "./report-issue-form";
 
 export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
+
+function Chevron({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`shrink-0 transition-transform group-open:rotate-180 ${className}`}
+    >
+      <path d="m3 5 4 4 4-4" />
+    </svg>
+  );
+}
 
 /* One page for taking care of the house: what is broken now, then the
    recurring work that keeps things from breaking. */
@@ -141,43 +164,8 @@ export default async function UpkeepPage({
         <p className="section-label">Fix-it list</p>
         <h2 className="font-display text-2xl mt-1">Keep the place cared for</h2>
         <ul className="mt-4">
-          {open.map((f) => (
-            <li
-              key={f.id}
-              className="flex items-center gap-4 border-t border-sand-line py-4 first:border-0"
-            >
-              {editor ? (
-                <form action={setFixitStatus} className="shrink-0">
-                  <input type="hidden" name="id" value={f.id} />
-                  <input type="hidden" name="status" value="done" />
-                  <button
-                    type="submit"
-                    aria-label={`Mark "${f.title}" done`}
-                    className="h-5 w-5 rounded-[4px] border border-sand-line hover:border-water"
-                  />
-                </form>
-              ) : (
-                <span
-                  aria-hidden
-                  className="h-5 w-5 shrink-0 rounded-[4px] border border-sand-line"
-                />
-              )}
-              {f.photoUrl ? (
-                <a
-                  href={f.photoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="shrink-0"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={f.photoUrl}
-                    alt={`Reported issue: ${f.title}`}
-                    loading="lazy"
-                    className="h-16 w-20 rounded-lh object-cover"
-                  />
-                </a>
-              ) : null}
+          {open.map((f) => {
+            const summary = (
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{f.title}</p>
                 {f.details ? (
@@ -189,11 +177,137 @@ export default async function UpkeepPage({
                   {f.reportedBy ? ` · Reported by ${f.reportedBy}` : ""}
                 </p>
               </div>
-              <span className={`chip chip-${f.priority} shrink-0`}>
-                {f.priority}
-              </span>
-            </li>
-          ))}
+            );
+            return (
+              <li
+                key={f.id}
+                className="flex items-center gap-4 border-t border-sand-line py-4 first:border-0"
+              >
+                {editor ? (
+                  <form action={setFixitStatus} className="shrink-0">
+                    <input type="hidden" name="id" value={f.id} />
+                    <input type="hidden" name="status" value="done" />
+                    <button
+                      type="submit"
+                      aria-label={`Mark "${f.title}" done`}
+                      className="h-5 w-5 rounded-[4px] border border-sand-line hover:border-water"
+                    />
+                  </form>
+                ) : (
+                  <span
+                    aria-hidden
+                    className="h-5 w-5 shrink-0 rounded-[4px] border border-sand-line"
+                  />
+                )}
+                {f.photoUrl ? (
+                  <a
+                    href={f.photoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={f.photoUrl}
+                      alt={`Reported issue: ${f.title}`}
+                      loading="lazy"
+                      className="h-16 w-20 rounded-lh object-cover"
+                    />
+                  </a>
+                ) : null}
+                {editor ? (
+                  <details className="group min-w-0 flex-1">
+                    <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                      {summary}
+                      <span className={`chip chip-${f.priority} shrink-0`}>
+                        {f.priority}
+                      </span>
+                      <Chevron />
+                    </summary>
+                    <form
+                      action={updateFixit}
+                      className="mt-3 grid gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-2"
+                    >
+                      <input type="hidden" name="id" value={f.id} />
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          What is broken
+                        </span>
+                        <input
+                          name="title"
+                          required
+                          maxLength={200}
+                          defaultValue={f.title}
+                          className="field"
+                        />
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Where
+                        </span>
+                        <input
+                          name="location"
+                          maxLength={200}
+                          defaultValue={f.location ?? ""}
+                          className="field"
+                        />
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          How urgent
+                        </span>
+                        <select
+                          name="priority"
+                          defaultValue={f.priority}
+                          className="field"
+                        >
+                          <option value="urgent">Urgent</option>
+                          <option value="soon">Soon</option>
+                          <option value="whenever">Whenever</option>
+                        </select>
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Who is on it
+                        </span>
+                        <input
+                          name="assignedTo"
+                          maxLength={200}
+                          defaultValue={f.assignedTo ?? ""}
+                          className="field"
+                          placeholder="Unassigned"
+                        />
+                      </label>
+                      <label className="min-w-0 sm:col-span-2">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Details
+                        </span>
+                        <textarea
+                          name="details"
+                          rows={2}
+                          maxLength={4000}
+                          defaultValue={f.details ?? ""}
+                          className="field"
+                        />
+                      </label>
+                      <div className="sm:col-span-2">
+                        <SubmitButton className="btn btn-primary">
+                          Save changes
+                        </SubmitButton>
+                      </div>
+                    </form>
+                  </details>
+                ) : (
+                  <>
+                    {summary}
+                    <span className={`chip chip-${f.priority} shrink-0`}>
+                      {f.priority}
+                    </span>
+                  </>
+                )}
+              </li>
+            );
+          })}
           {open.length === 0 ? (
             <li className="py-4 text-sm text-ink-soft">
               Nothing needs attention. The house thanks you.
@@ -363,6 +477,28 @@ export default async function UpkeepPage({
           {items.map((m) => {
             const overdue = m.nextDue && m.nextDue < today;
             const dueSoon = m.nextDue && !overdue && m.nextDue <= soon;
+            const summary = (
+              <>
+                <h3 className="font-display text-xl">
+                  {m.nextDue ? fmtDay(m.nextDue) : "No date"}
+                  <span className="ml-2 align-middle text-[11px] font-sans font-semibold uppercase tracking-wider text-ink-faint">
+                    next due
+                  </span>
+                </h3>
+                <p className="mt-1 font-semibold">{m.task}</p>
+                {m.equipmentId && equipmentById.get(m.equipmentId) ? (
+                  <p className="mt-1 text-xs font-semibold text-water">
+                    {equipmentById.get(m.equipmentId)!.name}
+                  </p>
+                ) : null}
+                {m.details ? (
+                  <p className="mt-1 text-sm text-ink-soft">{m.details}</p>
+                ) : null}
+                <p className="mt-2 text-xs text-ink-faint">
+                  {m.cadence ?? "No cadence"} · {m.assignedTo ? `Assigned to ${m.assignedTo}` : "Unassigned"}
+                </p>
+              </>
+            );
             return (
               <article
                 key={m.id}
@@ -385,22 +521,7 @@ export default async function UpkeepPage({
                         ⋯
                       </summary>
                       <div className="absolute right-0 top-12 z-30 w-64 rounded-lh border border-sand-line bg-white p-3 shadow-lg">
-                        <form action={updateDue} className="space-y-2">
-                          <input type="hidden" name="id" value={m.id} />
-                          <label className="block text-xs font-semibold text-ink-soft">
-                            Next due
-                          </label>
-                          <input
-                            type="date"
-                            name="nextDue"
-                            defaultValue={m.nextDue ?? ""}
-                            className="field py-2"
-                          />
-                          <button type="submit" className="btn btn-quiet w-full">
-                            Set next due
-                          </button>
-                        </form>
-                        <form action={removeSchedule} className="mt-2 border-t border-sand-line pt-2">
+                        <form action={removeSchedule}>
                           <input type="hidden" name="id" value={m.id} />
                           <button
                             type="submit"
@@ -423,41 +544,102 @@ export default async function UpkeepPage({
                     </>
                   ) : null}
                 </div>
-                <h3 className="font-display text-xl mt-3">
-                  {m.nextDue ? fmtDay(m.nextDue) : "No date"}
-                  <span className="ml-2 align-middle text-[11px] font-sans font-semibold uppercase tracking-wider text-ink-faint">
-                    next due
-                  </span>
-                </h3>
-                <p className="mt-1 font-semibold">{m.task}</p>
-                {m.equipmentId && equipmentById.get(m.equipmentId) ? (
-                  <p className="mt-1 text-xs font-semibold text-water">
-                    {equipmentById.get(m.equipmentId)!.name}
-                  </p>
-                ) : null}
-                {m.details ? (
-                  <p className="mt-1 flex-1 text-sm text-ink-soft">{m.details}</p>
+                {editor ? (
+                  <details className="group mt-3 flex-1">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-2 [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0 flex-1">{summary}</span>
+                      <Chevron className="mt-1" />
+                    </summary>
+                    <form
+                      action={updateMaintenance}
+                      className="mt-3 grid gap-3 border-t border-sand-line pt-3 sm:grid-cols-2"
+                    >
+                      <input type="hidden" name="id" value={m.id} />
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Task
+                        </span>
+                        <input
+                          name="task"
+                          required
+                          maxLength={200}
+                          defaultValue={m.task}
+                          className="field"
+                        />
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          How often
+                        </span>
+                        <input
+                          name="cadence"
+                          maxLength={200}
+                          defaultValue={m.cadence ?? ""}
+                          className="field"
+                        />
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Next due
+                        </span>
+                        <input
+                          type="date"
+                          name="nextDue"
+                          defaultValue={m.nextDue ?? ""}
+                          className="field"
+                        />
+                      </label>
+                      <label className="min-w-0">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Assigned to
+                        </span>
+                        <input
+                          name="assignedTo"
+                          maxLength={200}
+                          defaultValue={m.assignedTo ?? ""}
+                          className="field"
+                          placeholder="Unassigned"
+                        />
+                      </label>
+                      <label className="min-w-0 sm:col-span-2">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Equipment
+                        </span>
+                        <select
+                          name="equipmentId"
+                          defaultValue={m.equipmentId ?? ""}
+                          className="field"
+                        >
+                          <option value="">General house task</option>
+                          {equipment.map((eq2) => (
+                            <option key={eq2.id} value={eq2.id}>
+                              {eq2.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="min-w-0 sm:col-span-2">
+                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                          Details
+                        </span>
+                        <textarea
+                          name="details"
+                          rows={2}
+                          maxLength={4000}
+                          defaultValue={m.details ?? ""}
+                          className="field"
+                        />
+                      </label>
+                      <div className="sm:col-span-2">
+                        <SubmitButton className="btn btn-primary">
+                          Save changes
+                        </SubmitButton>
+                      </div>
+                    </form>
+                  </details>
                 ) : (
-                  <span className="flex-1" />
+                  <div className="mt-3 flex-1">{summary}</div>
                 )}
-                <p className="mt-2 text-xs text-ink-faint">
-                  {m.cadence ?? "No cadence"} · {m.assignedTo ? `Assigned to ${m.assignedTo}` : "Unassigned"}
-                </p>
-                <form
-                  action={updateDue}
-                  className={`mt-3 items-center gap-2 border-t border-sand-line pt-3 ${editor ? "hidden sm:flex" : "hidden"}`}
-                >
-                  <input type="hidden" name="id" value={m.id} />
-                  <input
-                    type="date"
-                    name="nextDue"
-                    defaultValue={m.nextDue ?? ""}
-                    className="field flex-1 py-2"
-                  />
-                  <button type="submit" className="btn btn-quiet shrink-0">
-                    Set next due
-                  </button>
-                </form>
               </article>
             );
           })}

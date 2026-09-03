@@ -8,7 +8,6 @@ import {
   addItem,
   updateItem,
   toggleItem,
-  removeItem,
   moveItem,
 } from "./actions";
 
@@ -22,7 +21,22 @@ export default async function ChecklistPage() {
   const completedItems = items.filter((item) => item.done);
 
   function itemRows(rows: typeof items) {
-    return rows.map((item, i) => (
+    return rows.map((item, i) => {
+      const details = (
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <p
+            className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
+          >
+            {item.title}
+          </p>
+          {item.done ? (
+            <span className="text-xs text-ink-faint">
+              Checked by {item.checkedBy ?? "Unknown"}
+            </span>
+          ) : null}
+        </div>
+      );
+      return (
       <li
         key={item.id}
         className="flex flex-wrap items-center gap-3 border-t border-sand-line py-3 first:border-0"
@@ -61,30 +75,6 @@ export default async function ChecklistPage() {
             ) : null}
           </button>
         </form>
-        <div className="min-w-0 flex-1 basis-48">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <p
-              className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
-            >
-              {item.title}
-            </p>
-            {item.done ? (
-              <span className="text-xs text-ink-faint">
-                Checked by {item.checkedBy ?? "Unknown"}
-              </span>
-            ) : null}
-          </div>
-          {item.details ? (
-            <p
-              className={`text-sm ${
-                item.done ? "text-ink-faint line-through" : "text-ink-soft"
-              }`}
-            >
-              {item.details}
-            </p>
-          ) : null}
-          <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
-        </div>
         {editor ? (
           <input
             id={`edit-item-${item.id}`}
@@ -92,6 +82,38 @@ export default async function ChecklistPage() {
             className="peer sr-only"
           />
         ) : null}
+        {editor ? (
+          <label
+            htmlFor={`edit-item-${item.id}`}
+            className="-my-1 min-w-0 flex-1 basis-48 cursor-pointer rounded-md py-1 hover:bg-mist/60"
+          >
+            {details}
+            {item.details ? (
+              <p
+                className={`text-sm ${
+                  item.done ? "text-ink-faint line-through" : "text-ink-soft"
+                }`}
+              >
+                {item.details}
+              </p>
+            ) : null}
+            <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
+          </label>
+        ) : (
+          <div className="min-w-0 flex-1 basis-48">
+            {details}
+            {item.details ? (
+              <p
+                className={`text-sm ${
+                  item.done ? "text-ink-faint line-through" : "text-ink-soft"
+                }`}
+              >
+                {item.details}
+              </p>
+            ) : null}
+            <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
+          </div>
+        )}
         <div
           className={`w-full justify-end sm:hidden ${editor ? "flex" : "hidden"}`}
         >
@@ -127,21 +149,6 @@ export default async function ChecklistPage() {
                   </button>
                 </form>
               </div>
-              <label
-                htmlFor={`edit-item-${item.id}`}
-                className="mt-2 flex min-h-11 cursor-pointer items-center rounded-md px-3 text-sm font-semibold text-water hover:bg-water-tint"
-              >
-                Edit item
-              </label>
-              <form action={removeItem}>
-                <input type="hidden" name="id" value={item.id} />
-                <button
-                  type="submit"
-                  className="flex min-h-11 w-full items-center rounded-md px-3 text-left text-sm font-semibold text-rust hover:bg-rust/5"
-                >
-                  Remove item
-                </button>
-              </form>
             </div>
           </details>
         </div>
@@ -200,21 +207,6 @@ export default async function ChecklistPage() {
               </svg>
             </button>
           </form>
-          <label
-            htmlFor={`edit-item-${item.id}`}
-            className="inline-flex min-h-11 cursor-pointer items-center text-xs font-medium text-water hover:text-deep-2"
-          >
-            Edit
-          </label>
-          <form action={removeItem}>
-            <input type="hidden" name="id" value={item.id} />
-            <button
-              type="submit"
-              className="inline-flex min-h-11 items-center text-xs font-medium text-ink-faint hover:text-rust"
-            >
-              Remove
-            </button>
-          </form>
         </div>
         {editor ? (
           <form
@@ -259,7 +251,8 @@ export default async function ChecklistPage() {
           </form>
         ) : null}
       </li>
-    ));
+      );
+    });
   }
 
   return (
@@ -272,8 +265,8 @@ export default async function ChecklistPage() {
           Pickup before the next trip
         </h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Everyone can check items off. Family and admins can add, edit,
-          remove, and reorder them.
+          Everyone can check items off. Family and admins can add, remove,
+          and reorder them — click an item to edit it.
         </p>
 
         <form

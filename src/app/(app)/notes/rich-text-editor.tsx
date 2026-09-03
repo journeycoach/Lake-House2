@@ -25,11 +25,17 @@ function ToolButton({
   );
 }
 
-export function RichTextEditor() {
+export function RichTextEditor({
+  initialHtml = "",
+}: {
+  initialHtml?: string;
+}) {
   const editorRef = useRef<HTMLDivElement>(null);
   const selectionRef = useRef<Range | null>(null);
-  const [html, setHtml] = useState("");
-  const [hasContent, setHasContent] = useState(false);
+  const [html, setHtml] = useState(initialHtml);
+  const [hasContent, setHasContent] = useState(
+    () => initialHtml.replace(/<[^>]*>/g, "").trim().length > 0
+  );
 
   function rememberSelection() {
     const selection = window.getSelection();
@@ -176,6 +182,7 @@ export function RichTextEditor() {
             syncEditor();
           }}
           className="rich-note min-h-32 px-3 py-3 text-sm outline-none"
+          {...(initialHtml ? { dangerouslySetInnerHTML: { __html: initialHtml } } : {})}
         />
       </div>
       <input type="hidden" name="body" value={html} />

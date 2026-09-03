@@ -4,8 +4,10 @@ import { canEdit } from "@/lib/roles";
 import { latestNotes } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { RichNote } from "@/components/rich-note";
+import { noteDisplayHtml } from "@/lib/note-rich-text";
 import { removeNote } from "./actions";
 import { NoteComposer } from "./note-composer";
+import { NoteEditor } from "./note-editor";
 
 export const metadata: Metadata = { title: "Family notes · Paine Pointe" };
 
@@ -70,26 +72,51 @@ export default async function NotesPage() {
       </details>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {notes.map((n) => (
-          <article key={n.id} className="card flex flex-col p-4 sm:p-5">
-            <p className="section-label">{n.tag}</p>
-            <RichNote body={n.body} className="mt-2 flex-1" />
-            <div className="mt-4 flex items-center justify-between border-t border-sand-line pt-3">
-              <p className="text-xs text-ink-faint">{n.authorName}</p>
-              {editor && (n.authorId === user.id || user.effectiveRole === "admin") ? (
-                <form action={removeNote}>
-                  <input type="hidden" name="id" value={n.id} />
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-ink-faint hover:text-rust"
+        {notes.map((n) => {
+          const canEditNote =
+            editor && (n.authorId === user.id || user.effectiveRole === "admin");
+          const checkboxId = `edit-note-${n.id}`;
+          return (
+            <article key={n.id} className="card flex flex-col p-4 sm:p-5">
+              <p className="section-label">{n.tag}</p>
+              {canEditNote ? (
+                <>
+                  <input id={checkboxId} type="checkbox" className="peer sr-only" />
+                  <label
+                    htmlFor={checkboxId}
+                    className="-m-1 mt-2 block flex-1 cursor-pointer rounded-md p-1 hover:bg-mist/60 peer-checked:hidden"
                   >
-                    Remove
-                  </button>
-                </form>
-              ) : null}
-            </div>
-          </article>
-        ))}
+                    <RichNote body={n.body} />
+                  </label>
+                  <div className="mt-2 hidden peer-checked:block">
+                    <NoteEditor
+                      id={n.id}
+                      tag={n.tag}
+                      initialHtml={noteDisplayHtml(n.body)}
+                      cancelHtmlFor={checkboxId}
+                    />
+                  </div>
+                </>
+              ) : (
+                <RichNote body={n.body} className="mt-2 flex-1" />
+              )}
+              <div className="mt-4 flex items-center justify-between border-t border-sand-line pt-3">
+                <p className="text-xs text-ink-faint">{n.authorName}</p>
+                {canEditNote ? (
+                  <form action={removeNote}>
+                    <input type="hidden" name="id" value={n.id} />
+                    <button
+                      type="submit"
+                      className="text-xs font-medium text-ink-faint hover:text-rust"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                ) : null}
+              </div>
+            </article>
+          );
+        })}
         {notes.length === 0 ? (
           <p className="text-sm text-ink-soft">No notes yet. Share the first one.</p>
         ) : null}

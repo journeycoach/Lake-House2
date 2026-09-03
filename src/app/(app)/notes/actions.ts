@@ -27,6 +27,25 @@ export async function addNote(formData: FormData) {
   return true;
 }
 
+export async function updateNote(formData: FormData) {
+  const user = await getEffectiveUser();
+  if (!user || !canEdit(user.effectiveRole)) return;
+  const id = Number(formData.get("id"));
+  if (!id) return;
+  const note = await getDb().query.notes.findFirst({
+    where: eq(schema.notes.id, id),
+  });
+  if (!note) return;
+  if (note.authorId !== user.id && user.effectiveRole !== "admin") return;
+  const body = sanitizeNoteForStorage(readText(formData.get("body"), 16000));
+  if (!body) return;
+  const tag = String(formData.get("tag") ?? note.tag);
+  await getDb().update(schema.notes).set({ body, tag }).where(eq(schema.notes.id, id));
+  await logActivity(user, "updated a note", notePlainText(body).slice(0, 80));
+  revalidatePath("/notes");
+  revalidatePath("/");
+}
+
 export async function removeNote(formData: FormData) {
   const user = await getEffectiveUser();
   if (!user || !canEdit(user.effectiveRole)) return;

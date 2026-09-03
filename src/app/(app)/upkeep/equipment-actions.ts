@@ -34,6 +34,31 @@ export async function addEquipment(formData: FormData) {
   refresh();
 }
 
+export async function updateEquipment(formData: FormData) {
+  const user = await requireEditor();
+  const id = Number(formData.get("id"));
+  if (!id) return;
+  const name = readText(formData.get("name"), 200);
+  if (!name) return;
+
+  await getDb()
+    .update(schema.equipment)
+    .set({
+      name,
+      category: readText(formData.get("category"), 120) || null,
+      location: readText(formData.get("location"), 200) || null,
+      manufacturer: readText(formData.get("manufacturer"), 200) || null,
+      model: readText(formData.get("model"), 200) || null,
+      serialNumber: readText(formData.get("serialNumber"), 200) || null,
+      installedOn: String(formData.get("installedOn") ?? "") || null,
+      warrantyUntil: String(formData.get("warrantyUntil") ?? "") || null,
+      notes: readText(formData.get("notes"), 4000) || null,
+    })
+    .where(eq(schema.equipment.id, id));
+  await logActivity(user, "updated equipment", name);
+  refresh();
+}
+
 export async function removeEquipment(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
