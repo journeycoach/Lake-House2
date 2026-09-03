@@ -86,11 +86,19 @@ export function MiniMonthGrid({
             </>
           );
 
+          const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+          const editorHref = firstStay
+            ? `/calendar?view=month&m=${monthKey}&editStay=${firstStay.id}#edit-stay`
+            : `/calendar?view=month&m=${monthKey}&start=${dayIso}#plan`;
+          const editorLabel = firstStay
+            ? `Edit stay: ${firstStay.label}`
+            : `Plan a stay beginning ${dayIso}`;
+
           return planningEnabled ? (
             <Link
               key={dayIso}
-              href={`/calendar?view=month&m=${year}-${String(month).padStart(2, "0")}&start=${dayIso}#plan`}
-              aria-label={`Plan a stay beginning ${dayIso}`}
+              href={editorHref}
+              aria-label={editorLabel}
               className={className}
               style={style}
             >
@@ -230,11 +238,19 @@ export function MonthGrid({
             : dayMaintenance.length > 0
               ? { background: "color-mix(in srgb, var(--care) 10%, transparent)" }
               : { background: "color-mix(in srgb, var(--sand) 35%, transparent)" };
+          const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+          const editorHref = first
+            ? `/calendar?view=month&m=${monthKey}&editStay=${first.id}#edit-stay`
+            : `/calendar?view=month&m=${monthKey}&start=${dayIso}#plan`;
+          const editorLabel = first
+            ? `Edit stay: ${first.label}`
+            : `Plan a stay beginning ${dayIso}`;
+
           return planningEnabled ? (
             <Link
               key={dayIso}
-              href={`/calendar?view=month&m=${year}-${String(month).padStart(2, "0")}&start=${dayIso}#plan`}
-              aria-label={`Plan a stay beginning ${dayIso}`}
+              href={editorHref}
+              aria-label={editorLabel}
               className={cellClassName}
               style={cellStyle}
             >

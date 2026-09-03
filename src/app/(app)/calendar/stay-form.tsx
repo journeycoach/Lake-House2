@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   createStay,
   updateStay,
@@ -43,6 +44,7 @@ export function StayForm({
     },
     initial
   );
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -158,17 +160,66 @@ export function StayForm({
           </label>
         </div>
       ) : null}
-      <div className="mobile-form-actions">
-        <button type="submit" disabled={pending} className="btn btn-primary">
-          {pending ? "Saving" : stay ? "Save changes" : "Add to calendar"}
-        </button>
-        {onDone ? (
-          <button type="button" onClick={onDone} className="btn btn-quiet">
-            Cancel
+      <div className="mobile-form-actions items-center justify-between">
+        <div className="mobile-form-actions">
+          <button type="submit" disabled={pending} className="btn btn-primary">
+            {pending ? "Saving" : stay ? "Save changes" : "Add to calendar"}
           </button>
+          {onDone ? (
+            <button type="button" onClick={onDone} className="btn btn-quiet">
+              Cancel
+            </button>
+          ) : null}
+        </div>
+        {stay ? (
+          confirmingDelete ? (
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                formAction={deleteStay}
+                className="text-sm font-semibold text-rust hover:text-rust-dark"
+              >
+                Confirm remove
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(false)}
+                className="text-sm font-medium text-ink-soft"
+              >
+                Keep
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(true)}
+              className="text-sm font-medium text-ink-faint hover:text-rust"
+            >
+              Remove
+            </button>
+          )
         ) : null}
       </div>
     </form>
+  );
+}
+
+export function EditStayForm({
+  households,
+  stay,
+  closeHref,
+}: {
+  households: Household[];
+  stay: EditableStay;
+  closeHref: string;
+}) {
+  const router = useRouter();
+  return (
+    <StayForm
+      households={households}
+      stay={stay}
+      onDone={() => router.push(closeHref)}
+    />
   );
 }
 
@@ -192,7 +243,6 @@ export function StayListItem({
   canEdit?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (editing) {
     return (
@@ -218,61 +268,36 @@ export function StayListItem({
         </span>
         <span className="text-[10px] uppercase">{dateBadge.split(" ")[0]}</span>
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">{stay.label}</p>
-        <p className="text-sm text-ink-soft">{meta}</p>
-        {stay.note ? (
-          <p className="text-sm text-ink-faint">{stay.note}</p>
-        ) : null}
-      </div>
+      {canEdit ? (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="min-w-0 flex-1 text-left"
+        >
+          <p className="font-semibold text-water hover:text-deep-2">
+            {stay.label}
+          </p>
+          <p className="text-sm text-ink-soft">{meta}</p>
+          {stay.note ? (
+            <p className="text-sm text-ink-faint">{stay.note}</p>
+          ) : null}
+        </button>
+      ) : (
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{stay.label}</p>
+          <p className="text-sm text-ink-soft">{meta}</p>
+          {stay.note ? (
+            <p className="text-sm text-ink-faint">{stay.note}</p>
+          ) : null}
+        </div>
+      )}
       <div className="flex shrink-0 items-center gap-3">
-        {confirmingDelete ? (
-          <>
-            <form action={deleteStay}>
-              <input type="hidden" name="id" value={stay.id} />
-              <button
-                type="submit"
-                className="text-sm font-semibold text-rust hover:text-rust-dark"
-              >
-                Confirm remove
-              </button>
-            </form>
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(false)}
-              className="text-sm font-medium text-ink-soft"
-            >
-              Keep
-            </button>
-          </>
-        ) : (
-          <>
-            <a
-              href={`/api/stay-ics/${stay.id}`}
-              className="text-sm font-medium text-water hover:text-deep-2"
-            >
-              Add to calendar
-            </a>
-            {canEdit ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  className="text-sm font-medium text-water hover:text-deep-2"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmingDelete(true)}
-                  className="text-sm font-medium text-ink-faint hover:text-rust"
-                >
-                  Remove
-                </button>
-              </>
-            ) : null}
-          </>
-        )}
+        <a
+          href={`/api/stay-ics/${stay.id}`}
+          className="text-sm font-medium text-water hover:text-deep-2"
+        >
+          Add to calendar
+        </a>
       </div>
       </div>
       <div className="ml-13">
