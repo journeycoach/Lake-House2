@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb, schema } from "@/lib/db";
 import { sendTemplateMail } from "@/lib/mail";
@@ -11,6 +11,13 @@ import { createSession } from "@/lib/session";
 import type { Role } from "@/lib/roles";
 
 export type ForgotState = { sent?: boolean; error?: string };
+
+// Repeated reset requests against one address are either someone who lost
+// their password fumbling the form, or someone else bombing that person's
+// inbox. Past this many in the window, stop emailing - but still say "sent"
+// so nobody outside the family learns which case it is.
+const RESET_WINDOW_MINUTES = 15;
+const RESET_LIMIT = 5;
 
 /*
   Always reports the same thing whether or not the address belongs to an
@@ -25,6 +32,23 @@ export async function requestReset(
     .trim()
     .toLowerCase();
   if (!email) return { error: "Enter the email address you sign in with." };
+
+  const windowStart = new Date(
+    Date.now() - RESET_WINDOW_MINUTES * 60 * 1000
+  ).toISOString();
+  const recent = await getDb()
+    .select({ id: schema.resetAttempts.id })
+    .from(schema.resetAttempts)
+    .where(
+      and(
+        eq(schema.resetAttempts.email, email),
+        gte(schema.resetAttempts.at, windowStart)
+      )
+    );
+  if (recent.length >= RESET_LIMIT) return { sent: true };
+  await getDb()
+    .insert(schema.resetAttempts)
+    .values({ email, at: new Date().toISOString() });
 
   const user = await getDb().query.users.findFirst({
     where: eq(schema.users.email, email),

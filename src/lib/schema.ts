@@ -280,3 +280,13 @@ export const outbox = pgTable("outbox", {
   status: text("status").notNull().default("logged"), // logged | sent | failed
   createdAt: text("created_at").notNull(),
 });
+
+/* One row per forgot-password request, hit or miss on the email. Nothing
+   else records a miss (requestReset does nothing else for an email with no
+   account), so this is what throttling a flood of reset requests against
+   one address, or a sweep across many, counts against. */
+export const resetAttempts = pgTable("reset_attempts", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  at: text("at").notNull(),
+});
