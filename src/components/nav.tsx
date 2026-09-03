@@ -137,11 +137,13 @@ function Mark() {
 export function Sidebar({
   user,
   status,
+  version,
   signOutSlot,
   previewSlot,
 }: {
   user: NavUser;
   status: string;
+  version: string;
   signOutSlot: React.ReactNode;
   previewSlot?: React.ReactNode;
 }) {
@@ -165,6 +167,9 @@ export function Sidebar({
           </Link>
           {signOutSlot}
         </div>
+        <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/35">
+          Version {version}
+        </p>
       </div>
     </aside>
   );
@@ -173,11 +178,13 @@ export function Sidebar({
 export function MobileHeader({
   user,
   status,
+  version,
   signOutSlot,
   previewSlot,
 }: {
   user: NavUser;
   status: string;
+  version: string;
   signOutSlot: React.ReactNode;
   previewSlot?: React.ReactNode;
 }) {
@@ -236,6 +243,9 @@ export function MobileHeader({
               </p>
               {signOutSlot}
             </div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/35">
+              Version {version}
+            </p>
           </div>
         </div>
       ) : null}

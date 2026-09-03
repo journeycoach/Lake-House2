@@ -60,6 +60,8 @@ export default async function AppLayout({
   const status = await houseStatus();
   const navUser = { name: user.name, role: user.effectiveRole };
   const isRealAdmin = user.role === "admin";
+  const commitSha = process.env.VERCEL_GIT_COMMIT_SHA;
+  const version = commitSha ? commitSha.slice(0, 7) : "Local";
 
   return (
     <div className="flex-1 flex flex-col">
@@ -94,6 +96,7 @@ export default async function AppLayout({
         <Sidebar
           user={navUser}
           status={status}
+          version={version}
           signOutSlot={<SignOutButton />}
           previewSlot={
             isRealAdmin && !user.viewingAs ? <PreviewControl /> : null
@@ -102,6 +105,7 @@ export default async function AppLayout({
         <MobileHeader
           user={navUser}
           status={status}
+          version={version}
           signOutSlot={<SignOutButton />}
           previewSlot={
             isRealAdmin && !user.viewingAs ? <PreviewControl /> : null
