@@ -20,7 +20,6 @@ const LINKS: {
   { href: "/checklist", label: "Shopping List", icon: "✅" },
   { href: "/guide", label: "House guide", icon: "📖" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
-  { href: "/search", label: "Search", icon: "🔍" },
   {
     href: "/admin",
     label: "Admin",
@@ -135,6 +134,28 @@ function Mark() {
   );
 }
 
+function SearchLink({
+  onNavigate,
+  className = "",
+}: {
+  onNavigate?: () => void;
+  className?: string;
+}) {
+  return (
+    <Link
+      href="/search"
+      onClick={onNavigate}
+      aria-label="Search"
+      title="Search"
+      className={`flex h-11 w-11 items-center justify-center rounded-lh border border-white/25 text-white hover:bg-white/10 transition-colors ${className}`}
+    >
+      <span aria-hidden className="text-base leading-none">
+        🔍
+      </span>
+    </Link>
+  );
+}
+
 export function Sidebar({
   user,
   status,
@@ -150,7 +171,10 @@ export function Sidebar({
 }) {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-deep p-6 sticky top-0 h-screen">
-      <Mark />
+      <div className="flex items-center justify-between">
+        <Mark />
+        <SearchLink />
+      </div>
       <div className="mt-10 flex-1">
         <NavLinks user={user} />
       </div>
@@ -193,8 +217,10 @@ export function MobileHeader({
   return (
     <>
     <header className="lg:hidden sticky top-0 z-40 bg-deep">
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between gap-2 p-4">
         <Mark />
+        <div className="flex items-center gap-2">
+        <SearchLink onNavigate={() => setOpen(false)} />
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -225,6 +251,7 @@ export function MobileHeader({
             )}
           </svg>
         </button>
+        </div>
       </div>
       {open ? (
         <div className="border-t border-white/15 p-4 pb-6 space-y-4">
