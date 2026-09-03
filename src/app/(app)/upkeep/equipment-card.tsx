@@ -19,13 +19,13 @@ export function EquipmentCard({
   const contentId = useId();
 
   return (
-    <article className="card overflow-hidden sm:overflow-visible sm:p-5">
+    <article className="card overflow-hidden">
       <button
         type="button"
         aria-expanded={expanded}
         aria-controls={contentId}
         onClick={() => setExpanded((current) => !current)}
-        className={`flex w-full items-center justify-between gap-3 p-4 text-left sm:hidden ${
+        className={`flex w-full items-center justify-between gap-3 p-3 text-left ${
           expanded ? "border-b border-sand-line" : ""
         }`}
       >
@@ -63,7 +63,7 @@ export function EquipmentCard({
         </svg>
       </button>
 
-      <div id={contentId} className={expanded ? "block" : "hidden sm:block"}>
+      <div id={contentId} className={expanded ? "block" : "hidden"}>
         {children}
       </div>
     </article>

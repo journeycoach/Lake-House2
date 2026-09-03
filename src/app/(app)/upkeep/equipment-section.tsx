@@ -123,7 +123,7 @@ export function EquipmentSection({
         maintenance history together for each major piece of equipment.
       </p>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {equipment.map((item) => {
           const itemRecords = recordsByEquipment.get(item.id) ?? [];
           return (
@@ -134,28 +134,22 @@ export function EquipmentSection({
               location={item.location}
               serviceRecordCount={itemRecords.length}
             >
-              <div className="p-4 pt-3 sm:p-0">
-                <div className="flex items-start justify-between gap-3">
-                <div className="hidden sm:block">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                    {item.category ?? "Equipment"}
-                  </p>
-                  <h3 className="font-display mt-1 text-xl">{item.name}</h3>
-                </div>
+              <div className="p-4 pt-3">
                 {editor ? (
-                  <form action={removeEquipment}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <button
-                      type="submit"
-                      className="text-xs font-medium text-ink-faint hover:text-rust"
-                    >
-                      Remove
-                    </button>
-                  </form>
+                  <div className="flex justify-end">
+                    <form action={removeEquipment}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-ink-faint hover:text-rust"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  </div>
                 ) : null}
-              </div>
 
-              <dl className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+              <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
                 {item.location ? (
                   <div>
                     <dt className="text-xs text-ink-faint">Location</dt>
