@@ -91,10 +91,13 @@ export default async function SearchPage({
       );
     for (const b of blocks) {
       if (!meetsRole(user.effectiveRole, b.minRole)) continue;
+      // Photo values are image URLs/data URIs, not readable text — never
+      // snippet from them, even on the rare label match.
+      const snippetSource = b.kind === "photo" ? (b.label ?? "Photo") : b.value;
       results.push({
         href: "/guide",
         title: b.label ?? "House guide",
-        snippet: excerpt(b.value, q),
+        snippet: excerpt(snippetSource, q),
         source: "House guide",
       });
     }

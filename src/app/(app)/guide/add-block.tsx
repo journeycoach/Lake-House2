@@ -64,13 +64,32 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
             });
             formData.set("value", blob.url);
           } catch (e) {
-            setUploading(false);
-            setError(
-              (e as Error).message.includes("store")
-                ? "Photo storage is not set up yet."
-                : (e as Error).message
-            );
-            return;
+            // Photo storage (Vercel Blob) isn't connected yet. Fall back to
+            // embedding small images directly rather than hard-failing, so
+            // photos still work while that gets set up. Once a Blob store is
+            // connected, uploads go back to using it automatically (this
+            // catch stops firing).
+            if (file.size <= 2 * 1024 * 1024) {
+              try {
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = () => reject(reader.error);
+                  reader.readAsDataURL(file);
+                });
+                formData.set("value", dataUrl);
+              } catch {
+                setUploading(false);
+                setError("Photo storage is not set up yet.");
+                return;
+              }
+            } else {
+              setUploading(false);
+              setError(
+                "Photo storage is not set up yet, and this photo is too large to add without it (2 MB limit for now)."
+              );
+              return;
+            }
           }
           setUploading(false);
         }
