@@ -20,6 +20,7 @@ const LINKS: {
   { href: "/checklist", label: "Shopping List", icon: "✅" },
   { href: "/guide", label: "House guide", icon: "📖" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
+  { href: "/search", label: "Search", icon: "🔍" },
   {
     href: "/admin",
     label: "Admin",
