@@ -23,7 +23,7 @@ import {
 import { YearGrid } from "@/components/year-grid";
 import { CopyField } from "@/components/copy-field";
 import { PageHeader } from "@/components/page-header";
-import { StayForm, StayListItem } from "./stay-form";
+import { StayForm, StayListItem, EditStayForm } from "./stay-form";
 
 export const metadata: Metadata = { title: "Calendar · Paine Pointe" };
 
@@ -43,6 +43,7 @@ export default async function CalendarPage({
     start?: string;
     plan?: string;
     stays?: string;
+    editStay?: string;
   }>;
 }) {
   const user = await requireUser();
@@ -83,6 +84,18 @@ export default async function CalendarPage({
         asc(schema.stayChecklistItems.position)
       ),
   ]);
+  const editStayId = editor ? Number(params.editStay) || null : null;
+  const stayToEdit = editStayId
+    ? (stays.find((s) => s.id === editStayId) ?? null)
+    : null;
+  const editCloseParams = new URLSearchParams();
+  for (const key of ["m", "y", "view"] as const) {
+    const value = params[key];
+    if (value) editCloseParams.set(key, value);
+  }
+  const editCloseQuery = editCloseParams.toString();
+  const editCloseHref = `/calendar${editCloseQuery ? `?${editCloseQuery}` : ""}`;
+
   const monthKey = `${y}-${String(m).padStart(2, "0")}`;
   const monthStays = stays.filter(
     (s) => s.start <= `${monthKey}-31` && s.end >= `${monthKey}-01`
@@ -133,16 +146,9 @@ export default async function CalendarPage({
       <PageHeader title="Calendar" />
 
       <section id="upcoming-stays" className="card mb-5 scroll-mt-6 p-3 md:p-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <div>
-            <p className="section-label">Upcoming stays</p>
-            <h2 className="font-display mt-0.5 text-lg">Who is using Paine Pointe</h2>
-          </div>
-          {editor ? (
-            <Link href="#plan" className="text-xs font-semibold text-water hover:text-deep-2">
-              Plan a stay
-            </Link>
-          ) : null}
+        <div>
+          <p className="section-label">Upcoming stays</p>
+          <h2 className="font-display mt-0.5 text-lg">Who is using Paine Pointe</h2>
         </div>
         <ul className="mt-1">
           {visibleUpcoming.map((s) => (
@@ -182,6 +188,43 @@ export default async function CalendarPage({
           </div>
         ) : null}
       </section>
+
+      {stayToEdit ? (
+        <section
+          id="edit-stay"
+          className="mb-5 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4"
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 17 17"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="2" y="3.5" width="13" height="11.5" rx="1.5" />
+                <path d="M5 2v3M12 2v3M2 7h13M8.5 9v4M6.5 11h4" />
+              </svg>
+            </span>
+            <div>
+              <p className="section-label text-water">Edit stay</p>
+              <h2 className="font-display mt-0.5 text-xl">{stayToEdit.label}</h2>
+            </div>
+          </div>
+          <EditStayForm
+            households={households}
+            stay={stayToEdit}
+            closeHref={editCloseHref}
+          />
+        </section>
+      ) : null}
 
       {editor ? (
         <details

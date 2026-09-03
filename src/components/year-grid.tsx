@@ -73,11 +73,18 @@ export function YearGrid({
                   stay?.label,
                   care ? `Preventive care: ${care.task}` : null,
                 ].filter(Boolean).join(" · ") || undefined;
+                const editorHref = stay
+                  ? `/calendar?view=year&y=${year}&editStay=${stay.id}#edit-stay`
+                  : `/calendar?view=year&y=${year}&start=${dayIso}#plan`;
+                const editorLabel = stay
+                  ? `Edit stay: ${stay.label}`
+                  : `Plan a stay beginning ${dayIso}`;
+
                 return planningEnabled ? (
                   <Link
                     key={dayIso}
-                    href={`/calendar?view=year&y=${year}&start=${dayIso}#plan`}
-                    aria-label={`Plan a stay beginning ${dayIso}`}
+                    href={editorHref}
+                    aria-label={editorLabel}
                     title={title}
                     className={dayClassName}
                     style={dayStyle}

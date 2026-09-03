@@ -47,6 +47,7 @@ export default async function AdminPage() {
     stayTemplates,
     stays,
     stayChecklistItems,
+    houseStatusRow,
   ] = await Promise.all([
     getDb()
       .select()
@@ -76,7 +77,11 @@ export default async function AdminPage() {
         asc(schema.stayChecklistItems.phase),
         asc(schema.stayChecklistItems.position)
       ),
+    getDb().query.settings.findFirst({
+      where: eq(schema.settings.key, "house_status"),
+    }),
   ]);
+  const currentHouseStatus = houseStatusRow?.value ?? "Ready";
   const householdsById = new Map(
     households.map((household) => [household.id, household])
   );
@@ -107,135 +112,49 @@ export default async function AdminPage() {
       <PageHeader title="Admin" action={<span className="chip chip-whenever">Admin only</span>} />
       <AdminTabs active="admin" />
 
-      <section className="card mb-4 p-4 sm:mb-6 sm:p-6">
-        <p className="section-label">House status</p>
-        <h2 className="font-display text-2xl mt-1">Shown to everyone</h2>
-        <form action={setHouseStatus} className="mt-4 flex items-center gap-2">
-          <input
-            name="value"
-            required
-            placeholder="Ready"
-            maxLength={200}
-            className="field flex-1"
-          />
-          <button type="submit" className="btn btn-quiet shrink-0">
+      <details className="group card mb-4 sm:mb-6">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-3">
+            <span className="section-label">House status</span>
+            <span className="chip chip-ready">{currentHouseStatus}</span>
+          </span>
+          <span className="flex shrink-0 items-center gap-2 text-sm font-semibold text-water">
             Update
-          </button>
-        </form>
-        <p className="mt-2 text-xs text-ink-faint">
-          Keep it short: Ready, Winterized, Water off, Under repair.
-        </p>
-      </section>
-
-      <StayChecklistTemplates templates={stayTemplates} />
-
-      <CollapsibleCard
-        label="Visit records"
-        title="Past check-in and check-out progress"
-        description="Open a past visit to see which tasks were completed, by whom, and when."
-      >
-        <ul className="divide-y divide-sand-line">
-          {pastStays.map((stay) => {
-            const items = checklistItemsByStay.get(stay.id) ?? [];
-            const done = items.filter((item) => item.checkedAt).length;
-            return (
-              <li
-                key={`record-${stay.id}`}
-                className="flex flex-wrap items-center gap-3 py-3 first:pt-0"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{stay.label}</p>
-                  <p className="text-xs text-ink-soft">
-                    {fmtRange(stay.start, stay.end)}
-                  </p>
-                </div>
-                <span
-                  className={`chip ${
-                    items.length > 0 && done === items.length
-                      ? "chip-ready"
-                      : "chip-whenever"
-                  }`}
-                >
-                  {done} of {items.length}
-                </span>
-                <Link
-                  href={`/calendar/${stay.id}/checklist`}
-                  className="text-sm font-semibold text-water hover:text-deep-2"
-                >
-                  View record
-                </Link>
-              </li>
-            );
-          })}
-          {pastStays.length === 0 ? (
-            <li className="py-3 text-sm text-ink-soft">No past visits yet.</li>
-          ) : null}
-        </ul>
-      </CollapsibleCard>
-
-      {/* Pending access requests. Only rendered when someone is waiting, so
-          the page stays quiet the rest of the time. */}
-      {requests.length > 0 ? (
-        <CollapsibleCard
-          id="requests"
-          className="border-rust"
-          label="Waiting on you"
-          title={`${requests.length} ${
-            requests.length === 1 ? "person wants" : "people want"
-          } in`}
-        >
-          <ul className="mt-4">
-            {requests.map((r) => (
-              <li
-                key={r.id}
-                className="border-t border-sand-line py-4 first:border-0 first:pt-0"
-              >
-                <p className="font-semibold">{r.name}</p>
-                <p className="text-sm text-ink-soft">{r.email}</p>
-                {r.message ? (
-                  <p className="mt-2 text-sm">{r.message}</p>
-                ) : null}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <form action={approveRequest} className="flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="id" value={r.id} />
-                    <select name="role" defaultValue="family" className="field w-full py-2 text-sm sm:w-44">
-                      {ROLES.map((role) => (
-                        <option key={role.value} value={role.value}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select name="householdId" defaultValue="" className="field w-full py-2 text-sm sm:w-44">
-                      <option value="">No household</option>
-                      {households.map((h) => (
-                        <option key={h.id} value={h.id}>
-                          {h.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="submit" className="btn btn-primary py-2">
-                      Approve
-                    </button>
-                  </form>
-                  <form action={declineRequest}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <button
-                      type="submit"
-                      className="text-xs font-medium text-ink-faint hover:text-rust"
-                    >
-                      Decline
-                    </button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-xs text-ink-faint">
-            Approving creates the account and emails them a link to set their
-            own password.
+            <svg
+              aria-hidden
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform group-open:rotate-180"
+            >
+              <path d="m3 5 4 4 4-4" />
+            </svg>
+          </span>
+        </summary>
+        <div className="border-t border-sand-line p-4 pt-3">
+          <form action={setHouseStatus} className="flex items-center gap-2">
+            <input
+              name="value"
+              required
+              defaultValue={currentHouseStatus}
+              placeholder="Ready"
+              maxLength={200}
+              className="field flex-1"
+            />
+            <button type="submit" className="btn btn-quiet shrink-0">
+              Update
+            </button>
+          </form>
+          <p className="mt-2 text-xs text-ink-faint">
+            Shown to everyone. Keep it short: Ready, Winterized, Water off, Under repair.
           </p>
-        </CollapsibleCard>
-      ) : null}
+        </div>
+      </details>
 
       {/* Family accounts */}
       <CollapsibleCard
@@ -410,6 +329,116 @@ export default async function AdminPage() {
           </form>
         </div>
       </CollapsibleCard>
+
+      <StayChecklistTemplates templates={stayTemplates} />
+
+      <CollapsibleCard
+        label="Visit records"
+        title="Past check-in and check-out progress"
+        description="Open a past visit to see which tasks were completed, by whom, and when."
+      >
+        <ul className="divide-y divide-sand-line">
+          {pastStays.map((stay) => {
+            const items = checklistItemsByStay.get(stay.id) ?? [];
+            const done = items.filter((item) => item.checkedAt).length;
+            return (
+              <li
+                key={`record-${stay.id}`}
+                className="flex flex-wrap items-center gap-3 py-3 first:pt-0"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{stay.label}</p>
+                  <p className="text-xs text-ink-soft">
+                    {fmtRange(stay.start, stay.end)}
+                  </p>
+                </div>
+                <span
+                  className={`chip ${
+                    items.length > 0 && done === items.length
+                      ? "chip-ready"
+                      : "chip-whenever"
+                  }`}
+                >
+                  {done} of {items.length}
+                </span>
+                <Link
+                  href={`/calendar/${stay.id}/checklist`}
+                  className="text-sm font-semibold text-water hover:text-deep-2"
+                >
+                  View record
+                </Link>
+              </li>
+            );
+          })}
+          {pastStays.length === 0 ? (
+            <li className="py-3 text-sm text-ink-soft">No past visits yet.</li>
+          ) : null}
+        </ul>
+      </CollapsibleCard>
+
+      {/* Pending access requests. Only rendered when someone is waiting, so
+          the page stays quiet the rest of the time. */}
+      {requests.length > 0 ? (
+        <CollapsibleCard
+          id="requests"
+          className="border-rust"
+          label="Waiting on you"
+          title={`${requests.length} ${
+            requests.length === 1 ? "person wants" : "people want"
+          } in`}
+        >
+          <ul className="mt-4">
+            {requests.map((r) => (
+              <li
+                key={r.id}
+                className="border-t border-sand-line py-4 first:border-0 first:pt-0"
+              >
+                <p className="font-semibold">{r.name}</p>
+                <p className="text-sm text-ink-soft">{r.email}</p>
+                {r.message ? (
+                  <p className="mt-2 text-sm">{r.message}</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <form action={approveRequest} className="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="id" value={r.id} />
+                    <select name="role" defaultValue="family" className="field w-full py-2 text-sm sm:w-44">
+                      {ROLES.map((role) => (
+                        <option key={role.value} value={role.value}>
+                          {role.label}
+                        </option>
+                      ))}
+                    </select>
+                    <select name="householdId" defaultValue="" className="field w-full py-2 text-sm sm:w-44">
+                      <option value="">No household</option>
+                      {households.map((h) => (
+                        <option key={h.id} value={h.id}>
+                          {h.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn btn-primary py-2">
+                      Approve
+                    </button>
+                  </form>
+                  <form action={declineRequest}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button
+                      type="submit"
+                      className="text-xs font-medium text-ink-faint hover:text-rust"
+                    >
+                      Decline
+                    </button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-ink-faint">
+            Approving creates the account and emails them a link to set their
+            own password.
+          </p>
+        </CollapsibleCard>
+      ) : null}
 
       {/* Storage and backups */}
       <CollapsibleCard
