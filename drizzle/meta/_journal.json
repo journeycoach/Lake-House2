@@ -50,6 +50,13 @@
       "when": 1788384273839,
       "tag": "0006_allow_user_removal_with_history",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788394340589,
+      "tag": "0007_reset_attempts",
+      "breakpoints": true
     }
   ]
 }
