@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/page-header";
 import { AdminTabs } from "@/components/admin-tabs";
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { StayChecklistTemplates } from "./stay-checklist-templates";
+import { PersonRow } from "./person-row";
 import {
   addUser,
   resetPassword,
@@ -248,37 +249,29 @@ export default async function AdminPage() {
               ? householdsById.get(u.householdId)
               : undefined;
             return (
-              <li
+              <PersonRow
                 key={u.id}
-                className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-sand-line py-4 first:border-0"
+                name={u.name}
+                email={u.email}
+                isYou={u.id === admin.id}
+                roleLabel={roleLabel(u.role)}
+                colorDot={
+                  <span
+                    aria-hidden
+                    className="h-3 w-3 shrink-0 rounded-full border border-sand-line"
+                    style={{
+                      background: household
+                        ? householdVar(household.color)
+                        : "transparent",
+                    }}
+                  />
+                }
               >
-                <div className="min-w-0 flex-1 basis-48">
-                  <p className="flex items-center gap-2 font-semibold">
-                    <span
-                      aria-hidden
-                      className="h-3 w-3 shrink-0 rounded-full border border-sand-line"
-                      style={{
-                        background: household
-                          ? householdVar(household.color)
-                          : "transparent",
-                      }}
-                    />
-                    <span>
-                      {u.name}
-                      {u.id === admin.id ? (
-                        <span className="ml-2 text-xs font-medium text-ink-faint">
-                          you
-                        </span>
-                      ) : null}
-                    </span>
-                  </p>
-                  <p className="truncate text-sm text-ink-soft">{u.email}</p>
-                  <p className="text-xs text-ink-faint">
-                    {household
-                      ? `${household.name} household color`
-                      : "No household color"}
-                  </p>
-                </div>
+                <p className="text-xs text-ink-faint">
+                  {household
+                    ? `${household.name} household color`
+                    : "No household color"}
+                </p>
                 <form action={setUserColor} className="w-full">
                   <input type="hidden" name="userId" value={u.id} />
                   <fieldset className="flex flex-wrap items-center gap-3 rounded-lg bg-sand/40 px-3 py-2">
@@ -361,9 +354,7 @@ export default async function AdminPage() {
                     </button>
                   </form>
                 </div>
-              ) : (
-                <span className="chip chip-whenever">{roleLabel(u.role)}</span>
-              )}
+              ) : null}
               <form action={resetPassword} className="flex w-full items-center gap-2 sm:w-auto">
                 <input type="hidden" name="id" value={u.id} />
                 <input
@@ -377,7 +368,7 @@ export default async function AdminPage() {
                   Reset
                 </button>
               </form>
-              </li>
+              </PersonRow>
             );
           })}
         </ul>

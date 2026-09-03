@@ -97,7 +97,12 @@ export async function addBlock(formData: FormData) {
   const user = await requireEditor();
   const sectionId = Number(formData.get("sectionId"));
   const kind = String(formData.get("kind"));
-  const value = readText(formData.get("value"), 4000);
+  // Photo values are normally a short Blob URL, but fall back to an
+  // embedded data: URI when no Blob store is connected (see
+  // add-block.tsx) — those need much more room than ordinary text.
+  const rawValue = String(formData.get("value") ?? "").trim();
+  const valueCap = kind === "photo" && rawValue.startsWith("data:image/") ? 4_000_000 : 4000;
+  const value = readText(formData.get("value"), valueCap);
   if (!sectionId || !KINDS.includes(kind) || !value) return;
 
   const [last] = await getDb()
@@ -122,7 +127,11 @@ export async function addBlock(formData: FormData) {
 export async function saveBlock(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
-  const value = readText(formData.get("value"), 4000);
+  // Same data: URI allowance as addBlock — an existing photo block's
+  // value can be a large embedded image when no Blob store is connected.
+  const rawValue = String(formData.get("value") ?? "").trim();
+  const valueCap = rawValue.startsWith("data:image/") ? 4_000_000 : 4000;
+  const value = readText(formData.get("value"), valueCap);
   if (!id || !value) return;
   await getDb()
     .update(schema.guideBlocks)
