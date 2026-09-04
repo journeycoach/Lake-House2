@@ -9,6 +9,7 @@ import {
   updateEquipment,
 } from "./equipment-actions";
 import { EquipmentCard } from "./equipment-card";
+import { CollapsibleEditForm } from "@/components/collapsible-edit-form";
 
 type Equipment = typeof schema.equipment.$inferSelect;
 type ServiceRecord = typeof schema.serviceRecords.$inferSelect;
@@ -169,7 +170,7 @@ export function EquipmentSection({
                         <path d="m3 5 4 4 4-4" />
                       </svg>
                     </summary>
-                    <form
+                    <CollapsibleEditForm
                       action={updateEquipment}
                       className="mt-3 grid gap-2 sm:grid-cols-2"
                     >
@@ -255,7 +256,7 @@ export function EquipmentSection({
                           Save changes
                         </SubmitButton>
                       </div>
-                    </form>
+                    </CollapsibleEditForm>
                   </details>
                 ) : null}
 
