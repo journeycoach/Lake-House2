@@ -10,7 +10,7 @@ import { readText } from "@/lib/forms";
 import { sendTemplateMail } from "@/lib/mail";
 import { siteUrl } from "@/lib/email-template";
 
-export type StayFormState = { error?: string; conflict?: string };
+export type StayFormState = { error?: string; conflict?: string; added?: boolean };
 
 function readStay(formData: FormData) {
   const label = readText(formData.get("label"), 200);
@@ -144,7 +144,7 @@ export async function createStay(
   if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");
   revalidatePath("/");
-  return {};
+  return { added: true };
 }
 
 export async function updateStay(

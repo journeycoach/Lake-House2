@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createStay,
@@ -45,9 +45,14 @@ export function StayForm({
     initial
   );
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.added) formRef.current?.reset();
+  }, [state.added]);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       {stay ? <input type="hidden" name="id" value={stay.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -150,6 +155,11 @@ export function StayForm({
       </div>
       {state.error ? (
         <p className="text-sm font-medium text-rust">{state.error}</p>
+      ) : null}
+      {state.added ? (
+        <p aria-live="polite" className="text-sm font-medium text-sage">
+          Added.
+        </p>
       ) : null}
       {state.conflict ? (
         <div className="rounded-lh border border-amber/40 bg-amber/10 p-3 text-sm">

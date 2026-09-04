@@ -35,10 +35,15 @@ async function normalizeGroup(done: number) {
   );
 }
 
-export async function addItem(formData: FormData) {
+export type AddItemState = { error?: string; added?: boolean };
+
+export async function addItem(
+  _prev: AddItemState,
+  formData: FormData
+): Promise<AddItemState> {
   const user = await requireEditor();
   const title = readText(formData.get("title"), 200);
-  if (!title) return;
+  if (!title) return { error: "Give the item a name." };
   const rows = await groupItems(0);
   const position = Math.max(0, ...rows.map((r) => r.position)) + 1;
   await getDb().insert(schema.checklist).values({
@@ -50,6 +55,7 @@ export async function addItem(formData: FormData) {
   });
   await logActivity(user, "added a checklist item", title);
   refresh();
+  return { added: true };
 }
 
 export async function updateItem(formData: FormData) {
