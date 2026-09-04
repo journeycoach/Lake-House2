@@ -276,7 +276,11 @@ export default async function CalendarPage({
             </span>
           </summary>
           <div className="mt-4 border-t border-sand-line pt-4">
-            <StayForm households={households} defaultDate={selectedStart} />
+            <StayForm
+              households={households}
+              defaultDate={selectedStart}
+              closeDetailsId="plan"
+            />
           </div>
         </details>
       ) : null}
