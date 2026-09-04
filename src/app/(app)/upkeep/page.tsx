@@ -9,6 +9,7 @@ import { maintenanceItems, openFixit } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { setFixitStatus, removeFixit, updateFixit } from "./fixit-actions";
+import { CollapsibleEditForm } from "@/components/collapsible-edit-form";
 import {
   addSchedule,
   updateMaintenance,
@@ -224,7 +225,7 @@ export default async function UpkeepPage({
                       </span>
                       <Chevron />
                     </summary>
-                    <form
+                    <CollapsibleEditForm
                       action={updateFixit}
                       className="mt-3 grid gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-2"
                     >
@@ -295,7 +296,7 @@ export default async function UpkeepPage({
                           Save changes
                         </SubmitButton>
                       </div>
-                    </form>
+                    </CollapsibleEditForm>
                   </details>
                 ) : (
                   <>
@@ -550,7 +551,7 @@ export default async function UpkeepPage({
                       <span className="min-w-0 flex-1">{summary}</span>
                       <Chevron className="mt-1" />
                     </summary>
-                    <form
+                    <CollapsibleEditForm
                       action={updateMaintenance}
                       className="mt-3 grid gap-3 border-t border-sand-line pt-3 sm:grid-cols-2"
                     >
@@ -635,7 +636,7 @@ export default async function UpkeepPage({
                           Save changes
                         </SubmitButton>
                       </div>
-                    </form>
+                    </CollapsibleEditForm>
                   </details>
                 ) : (
                   <div className="mt-3 flex-1">{summary}</div>

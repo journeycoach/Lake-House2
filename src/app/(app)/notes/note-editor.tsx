@@ -18,7 +18,16 @@ export function NoteEditor({
   cancelHtmlFor: string;
 }) {
   return (
-    <form action={updateNote} className="space-y-3">
+    <form
+      action={async (formData: FormData) => {
+        await updateNote(formData);
+        const checkbox = document.getElementById(
+          cancelHtmlFor
+        ) as HTMLInputElement | null;
+        if (checkbox) checkbox.checked = false;
+      }}
+      className="space-y-3"
+    >
       <input type="hidden" name="id" value={id} />
       <RichTextEditor initialHtml={initialHtml} />
       <div className="flex flex-wrap items-end gap-3">

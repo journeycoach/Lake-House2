@@ -3,10 +3,9 @@ import { requireUser } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
 import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { SubmitButton } from "@/components/submit-button";
 import { AddItemForm } from "./add-item-form";
+import { EditableChecklistItem } from "./edit-item";
 import {
-  updateItem,
   toggleItem,
   moveItem,
 } from "./actions";
@@ -22,20 +21,6 @@ export default async function ChecklistPage() {
 
   function itemRows(rows: typeof items) {
     return rows.map((item, i) => {
-      const details = (
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <p
-            className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
-          >
-            {item.title}
-          </p>
-          {item.done ? (
-            <span className="text-xs text-ink-faint">
-              Checked by {item.checkedBy ?? "Unknown"}
-            </span>
-          ) : null}
-        </div>
-      );
       return (
       <li
         key={item.id}
@@ -76,32 +61,21 @@ export default async function ChecklistPage() {
           </button>
         </form>
         {editor ? (
-          <input
-            id={`edit-item-${item.id}`}
-            type="checkbox"
-            className="peer sr-only"
-          />
-        ) : null}
-        {editor ? (
-          <label
-            htmlFor={`edit-item-${item.id}`}
-            className="-my-1 min-w-0 flex-1 basis-48 cursor-pointer rounded-md py-1 hover:bg-mist/60"
-          >
-            {details}
-            {item.details ? (
-              <p
-                className={`text-sm ${
-                  item.done ? "text-ink-faint line-through" : "text-ink-soft"
-                }`}
-              >
-                {item.details}
-              </p>
-            ) : null}
-            <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
-          </label>
+          <EditableChecklistItem item={item} />
         ) : (
           <div className="min-w-0 flex-1 basis-48">
-            {details}
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <p
+                className={`font-semibold ${item.done ? "text-ink-faint line-through" : ""}`}
+              >
+                {item.title}
+              </p>
+              {item.done ? (
+                <span className="text-xs text-ink-faint">
+                  Checked by {item.checkedBy ?? "Unknown"}
+                </span>
+              ) : null}
+            </div>
             {item.details ? (
               <p
                 className={`text-sm ${
@@ -208,48 +182,6 @@ export default async function ChecklistPage() {
             </button>
           </form>
         </div>
-        {editor ? (
-          <form
-            action={updateItem}
-            className="hidden w-full gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 peer-checked:grid sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto]"
-          >
-            <input type="hidden" name="id" value={item.id} />
-            <label className="min-w-0">
-              <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                Item
-              </span>
-              <input
-                name="title"
-                required
-                maxLength={200}
-                defaultValue={item.title}
-                className="field"
-              />
-            </label>
-            <label className="min-w-0">
-              <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                Details
-              </span>
-              <input
-                name="details"
-                maxLength={4000}
-                defaultValue={item.details ?? ""}
-                className="field"
-              />
-            </label>
-            <div className="flex items-end gap-3">
-              <SubmitButton className="btn btn-primary whitespace-nowrap">
-                Save changes
-              </SubmitButton>
-              <label
-                htmlFor={`edit-item-${item.id}`}
-                className="cursor-pointer pb-2 text-xs font-medium text-ink-faint hover:text-rust"
-              >
-                Cancel
-              </label>
-            </div>
-          </form>
-        ) : null}
       </li>
       );
     });

@@ -29,17 +29,25 @@ export function StayForm({
   stay,
   onDone,
   defaultDate,
+  closeDetailsId,
 }: {
   households: Household[];
   stay?: EditableStay;
   onDone?: () => void;
   defaultDate?: string;
+  closeDetailsId?: string;
 }) {
   const action = stay ? updateStay : createStay;
   const [state, formAction, pending] = useActionState(
     async (prev: StayFormState, formData: FormData) => {
       const result = await action(prev, formData);
-      if (!result.error && !result.conflict) onDone?.();
+      if (!result.error && !result.conflict) {
+        onDone?.();
+        if (closeDetailsId) {
+          const details = document.getElementById(closeDetailsId);
+          if (details instanceof HTMLDetailsElement) details.open = false;
+        }
+      }
       return result;
     },
     initial

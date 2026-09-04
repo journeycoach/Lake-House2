@@ -30,6 +30,8 @@ export function ReportIssueForm() {
           await reportIssue(formData);
           formRef.current?.reset();
           setAdded(true);
+          const details = document.getElementById("report-an-issue");
+          if (details instanceof HTMLDetailsElement) details.open = false;
         } catch (caught) {
           const message = (caught as Error).message;
           setError(
