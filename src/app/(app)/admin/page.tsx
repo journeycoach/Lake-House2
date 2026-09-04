@@ -284,7 +284,7 @@ export default async function AdminPage() {
                   className="field flex-1 py-2 text-sm sm:w-44"
                 />
                 <button type="submit" className="btn btn-quiet shrink-0 py-2">
-                  Reset
+                  Save
                 </button>
               </form>
               </PersonRow>
