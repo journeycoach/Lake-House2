@@ -4,8 +4,8 @@ import { canEdit } from "@/lib/roles";
 import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
+import { AddItemForm } from "./add-item-form";
 import {
-  addItem,
   updateItem,
   toggleItem,
   moveItem,
@@ -269,39 +269,7 @@ export default async function ChecklistPage() {
           and reorder them — click an item to edit it.
         </p>
 
-        <form
-          action={addItem}
-          className={`mt-4 gap-3 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
-            editor ? "grid" : "hidden"
-          }`}
-        >
-          <label className="min-w-0">
-            <span className="mb-1 block text-xs font-semibold text-ink-soft">
-              Item
-            </span>
-            <input
-              name="title"
-              required
-              maxLength={200}
-              className="field"
-              placeholder="Paper towels"
-            />
-          </label>
-          <label className="min-w-0">
-            <span className="mb-1 block text-xs font-semibold text-ink-soft">
-              Details
-            </span>
-            <input
-              name="details"
-              maxLength={4000}
-              className="field"
-              placeholder="Quantity, brand, or location"
-            />
-          </label>
-          <SubmitButton className="btn btn-primary self-end whitespace-nowrap">
-            Add to list
-          </SubmitButton>
-        </form>
+        <AddItemForm editor={editor} />
 
         <ul className="mt-4">
           {itemRows(openItems)}

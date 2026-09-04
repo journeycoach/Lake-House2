@@ -9,6 +9,7 @@ export function ReportIssueForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [added, setAdded] = useState(false);
 
   return (
     <form
@@ -16,6 +17,7 @@ export function ReportIssueForm() {
       action={async (formData) => {
         setSaving(true);
         setError(null);
+        setAdded(false);
         try {
           const file = fileRef.current?.files?.[0];
           if (file) {
@@ -27,6 +29,7 @@ export function ReportIssueForm() {
           }
           await reportIssue(formData);
           formRef.current?.reset();
+          setAdded(true);
         } catch (caught) {
           const message = (caught as Error).message;
           setError(
@@ -128,6 +131,11 @@ export function ReportIssueForm() {
       {error ? (
         <p aria-live="polite" className="text-sm font-medium text-rust">
           {error}
+        </p>
+      ) : null}
+      {added && !error ? (
+        <p aria-live="polite" className="text-sm font-medium text-sage">
+          Added.
         </p>
       ) : null}
     </form>
