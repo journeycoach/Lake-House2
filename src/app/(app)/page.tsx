@@ -127,7 +127,6 @@ export default async function HomePage() {
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-stretch">
       <section className="card p-4 sm:p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">
           <p className="section-label">Who is at the lake</p>
@@ -187,11 +186,6 @@ export default async function HomePage() {
           </p>
         ) : null}
       </section>
-
-      <Suspense fallback={<LiveWeatherFallback />}>
-        <LiveWeatherCard />
-      </Suspense>
-      </div>
 
       {hasAttention ? (
         <section className="card mt-4 p-4 sm:mt-6 sm:p-5">
@@ -261,6 +255,12 @@ export default async function HomePage() {
           </ul>
         </section>
       ) : null}
+
+      <div className="mt-4 sm:mt-6">
+        <Suspense fallback={<LiveWeatherFallback />}>
+          <LiveWeatherCard />
+        </Suspense>
+      </div>
 
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
