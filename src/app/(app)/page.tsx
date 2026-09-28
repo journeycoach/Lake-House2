@@ -98,7 +98,7 @@ export default async function HomePage() {
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <Link
             href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
-            className="btn btn-quiet min-w-0 px-3 text-xs sm:text-xs"
+            className="btn btn-quiet min-w-0 bg-card px-3 text-xs sm:text-xs"
           >
             Who&apos;s at the lake?{" "}
             <span className="font-semibold text-ink">
