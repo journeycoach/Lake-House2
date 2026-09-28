@@ -13,6 +13,7 @@ import { CollapsibleEditForm } from "@/components/collapsible-edit-form";
 import {
   addSchedule,
   updateMaintenance,
+  completeMaintenance,
   removeSchedule,
 } from "./maintenance-actions";
 import { EquipmentSection } from "./equipment-section";
@@ -507,11 +508,49 @@ export default async function UpkeepPage({
                 className="card flex scroll-mt-6 flex-col p-4 sm:p-5"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span
-                    className={`chip ${overdue ? "chip-urgent" : dueSoon ? "chip-soon" : "chip-whenever"}`}
-                  >
-                    {overdue ? "Overdue" : dueSoon ? "Due soon" : "Upcoming"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {editor ? (
+                      <form action={completeMaintenance} className="shrink-0">
+                        <input type="hidden" name="id" value={m.id} />
+                        <button
+                          type="submit"
+                          aria-label={`Mark "${m.task}" done`}
+                          aria-pressed={!m.nextDue}
+                          disabled={!m.nextDue}
+                          title={
+                            m.nextDue
+                              ? "Mark done"
+                              : "Marked done — set a new due date to schedule it again"
+                          }
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md border transition-colors sm:h-9 sm:w-9 ${
+                            !m.nextDue
+                              ? "border-sage bg-sage text-white"
+                              : "border-sand-line bg-white hover:border-sage hover:bg-mist"
+                          }`}
+                        >
+                          {!m.nextDue ? (
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 10 10"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M1.5 5.5L4 8l4.5-6" />
+                            </svg>
+                          ) : null}
+                        </button>
+                      </form>
+                    ) : null}
+                    <span
+                      className={`chip ${overdue ? "chip-urgent" : dueSoon ? "chip-soon" : m.nextDue ? "chip-whenever" : "chip-ready"}`}
+                    >
+                      {overdue ? "Overdue" : dueSoon ? "Due soon" : m.nextDue ? "Upcoming" : "Done for now"}
+                    </span>
+                  </div>
                   {editor ? (
                     <>
                     <details className="relative sm:hidden">

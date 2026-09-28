@@ -67,6 +67,22 @@ export async function updateMaintenance(formData: FormData) {
   refresh();
 }
 
+export async function completeMaintenance(formData: FormData) {
+  const user = await requireEditor();
+  const id = Number(formData.get("id"));
+  if (!id) return;
+  const item = await getDb().query.maintenance.findFirst({
+    where: eq(schema.maintenance.id, id),
+  });
+  if (!item || !item.nextDue) return;
+  await getDb()
+    .update(schema.maintenance)
+    .set({ nextDue: null })
+    .where(eq(schema.maintenance.id, id));
+  await logActivity(user, "checked off a maintenance task", item.task);
+  refresh();
+}
+
 export async function removeSchedule(formData: FormData) {
   const user = await requireEditor();
   const id = Number(formData.get("id"));
