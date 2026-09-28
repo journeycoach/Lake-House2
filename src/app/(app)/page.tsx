@@ -23,26 +23,21 @@ import {
   LiveWeatherFallback,
 } from "@/components/live-weather-card";
 import { toggleItem } from "./checklist/actions";
-import { QuickActionsMenu } from "./quick-actions";
 
 export default async function HomePage() {
   const user = await requireUser();
   const today = todayISO();
-  const [stays, notes, fixes, checks, maintenance, statusRow] = await Promise.all([
+  const [stays, notes, fixes, checks, maintenance] = await Promise.all([
     allStays(),
     latestNotes(3),
     openFixit(),
     checklistItems(),
     maintenanceItems(),
-    getDb().query.settings.findFirst({
-      where: eq(schema.settings.key, "house_status"),
-    }),
   ]);
 
   const here = staysNow(stays, today);
   const next = staysUpcoming(stays, today)[0];
   const checklistStay = here[0] ?? next;
-  const status = statusRow?.value ?? "Ready";
   const progressByStay = await stayChecklistProgress(here.map((s) => s.id));
 
   // Attention: only the handful of things someone should actually act on.
@@ -100,112 +95,64 @@ export default async function HomePage() {
             Good morning, {user.name}
           </h1>
         </div>
-        <QuickActionsMenu
-          actions={[
-            ...(canEdit(user.effectiveRole)
-              ? [
-                  {
-                    href: "/calendar?plan=open#plan",
-                    label: "Plan a stay",
-                    className: "btn btn-primary min-w-0 px-3 text-xs sm:text-xs",
-                  },
-                  {
-                    href: "/upkeep?tab=fixit&report=open#report-an-issue",
-                    label: "Report an Issue",
-                    className:
-                      "btn min-w-0 bg-water px-3 text-xs text-white hover:bg-deep-2 sm:text-xs",
-                  },
-                ]
-              : []),
-            {
-              href: checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan",
-              label: "Check-in list",
-              className: "btn min-w-0 bg-sage px-3 text-xs text-white hover:bg-deep sm:text-xs",
-            },
-          ]}
-        />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          <Link
+            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
+            className="btn btn-quiet min-w-0 px-3 text-xs sm:text-xs"
+          >
+            Who&apos;s at the lake?{" "}
+            <span className="font-semibold text-ink">
+              {here.length > 0 ? here.map((s) => s.label).join(", ") : "Nobody"}
+            </span>
+          </Link>
+          <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+            {canEdit(user.effectiveRole) ? (
+              <>
+                <Link
+                  href="/calendar?plan=open#plan"
+                  className="btn btn-primary min-w-0 px-2 text-[11px] sm:px-3 sm:text-xs"
+                >
+                  Plan a stay
+                </Link>
+                <Link
+                  href="/upkeep?tab=fixit&report=open#report-an-issue"
+                  className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
+                >
+                  Report an Issue
+                </Link>
+              </>
+            ) : null}
+            <Link
+              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
+              className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
+            >
+              Check-in list
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Hero: three widgets in a row for a simpler, scannable top of page. */}
-      <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
-      <section className="card p-4 sm:p-5 lg:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <p className="section-label">Who is at the lake</p>
-          <span className="chip chip-ready">House is {status.toLowerCase()}</span>
-        </div>
-        {here.length > 0 ? (
-          <div className="mt-2 space-y-4">
-            {here.map((s) => {
-              const progress = progressByStay.get(s.id);
-              return (
-                <div key={s.id}>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <h2 className="font-display text-2xl lg:text-4xl leading-tight">
-                      <span
-                        aria-hidden
-                        className="mr-3 inline-block h-3 w-3 rounded-full align-middle"
-                        style={{ background: householdVar(s.color) }}
-                      />
-                      {s.label}
-                    </h2>
-                    <p className="text-sm text-ink-soft">
-                      Through {fmtDay(s.end)} · {s.adults + s.kids} guest
-                      {s.adults + s.kids === 1 ? "" : "s"}
-                      {s.note ? ` · "${s.note}"` : ""}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/calendar/${s.id}/checklist`}
-                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-water hover:text-deep-2"
-                  >
-                    Visit checklist
-                    {progress && progress.total > 0 ? (
-                      <span
-                        className={`chip ${progress.completed === progress.total ? "chip-ready" : "chip-whenever"}`}
-                      >
-                        {progress.completed} of {progress.total} complete
-                      </span>
-                    ) : null}
-                    <span aria-hidden>→</span>
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="mt-2">
-            <h2 className="font-display text-2xl lg:text-4xl leading-tight">
-              Nobody at the lake right now
-            </h2>
-          </div>
-        )}
-        {next ? (
-          <p className="mt-4 border-t border-sand-line pt-3 text-sm text-ink-soft">
-            Next up: <span className="font-semibold text-ink">{next.label}</span>
-            , arriving {fmtDay(next.start)}
-            {next.note ? ` · "${next.note}"` : ""}
-          </p>
-        ) : null}
-      </section>
-
+      {/* Hero: needs-attention + weather; "who's at the lake" now lives in the header as a compact button. */}
+      <div className="grid gap-2 sm:gap-4 lg:grid-cols-2 lg:items-start">
       {hasAttention ? (
-        <section className="card p-4 sm:p-5">
+        <section className="card p-4 sm:p-6">
           <p className="section-label">Needs attention</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2 space-y-0.5 sm:mt-3 sm:space-y-1">
             {overlaps.map(({ a, b }) => (
               <li key={`overlap-${a.id}-${b.id}`}>
                 <Link
                   href="/calendar"
-                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
                 >
-                  <span className="chip chip-soon">Overlap</span>
-                  <span className="text-sm">
-                    <span className="font-semibold">{a.label}</span> and{" "}
-                    <span className="font-semibold">{b.label}</span> are both at the lake{" "}
+                  <span className="chip chip-soon shrink-0">Overlap</span>
+                  <span className="shrink-0 text-xs font-medium text-ink-soft">
                     {fmtRange(
                       a.start > b.start ? a.start : b.start,
                       a.end < b.end ? a.end : b.end
                     )}
+                  </span>
+                  <span className="truncate text-sm font-semibold">
+                    {a.label} & {b.label}
                   </span>
                 </Link>
               </li>
@@ -214,13 +161,13 @@ export default async function HomePage() {
               <li key={`maint-${item.id}`}>
                 <Link
                   href="/upkeep?tab=maintenance"
-                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
                 >
-                  <span className="chip chip-urgent">Overdue</span>
-                  <span className="text-sm">
-                    <span className="font-semibold">{item.task}</span> was due{" "}
-                    {fmtDay(item.nextDue as string)}
+                  <span className="chip chip-urgent shrink-0">Overdue</span>
+                  <span className="shrink-0 text-xs font-medium text-ink-soft">
+                    due {fmtDay(item.nextDue as string)}
                   </span>
+                  <span className="truncate text-sm font-semibold">{item.task}</span>
                 </Link>
               </li>
             ))}
@@ -228,10 +175,10 @@ export default async function HomePage() {
               <li key={`fix-${f.id}`}>
                 <Link
                   href="/upkeep?tab=fixit"
-                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
                 >
-                  <span className="chip chip-urgent">Urgent</span>
-                  <span className="text-sm">
+                  <span className="chip chip-urgent shrink-0">Urgent</span>
+                  <span className="truncate text-sm">
                     <span className="font-semibold">{f.title}</span>
                     {f.location ? ` · ${f.location}` : ""}
                   </span>
@@ -242,14 +189,13 @@ export default async function HomePage() {
               <li key={`departure-${stay.id}`}>
                 <Link
                   href={`/calendar/${stay.id}/checklist`}
-                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
                 >
-                  <span className="chip chip-urgent">Leaving today</span>
-                  <span className="text-sm">
-                    <span className="font-semibold">{stay.label}</span> has{" "}
-                    {(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0)} departure
-                    task{(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0) === 1 ? "" : "s"} left
+                  <span className="chip chip-urgent shrink-0">Leaving today</span>
+                  <span className="shrink-0 text-xs font-medium text-ink-soft">
+                    {(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0)} left
                   </span>
+                  <span className="truncate text-sm font-semibold">{stay.label}</span>
                 </Link>
               </li>
             ))}

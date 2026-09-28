@@ -191,7 +191,7 @@ async function lakeWeather(): Promise<WeatherResponse | null> {
 
 export function LiveWeatherFallback() {
   return (
-    <div className="ml-auto min-h-32 w-full max-w-[380px] animate-pulse rounded-lh bg-water/15" />
+    <div className="min-h-32 w-full animate-pulse rounded-lh bg-water/15" />
   );
 }
 
@@ -211,7 +211,7 @@ function AlertBanner({ alerts }: { alerts: WeatherAlert[] }) {
   const severe = alertIsSevere(primary.severity);
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white ${
+      className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white sm:px-4 sm:py-2 ${
         severe ? "bg-rust" : "bg-amber"
       }`}
     >
@@ -229,7 +229,7 @@ export async function LiveWeatherCard() {
 
   if (!weather) {
     return (
-      <div className="ml-auto w-full max-w-[380px] overflow-hidden rounded-lh">
+      <div className="w-full overflow-hidden rounded-lh">
         <AlertBanner alerts={alerts} />
         <Link
           href={FORECAST_URL}
@@ -260,7 +260,7 @@ export async function LiveWeatherCard() {
       target="_blank"
       rel="noreferrer"
       aria-label={`Lake Palestine live weather: ${theme.label}, ${Math.round(current.temperature_2m)} degrees. Open the full forecast.`}
-      className="group relative ml-auto block w-full max-w-[380px] overflow-hidden rounded-lh border border-white/20 text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative block w-full overflow-hidden rounded-lh border border-white/20 text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
       style={{ background: theme.background }}
     >
       <AlertBanner alerts={alerts} />
@@ -272,7 +272,7 @@ export async function LiveWeatherCard() {
         aria-hidden
         className="absolute -bottom-20 left-1/3 h-44 w-72 rounded-full bg-deep/20 blur-3xl"
       />
-      <div className="relative p-4">
+      <div className="relative p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75">
@@ -288,16 +288,16 @@ export async function LiveWeatherCard() {
           </span>
         </div>
 
-        <div className="mt-3 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-3 sm:mt-3">
           <span
             role="img"
             aria-label={theme.label}
-            className="text-4xl drop-shadow-sm"
+            className="text-3xl drop-shadow-sm sm:text-4xl"
           >
             {theme.icon}
           </span>
           <div className="flex min-w-0 flex-1 items-end gap-2">
-            <p className="font-display text-4xl leading-none">
+            <p className="font-display text-3xl leading-none sm:text-4xl">
               {Math.round(current.temperature_2m)}°
             </p>
             <div className="min-w-0 pb-0.5">
@@ -312,7 +312,7 @@ export async function LiveWeatherCard() {
           </div>
         </div>
 
-        <div className="mt-3 flex gap-4 border-t border-white/20 pt-2 text-xs text-white/75">
+        <div className="mt-2 flex gap-4 border-t border-white/20 pt-2 text-xs text-white/75 sm:mt-3">
           <span>Humidity {Math.round(current.relative_humidity_2m)}%</span>
           <span>Wind {Math.round(current.wind_speed_10m)} mph</span>
         </div>
