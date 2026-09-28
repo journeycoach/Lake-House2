@@ -126,7 +126,8 @@ export default async function HomePage() {
         />
       </div>
 
-      {/* Hero: people first. House status is a small chip, on purpose. */}
+      {/* Hero: three widgets in a row for a simpler, scannable top of page. */}
+      <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
       <section className="card p-4 sm:p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">
           <p className="section-label">Who is at the lake</p>
@@ -188,7 +189,7 @@ export default async function HomePage() {
       </section>
 
       {hasAttention ? (
-        <section className="card mt-4 p-4 sm:mt-6 sm:p-5">
+        <section className="card p-4 sm:p-5">
           <p className="section-label">Needs attention</p>
           <ul className="mt-3 space-y-2">
             {overlaps.map(({ a, b }) => (
@@ -256,10 +257,9 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <div className="mt-4 sm:mt-6">
-        <Suspense fallback={<LiveWeatherFallback />}>
-          <LiveWeatherCard />
-        </Suspense>
+      <Suspense fallback={<LiveWeatherFallback />}>
+        <LiveWeatherCard />
+      </Suspense>
       </div>
 
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
