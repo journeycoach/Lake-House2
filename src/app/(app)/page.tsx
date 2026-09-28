@@ -342,9 +342,12 @@ export default async function HomePage() {
               {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}
             </Link>
           </div>
-          <ul className="mt-4 space-y-3">
-            {fixes.slice(0, 3).map((f) => (
-              <li key={f.id} className="flex items-center justify-between gap-3">
+          <ul className="mt-4">
+            {fixes.slice(0, 5).map((f) => (
+              <li
+                key={f.id}
+                className="flex items-center justify-between gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{f.title}</p>
                   <p className="text-xs text-ink-soft">
@@ -356,6 +359,14 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+          {fixes.length > 5 ? (
+            <Link
+              href="/upkeep"
+              className="mt-4 inline-block text-sm font-semibold text-water hover:text-deep-2"
+            >
+              View all {fixes.length} issues →
+            </Link>
+          ) : null}
         </section>
 
         {/* Notes */}
