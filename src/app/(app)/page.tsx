@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
@@ -13,10 +14,16 @@ import {
   openFixit,
   staysNow,
   staysUpcoming,
+  stayChecklistProgress,
 } from "@/lib/queries";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
 import { RichNote } from "@/components/rich-note";
+import {
+  LiveWeatherCard,
+  LiveWeatherFallback,
+} from "@/components/live-weather-card";
 import { toggleItem } from "./checklist/actions";
+import { QuickActionsMenu } from "./quick-actions";
 
 export default async function HomePage() {
   const user = await requireUser();
@@ -36,6 +43,38 @@ export default async function HomePage() {
   const next = staysUpcoming(stays, today)[0];
   const checklistStay = here[0] ?? next;
   const status = statusRow?.value ?? "Ready";
+  const progressByStay = await stayChecklistProgress(here.map((s) => s.id));
+
+  // Attention: only the handful of things someone should actually act on.
+  const upcomingOrCurrent = stays
+    .filter((s) => s.end >= today)
+    .sort((a, b) => a.start.localeCompare(b.start));
+  const overlaps: { a: (typeof stays)[number]; b: (typeof stays)[number] }[] = [];
+  for (let i = 0; i < upcomingOrCurrent.length; i++) {
+    for (let j = i + 1; j < upcomingOrCurrent.length; j++) {
+      const a = upcomingOrCurrent[i];
+      const b = upcomingOrCurrent[j];
+      if (a.householdId !== b.householdId && a.start <= b.end && b.start <= a.end) {
+        overlaps.push({ a, b });
+      }
+    }
+  }
+  const overdueMaintenance = maintenance.filter(
+    (item) => item.nextDue && item.nextDue < today
+  );
+  const urgentFixes = fixes.filter((f) => f.priority === "urgent");
+  const departingToday = here.filter((s) => s.end === today);
+  const incompleteDepartures = departingToday
+    .map((s) => ({ stay: s, progress: progressByStay.get(s.id) }))
+    .filter(
+      ({ progress }) =>
+        progress && progress.checkoutTotal > 0 && progress.checkoutCompleted < progress.checkoutTotal
+    );
+  const hasAttention =
+    overlaps.length > 0 ||
+    overdueMaintenance.length > 0 ||
+    urgentFixes.length > 0 ||
+    incompleteDepartures.length > 0;
   const { y, m } = (() => {
     const t = parseISO(today);
     return { y: t.y, m: t.m };
@@ -49,11 +88,8 @@ export default async function HomePage() {
   const monthMaintenance = maintenance.filter((item) =>
     item.nextDue?.startsWith(monthKey)
   );
-  const currentChecks = checks.filter((check) => !check.done).slice(0, 5);
-  const recentCompletedChecks = checks
-    .filter((check) => check.done)
-    .sort((a, b) => b.position - a.position)
-    .slice(0, 5);
+  const openChecks = checks.filter((check) => !check.done);
+  const currentChecks = openChecks.slice(0, 4);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -64,60 +100,77 @@ export default async function HomePage() {
             Good morning, {user.name}
           </h1>
         </div>
-        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
-          {canEdit(user.effectiveRole) ? (
-            <>
-              <Link
-                href="/calendar?plan=open#plan"
-                className="btn btn-primary min-w-0 px-2 text-[11px] sm:px-3 sm:text-xs"
-              >
-                Plan a stay
-              </Link>
-              <Link
-                href="/upkeep?tab=fixit&report=open#report-an-issue"
-                className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
-              >
-                Report an Issue
-              </Link>
-            </>
-          ) : null}
-          <Link
-            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
-            className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
-          >
-            Check-in list
-          </Link>
-        </div>
+        <QuickActionsMenu
+          actions={[
+            ...(canEdit(user.effectiveRole)
+              ? [
+                  {
+                    href: "/calendar?plan=open#plan",
+                    label: "Plan a stay",
+                    className: "btn btn-primary min-w-0 px-3 text-xs sm:text-xs",
+                  },
+                  {
+                    href: "/upkeep?tab=fixit&report=open#report-an-issue",
+                    label: "Report an Issue",
+                    className:
+                      "btn min-w-0 bg-water px-3 text-xs text-white hover:bg-deep-2 sm:text-xs",
+                  },
+                ]
+              : []),
+            {
+              href: checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan",
+              label: "Check-in list",
+              className: "btn min-w-0 bg-sage px-3 text-xs text-white hover:bg-deep sm:text-xs",
+            },
+          ]}
+        />
       </div>
 
       {/* Hero: people first. House status is a small chip, on purpose. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-stretch">
       <section className="card p-4 sm:p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">
           <p className="section-label">Who is at the lake</p>
           <span className="chip chip-ready">House is {status.toLowerCase()}</span>
         </div>
         {here.length > 0 ? (
-          <div className="mt-2 space-y-3">
-            {here.map((s) => (
-              <div
-                key={s.id}
-                className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
-              >
-                <h2 className="font-display text-2xl lg:text-4xl leading-tight">
-                  <span
-                    aria-hidden
-                    className="mr-3 inline-block h-3 w-3 rounded-full align-middle"
-                    style={{ background: householdVar(s.color) }}
-                  />
-                  {s.label}
-                </h2>
-                <p className="text-sm text-ink-soft">
-                  Through {fmtDay(s.end)} · {s.adults + s.kids} guest
-                  {s.adults + s.kids === 1 ? "" : "s"}
-                  {s.note ? ` · "${s.note}"` : ""}
-                </p>
-              </div>
-            ))}
+          <div className="mt-2 space-y-4">
+            {here.map((s) => {
+              const progress = progressByStay.get(s.id);
+              return (
+                <div key={s.id}>
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <h2 className="font-display text-2xl lg:text-4xl leading-tight">
+                      <span
+                        aria-hidden
+                        className="mr-3 inline-block h-3 w-3 rounded-full align-middle"
+                        style={{ background: householdVar(s.color) }}
+                      />
+                      {s.label}
+                    </h2>
+                    <p className="text-sm text-ink-soft">
+                      Through {fmtDay(s.end)} · {s.adults + s.kids} guest
+                      {s.adults + s.kids === 1 ? "" : "s"}
+                      {s.note ? ` · "${s.note}"` : ""}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/calendar/${s.id}/checklist`}
+                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-water hover:text-deep-2"
+                  >
+                    Visit checklist
+                    {progress && progress.total > 0 ? (
+                      <span
+                        className={`chip ${progress.completed === progress.total ? "chip-ready" : "chip-whenever"}`}
+                      >
+                        {progress.completed} of {progress.total} complete
+                      </span>
+                    ) : null}
+                    <span aria-hidden>→</span>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="mt-2">
@@ -135,13 +188,84 @@ export default async function HomePage() {
         ) : null}
       </section>
 
+      <Suspense fallback={<LiveWeatherFallback />}>
+        <LiveWeatherCard />
+      </Suspense>
+      </div>
+
+      {hasAttention ? (
+        <section className="card mt-4 p-4 sm:mt-6 sm:p-5">
+          <p className="section-label">Needs attention</p>
+          <ul className="mt-3 space-y-2">
+            {overlaps.map(({ a, b }) => (
+              <li key={`overlap-${a.id}-${b.id}`}>
+                <Link
+                  href="/calendar"
+                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                >
+                  <span className="chip chip-soon">Overlap</span>
+                  <span className="text-sm">
+                    <span className="font-semibold">{a.label}</span> and{" "}
+                    <span className="font-semibold">{b.label}</span> are both at the lake{" "}
+                    {fmtRange(
+                      a.start > b.start ? a.start : b.start,
+                      a.end < b.end ? a.end : b.end
+                    )}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {overdueMaintenance.map((item) => (
+              <li key={`maint-${item.id}`}>
+                <Link
+                  href="/upkeep?tab=maintenance"
+                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                >
+                  <span className="chip chip-urgent">Overdue</span>
+                  <span className="text-sm">
+                    <span className="font-semibold">{item.task}</span> was due{" "}
+                    {fmtDay(item.nextDue as string)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {urgentFixes.map((f) => (
+              <li key={`fix-${f.id}`}>
+                <Link
+                  href="/upkeep?tab=fixit"
+                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                >
+                  <span className="chip chip-urgent">Urgent</span>
+                  <span className="text-sm">
+                    <span className="font-semibold">{f.title}</span>
+                    {f.location ? ` · ${f.location}` : ""}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {incompleteDepartures.map(({ stay, progress }) => (
+              <li key={`departure-${stay.id}`}>
+                <Link
+                  href={`/calendar/${stay.id}/checklist`}
+                  className="flex flex-wrap items-center gap-2 rounded-lh px-2 py-1.5 -mx-2 hover:bg-mist/60"
+                >
+                  <span className="chip chip-urgent">Leaving today</span>
+                  <span className="text-sm">
+                    <span className="font-semibold">{stay.label}</span> has{" "}
+                    {(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0)} departure
+                    task{(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0) === 1 ? "" : "s"} left
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
-        <Link
-          href="/calendar"
-          className="card group block p-4 transition-colors hover:border-water/40 sm:p-6 lg:col-span-3"
-        >
-          <div className="flex items-baseline justify-between gap-4">
+        <div className="card p-4 sm:p-6 lg:col-span-3">
+          <Link href="/calendar" className="group flex items-baseline justify-between gap-4">
             <div>
               <p className="section-label">Family calendar</p>
               <h2 className="font-display text-2xl transition-colors group-hover:text-water">
@@ -151,7 +275,7 @@ export default async function HomePage() {
             <span className="text-sm font-medium text-water transition-colors group-hover:text-deep-2">
               Open calendar
             </span>
-          </div>
+          </Link>
           <div className="mt-4 hidden md:block">
             <MonthGrid
               year={y}
@@ -159,22 +283,33 @@ export default async function HomePage() {
               stays={monthStays}
               maintenance={monthMaintenance}
               today={today}
+              planningEnabled={canEdit(user.effectiveRole)}
             />
+            {canEdit(user.effectiveRole) ? (
+              <p className="mt-2 text-xs text-ink-faint">
+                Tap a stay to edit it, or an empty day to plan one.
+              </p>
+            ) : null}
           </div>
-          <ul className="mt-4 space-y-3 md:hidden">
+          <ul className="mt-4 space-y-1 md:hidden">
             {[...here, ...staysUpcoming(stays, today)].slice(0, 4).map((s) => (
-              <li key={s.id} className="flex items-center gap-3">
-                <span
-                  aria-hidden
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: householdVar(s.color) }}
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{s.label}</p>
-                  <p className="text-xs text-ink-soft">
-                    {fmtRange(s.start, s.end)}
-                  </p>
-                </div>
+              <li key={s.id}>
+                <Link
+                  href={`/calendar/${s.id}/checklist`}
+                  className="-mx-2 flex items-center gap-3 rounded-lh px-2 py-1.5 hover:bg-mist/60"
+                >
+                  <span
+                    aria-hidden
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: householdVar(s.color) }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{s.label}</p>
+                    <p className="text-xs text-ink-soft">
+                      {fmtRange(s.start, s.end)}
+                    </p>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
@@ -184,11 +319,11 @@ export default async function HomePage() {
               showMaintenance={monthMaintenance.length > 0}
             />
           </div>
-        </Link>
+        </div>
 
         {/* Checklist */}
         <section className="card p-4 sm:p-6 lg:col-span-2">
-          <p className="section-label">Check List</p>
+          <p className="section-label">Shopping List</p>
           <Link
             href="/checklist"
             className="font-display text-2xl hover:text-water transition-colors"
@@ -230,64 +365,14 @@ export default async function HomePage() {
               ) : null}
             </ul>
           </div>
-
-          <div className="mt-5 border-t border-sand-line pt-4">
-            <p className="section-label">Recently checked off</p>
-            <ul className="mt-2">
-              {recentCompletedChecks.map((check) => (
-                <li
-                  key={check.id}
-                  className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
-                >
-                  <form action={toggleItem} className="shrink-0">
-                    <input type="hidden" name="id" value={check.id} />
-                    <button
-                      type="submit"
-                      aria-label={`Mark "${check.title}" not done`}
-                      aria-pressed="true"
-                      className="flex h-7 w-7 items-center justify-center rounded-md border border-sage bg-sage text-white transition-colors hover:bg-deep"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 10 10"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M1.5 5.5L4 8l4.5-6" />
-                      </svg>
-                    </button>
-                  </form>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                      <p className="font-semibold text-ink-faint line-through">
-                        {check.title}
-                      </p>
-                      <span className="text-xs text-ink-faint">
-                        Checked by {check.checkedBy ?? "Unknown"}
-                      </span>
-                    </div>
-                    {check.details ? (
-                      <p className="text-sm text-ink-faint line-through">
-                        {check.details}
-                      </p>
-                    ) : null}
-                    <p className="text-xs font-medium text-water">
-                      Added by {check.addedBy}
-                    </p>
-                  </div>
-                </li>
-              ))}
-              {recentCompletedChecks.length === 0 ? (
-                <li className="text-sm text-ink-soft">
-                  Nothing has been checked off yet.
-                </li>
-              ) : null}
-            </ul>
-          </div>
+          {openChecks.length > currentChecks.length ? (
+            <Link
+              href="/checklist"
+              className="mt-4 inline-block text-sm font-semibold text-water hover:text-deep-2"
+            >
+              View all {openChecks.length} items →
+            </Link>
+          ) : null}
         </section>
 
         {/* Fix-it */}
