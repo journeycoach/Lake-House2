@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
@@ -16,6 +17,10 @@ import {
 } from "@/lib/queries";
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
 import { RichNote } from "@/components/rich-note";
+import {
+  LiveWeatherCard,
+  LiveWeatherFallback,
+} from "@/components/live-weather-card";
 import { toggleItem } from "./checklist/actions";
 
 export default async function HomePage() {
@@ -90,50 +95,55 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Hero: people first. House status is a small chip, on purpose. */}
-      <section className="card p-4 sm:p-5 lg:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <p className="section-label">Who is at the lake</p>
-          <span className="chip chip-ready">House is {status.toLowerCase()}</span>
-        </div>
-        {here.length > 0 ? (
-          <div className="mt-2 space-y-3">
-            {here.map((s) => (
-              <div
-                key={s.id}
-                className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
-              >
-                <h2 className="font-display text-2xl lg:text-4xl leading-tight">
-                  <span
-                    aria-hidden
-                    className="mr-3 inline-block h-3 w-3 rounded-full align-middle"
-                    style={{ background: householdVar(s.color) }}
-                  />
-                  {s.label}
-                </h2>
-                <p className="text-sm text-ink-soft">
-                  Through {fmtDay(s.end)} · {s.adults + s.kids} guest
-                  {s.adults + s.kids === 1 ? "" : "s"}
-                  {s.note ? ` · "${s.note}"` : ""}
-                </p>
-              </div>
-            ))}
+      <div className="mt-4 grid gap-4 sm:mt-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-stretch">
+        {/* Hero: people first. House status is a small chip, on purpose. */}
+        <section className="card p-4">
+          <div className="flex items-start justify-between gap-4">
+            <p className="section-label">Who is at the lake</p>
+            <span className="chip chip-ready">House is {status.toLowerCase()}</span>
           </div>
-        ) : (
-          <div className="mt-2">
-            <h2 className="font-display text-2xl lg:text-4xl leading-tight">
+          {here.length > 0 ? (
+            <div className="mt-2 space-y-2">
+              {here.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
+                >
+                  <h2 className="font-display text-2xl leading-tight lg:text-3xl">
+                    <span
+                      aria-hidden
+                      className="mr-2 inline-block h-2.5 w-2.5 rounded-full align-middle"
+                      style={{ background: householdVar(s.color) }}
+                    />
+                    {s.label}
+                  </h2>
+                  <p className="text-sm text-ink-soft">
+                    Through {fmtDay(s.end)} · {s.adults + s.kids} guest
+                    {s.adults + s.kids === 1 ? "" : "s"}
+                    {s.note ? ` · "${s.note}"` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <h2 className="mt-2 font-display text-2xl leading-tight lg:text-3xl">
               Nobody at the lake right now
             </h2>
-          </div>
-        )}
-        {next ? (
-          <p className="mt-4 border-t border-sand-line pt-3 text-sm text-ink-soft">
-            Next up: <span className="font-semibold text-ink">{next.label}</span>
-            , arriving {fmtDay(next.start)}
-            {next.note ? ` · "${next.note}"` : ""}
-          </p>
-        ) : null}
-      </section>
+          )}
+          {next ? (
+            <p className="mt-3 border-t border-sand-line pt-2 text-sm text-ink-soft">
+              Next up:{" "}
+              <span className="font-semibold text-ink">{next.label}</span>, arriving{" "}
+              {fmtDay(next.start)}
+              {next.note ? ` · "${next.note}"` : ""}
+            </p>
+          ) : null}
+        </section>
+
+        <Suspense fallback={<LiveWeatherFallback />}>
+          <LiveWeatherCard />
+        </Suspense>
+      </div>
 
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
