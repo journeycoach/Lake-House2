@@ -23,7 +23,7 @@ export function AddItemForm({ editor }: { editor: boolean }) {
   return (
     <form
       action={action}
-      className={`mt-4 gap-3 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
+      className={`mt-3 gap-2 rounded-lh border border-water/30 border-l-4 bg-water-tint p-3 sm:mt-4 sm:gap-3 sm:p-4 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] ${
         editor ? "grid" : "hidden"
       }`}
     >

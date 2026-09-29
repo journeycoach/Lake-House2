@@ -24,7 +24,7 @@ export default async function ChecklistPage() {
       return (
       <li
         key={item.id}
-        className="flex flex-wrap items-center gap-3 border-t border-sand-line py-3 first:border-0"
+        className="flex flex-wrap items-center gap-2 border-t border-sand-line py-2 sm:gap-3 sm:py-3 first:border-0"
       >
         <span
           aria-hidden
@@ -71,25 +71,37 @@ export default async function ChecklistPage() {
                 {item.title}
               </p>
               {item.done ? (
-                <span className="text-xs text-ink-faint">
+                <span className="hidden text-xs text-ink-faint sm:inline">
                   Checked by {item.checkedBy ?? "Unknown"}
                 </span>
               ) : null}
             </div>
+            <p className="truncate text-xs text-ink-faint sm:hidden">
+              {[
+                item.details,
+                item.done
+                  ? `Checked by ${item.checkedBy ?? "Unknown"}`
+                  : `Added by ${item.addedBy}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
             {item.details ? (
               <p
-                className={`text-sm ${
+                className={`hidden text-sm sm:block ${
                   item.done ? "text-ink-faint line-through" : "text-ink-soft"
                 }`}
               >
                 {item.details}
               </p>
             ) : null}
-            <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
+            <p className="hidden text-xs text-ink-faint sm:block">
+              Added by {item.addedBy}
+            </p>
           </div>
         )}
         <div
-          className={`w-full justify-end sm:hidden ${editor ? "flex" : "hidden"}`}
+          className={`ml-auto shrink-0 justify-end sm:hidden ${editor ? "flex" : "hidden"}`}
         >
           <details className="relative">
             <summary
@@ -191,7 +203,7 @@ export default async function ChecklistPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader title="Shopping List" />
 
-      <section className="card p-4 sm:p-6">
+      <section className="card p-3 sm:p-6">
         <p className="section-label">Shopping List</p>
         <h2 className="font-display text-2xl mt-1">
           Pickup before the next trip
@@ -203,7 +215,7 @@ export default async function ChecklistPage() {
 
         <AddItemForm editor={editor} />
 
-        <ul className="mt-4">
+        <ul className="mt-3 sm:mt-4">
           {itemRows(openItems)}
           {openItems.length === 0 ? (
             <li className="py-4 text-sm text-ink-soft">

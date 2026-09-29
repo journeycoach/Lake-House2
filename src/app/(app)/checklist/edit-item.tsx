@@ -84,21 +84,33 @@ export function EditableChecklistItem({ item }: { item: Item }) {
           {item.title}
         </p>
         {item.done ? (
-          <span className="text-xs text-ink-faint">
+          <span className="hidden text-xs text-ink-faint sm:inline">
             Checked by {item.checkedBy ?? "Unknown"}
           </span>
         ) : null}
       </div>
+      <p className="truncate text-xs text-ink-faint sm:hidden">
+        {[
+          item.details,
+          item.done
+            ? `Checked by ${item.checkedBy ?? "Unknown"}`
+            : `Added by ${item.addedBy}`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
       {item.details ? (
         <p
-          className={`text-sm ${
+          className={`hidden text-sm sm:block ${
             item.done ? "text-ink-faint line-through" : "text-ink-soft"
           }`}
         >
           {item.details}
         </p>
       ) : null}
-      <p className="text-xs text-ink-faint">Added by {item.addedBy}</p>
+      <p className="hidden text-xs text-ink-faint sm:block">
+        Added by {item.addedBy}
+      </p>
     </button>
   );
 }
