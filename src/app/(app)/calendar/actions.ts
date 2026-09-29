@@ -10,7 +10,13 @@ import { readText } from "@/lib/forms";
 import { sendTemplateMail } from "@/lib/mail";
 import { siteUrl } from "@/lib/email-template";
 
-export type StayFormState = { error?: string; conflict?: string; added?: boolean };
+export type StayFormValues = ReturnType<typeof readStay>;
+export type StayFormState = {
+  error?: string;
+  conflict?: string;
+  added?: boolean;
+  values?: StayFormValues;
+};
 
 function readStay(formData: FormData) {
   const label = readText(formData.get("label"), 200);
@@ -98,9 +104,12 @@ export async function createStay(
 ): Promise<StayFormState> {
   const user = await requireEditor();
   const stay = readStay(formData);
-  if (!stay.label) return { error: "Give the stay a name." };
+  if (!stay.label) return { error: "Give the stay a name.", values: stay };
   if (!stay.start || !stay.end || stay.end < stay.start)
-    return { error: "Check the dates: the end can not come before the start." };
+    return {
+      error: "Check the dates: the end can not come before the start.",
+      values: stay,
+    };
 
   const conflicts = await findConflicts(stay.start, stay.end);
   const confirmed = formData.get("confirmConflict") === "1";
@@ -108,6 +117,7 @@ export async function createStay(
     const first = conflicts[0];
     return {
       conflict: `${first.label} is already booked ${fmtRange(first.start, first.end)}${conflicts.length > 1 ? `, along with ${conflicts.length - 1} other visit${conflicts.length === 2 ? "" : "s"}` : ""}. Save anyway if sharing the house is the plan.`,
+      values: stay,
     };
   }
 
@@ -154,10 +164,13 @@ export async function updateStay(
   const user = await requireEditor();
   const id = Number(formData.get("id"));
   const stay = readStay(formData);
-  if (!id) return { error: "Missing stay." };
-  if (!stay.label) return { error: "Give the stay a name." };
+  if (!id) return { error: "Missing stay.", values: stay };
+  if (!stay.label) return { error: "Give the stay a name.", values: stay };
   if (!stay.start || !stay.end || stay.end < stay.start)
-    return { error: "Check the dates: the end can not come before the start." };
+    return {
+      error: "Check the dates: the end can not come before the start.",
+      values: stay,
+    };
 
   const conflicts = await findConflicts(stay.start, stay.end, id);
   const confirmed = formData.get("confirmConflict") === "1";
@@ -165,6 +178,7 @@ export async function updateStay(
     const first = conflicts[0];
     return {
       conflict: `${first.label} is already booked ${fmtRange(first.start, first.end)}${conflicts.length > 1 ? `, along with ${conflicts.length - 1} other visit${conflicts.length === 2 ? "" : "s"}` : ""}. Save anyway if sharing the house is the plan.`,
+      values: stay,
     };
   }
 
