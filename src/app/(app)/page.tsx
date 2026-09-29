@@ -22,6 +22,7 @@ import {
   LiveWeatherCard,
   LiveWeatherFallback,
 } from "@/components/live-weather-card";
+import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
 import { toggleItem } from "./checklist/actions";
 
 export default async function HomePage() {
@@ -38,7 +39,21 @@ export default async function HomePage() {
   const here = staysNow(stays, today);
   const next = staysUpcoming(stays, today)[0];
   const checklistStay = here[0] ?? next;
-  const progressByStay = await stayChecklistProgress(here.map((s) => s.id));
+  const householdStays = user.householdId
+    ? stays
+        .filter((stay) => stay.householdId === user.householdId && stay.end >= today)
+        .sort((a, b) => a.start.localeCompare(b.start))
+    : [];
+  const myVisit =
+    householdStays.find((stay) => stay.start <= today && today <= stay.end) ??
+    householdStays[0];
+  const progressStayIds = Array.from(
+    new Set([
+      ...here.map((stay) => stay.id),
+      ...(myVisit ? [myVisit.id] : []),
+    ])
+  );
+  const progressByStay = await stayChecklistProgress(progressStayIds);
 
   // Attention: only the handful of things someone should actually act on.
   const upcomingOrCurrent = stays
@@ -85,6 +100,19 @@ export default async function HomePage() {
   );
   const openChecks = checks.filter((check) => !check.done);
   const currentChecks = openChecks.slice(0, 4);
+  const visitIssues = myVisit
+    ? [
+        ...urgentFixes.map((item) => ({ id: item.id, title: item.title })),
+        ...maintenance
+          .filter(
+            (item) =>
+              item.nextDue &&
+              item.nextDue >= today &&
+              item.nextDue <= myVisit.end
+          )
+          .map((item) => ({ id: item.id, title: item.task })),
+      ]
+    : [];
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -131,6 +159,18 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
+
+      {myVisit ? (
+        <MyVisitCard
+          stay={myVisit}
+          today={today}
+          progress={progressByStay.get(myVisit.id)}
+          shoppingItems={openChecks}
+          issues={visitIssues}
+        />
+      ) : (
+        <MyVisitEmptyState canPlan={canEdit(user.effectiveRole)} />
+      )}
 
       {/* Hero: needs-attention + weather; "who's at the lake" now lives in the header as a compact button. */}
       <div className="grid gap-2 sm:gap-4 lg:grid-cols-2 lg:items-start">
