@@ -24,7 +24,7 @@ export default async function ChecklistPage() {
       return (
       <li
         key={item.id}
-        className="flex flex-wrap items-center gap-2 border-t border-sand-line py-2 sm:gap-3 sm:py-3 first:border-0"
+        className="flex flex-wrap items-center gap-1.5 border-t border-sand-line py-1.5 sm:gap-3 sm:py-3 first:border-0"
       >
         <span
           aria-hidden
@@ -215,7 +215,7 @@ export default async function ChecklistPage() {
 
         <AddItemForm editor={editor} />
 
-        <ul className="mt-3 sm:mt-4">
+        <ul className="mt-2 sm:mt-4">
           {itemRows(openItems)}
           {openItems.length === 0 ? (
             <li className="py-4 text-sm text-ink-soft">
@@ -227,9 +227,9 @@ export default async function ChecklistPage() {
         </ul>
 
         {completedItems.length > 0 ? (
-          <div className="mt-6 border-t border-sand-line pt-5">
+          <div className="mt-4 border-t border-sand-line pt-3 sm:mt-6 sm:pt-5">
             <p className="section-label">Completed ({completedItems.length})</p>
-            <ul className="mt-2">{itemRows(completedItems)}</ul>
+            <ul className="mt-1.5 sm:mt-2">{itemRows(completedItems)}</ul>
           </div>
         ) : null}
       </section>
