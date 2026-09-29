@@ -8,7 +8,7 @@ import { logActivity } from "@/lib/activity";
 import { readText } from "@/lib/forms";
 
 function refresh() {
-  revalidatePath("/checklist");
+  revalidatePath("/shopping-list");
   revalidatePath("/");
 }
 

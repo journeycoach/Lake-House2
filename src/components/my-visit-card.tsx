@@ -103,7 +103,7 @@ export function MyVisitCard({
 
         <div className="rounded-lh bg-white p-4 text-ink">
           <div className="grid grid-cols-2 gap-3">
-            <Link href="/checklist" className="rounded-lh bg-mist p-3 hover:bg-water/10">
+            <Link href="/shopping-list" className="rounded-lh bg-mist p-3 hover:bg-water/10">
               <span className="section-label">Shopping</span>
               <span className="mt-1 block font-display text-xl">
                 {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}

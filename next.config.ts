@@ -12,6 +12,17 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4mb",
     },
   },
+  async redirects() {
+    return [
+      // The shopping list page used to live at /checklist. Keep old
+      // bookmarks and home-screen shortcuts working.
+      {
+        source: "/checklist",
+        destination: "/shopping-list",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

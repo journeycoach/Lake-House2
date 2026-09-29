@@ -135,7 +135,7 @@ export default async function SearchPage({
       );
     for (const i of items) {
       results.push({
-        href: "/checklist",
+        href: "/shopping-list",
         title: i.title,
         snippet: excerpt(i.details || i.title, q),
         source: "Shopping list",
