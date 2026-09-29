@@ -23,7 +23,7 @@ import {
   LiveWeatherFallback,
 } from "@/components/live-weather-card";
 import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
-import { toggleItem } from "./checklist/actions";
+import { toggleItem } from "./shopping-list/actions";
 
 export default async function HomePage() {
   const user = await requireUser();
@@ -311,7 +311,7 @@ export default async function HomePage() {
         <section className="card p-4 sm:p-6 lg:col-span-2">
           <p className="section-label">Shopping List</p>
           <Link
-            href="/checklist"
+            href="/shopping-list"
             className="font-display text-2xl hover:text-water transition-colors"
           >
             Pickup before the next trip
@@ -353,7 +353,7 @@ export default async function HomePage() {
           </div>
           {openChecks.length > currentChecks.length ? (
             <Link
-              href="/checklist"
+              href="/shopping-list"
               className="mt-4 inline-block text-sm font-semibold text-water hover:text-deep-2"
             >
               View all {openChecks.length} items →

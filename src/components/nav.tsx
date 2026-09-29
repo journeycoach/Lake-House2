@@ -17,7 +17,7 @@ const LINKS: {
   { href: "/", label: "Home", icon: "🏠" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
   { href: "/upkeep", label: "Property Care", icon: "🛠️" },
-  { href: "/checklist", label: "Shopping List", icon: "✅" },
+  { href: "/shopping-list", label: "Shopping List", icon: "✅" },
   { href: "/guide", label: "House guide", icon: "📖" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
   {
