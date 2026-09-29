@@ -7,6 +7,7 @@ export type StayRow = {
   id: number;
   label: string;
   householdId: number | null;
+  householdName: string | null;
   start: string;
   end: string;
   adults: number;
@@ -23,6 +24,7 @@ export async function allStays(): Promise<StayRow[]> {
       id: schema.stays.id,
       label: schema.stays.label,
       householdId: schema.stays.householdId,
+      householdName: schema.households.name,
       start: schema.stays.start,
       end: schema.stays.end,
       adults: schema.stays.adults,
