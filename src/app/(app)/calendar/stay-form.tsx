@@ -54,13 +54,20 @@ export function StayForm({
   );
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const values = state.values;
+  const formKey = values ? JSON.stringify(values) : "ready";
 
   useEffect(() => {
     if (state.added) formRef.current?.reset();
   }, [state.added]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form
+      key={formKey}
+      ref={formRef}
+      action={formAction}
+      className="space-y-4"
+    >
       {stay ? <input type="hidden" name="id" value={stay.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -71,7 +78,7 @@ export function StayForm({
             id="label"
             name="label"
             required
-            defaultValue={stay?.label}
+            defaultValue={values?.label ?? stay?.label}
             maxLength={200}
             className="field"
             placeholder="John & Jenn, Guys Weekend"
@@ -84,7 +91,7 @@ export function StayForm({
           <select
             id="householdId"
             name="householdId"
-            defaultValue={stay?.householdId ?? ""}
+            defaultValue={values?.householdId ?? stay?.householdId ?? ""}
             className="field"
           >
             <option value="">Pick one</option>
@@ -104,7 +111,7 @@ export function StayForm({
             name="start"
             type="date"
             required
-            defaultValue={stay?.start ?? defaultDate}
+            defaultValue={values?.start ?? stay?.start ?? defaultDate}
             className="field"
           />
         </div>
@@ -117,7 +124,7 @@ export function StayForm({
             name="end"
             type="date"
             required
-            defaultValue={stay?.end ?? defaultDate}
+            defaultValue={values?.end ?? stay?.end ?? defaultDate}
             className="field"
           />
         </div>
@@ -130,7 +137,7 @@ export function StayForm({
             name="adults"
             type="number"
             min={0}
-            defaultValue={stay?.adults ?? 2}
+            defaultValue={values?.adults ?? stay?.adults ?? 2}
             className="field"
           />
         </div>
@@ -143,7 +150,7 @@ export function StayForm({
             name="kids"
             type="number"
             min={0}
-            defaultValue={stay?.kids ?? 0}
+            defaultValue={values?.kids ?? stay?.kids ?? 0}
             className="field"
           />
         </div>
@@ -155,7 +162,7 @@ export function StayForm({
         <input
           id="note"
           name="note"
-          defaultValue={stay?.note ?? ""}
+          defaultValue={values?.note ?? stay?.note ?? ""}
           maxLength={4000}
           className="field"
           placeholder="Arriving after lunch Friday"

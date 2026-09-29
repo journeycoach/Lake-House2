@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { roleLabel } from "@/lib/roles";
 import { Sidebar, MobileHeader } from "@/components/nav";
+import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { signOut } from "@/app/signin/actions";
 import { setViewAs, clearViewAs } from "./view-as-actions";
 
@@ -65,6 +66,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex-1 flex flex-col">
+      <ServiceWorkerRegistrar />
       {user.viewingAs ? (
         <div className="sticky top-0 z-50 flex items-center justify-center gap-3 bg-amber px-4 py-2 text-sm font-medium text-white">
           <span>
@@ -111,7 +113,17 @@ export default async function AppLayout({
             isRealAdmin && !user.viewingAs ? <PreviewControl /> : null
           }
         />
-        <main className="min-w-0 flex-1 p-4 pb-28 lg:p-10">{children}</main>
+        <main className="min-w-0 flex-1 p-4 pb-28 lg:p-10">
+          {children}
+          <footer className="mx-auto mt-10 flex max-w-5xl justify-center border-t border-sand-line pt-5">
+            <Link
+              href="/install"
+              className="text-sm font-semibold text-water transition-colors hover:text-deep-2"
+            >
+              Install Paine Pointe on your phone →
+            </Link>
+          </footer>
+        </main>
       </div>
     </div>
   );

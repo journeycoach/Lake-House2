@@ -7,7 +7,9 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Paine Pointe",
     description:
       "Paine Pointe: who is up, what needs doing, and how the house works.",
+    id: "/",
     start_url: "/",
+    scope: "/",
     display: "standalone",
     background_color: "#123236",
     theme_color: "#123236",
