@@ -1,11 +1,6 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import { fmtRange } from "@/lib/dates";
 import type { StayChecklistProgress, StayRow } from "@/lib/queries";
-import {
-  VisitWeatherFallback,
-  VisitWeatherSummary,
-} from "@/components/live-weather-card";
 
 type VisitIssue = {
   id: number;
@@ -21,7 +16,7 @@ export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
         </p>
         <h2 className="mt-1 font-display text-2xl">No upcoming visit assigned</h2>
         <p className="mt-1 text-sm text-white/70">
-          Your dates, stay checklist, weather, shopping, and property notes will
+          Your dates, stay checklist, shopping, and property notes will
           appear here once your household has a stay.
         </p>
       </div>
@@ -77,10 +72,14 @@ export function MyVisitCard({
               : ""}
           </p>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lh bg-white/10 p-3">
+          <div className="mt-4 max-w-md">
+            <Link
+              href={`/calendar/${stay.id}/checklist`}
+              aria-label={`Open stay checklist for ${stay.label}`}
+              className="group block rounded-lh bg-white/10 p-3 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-semibold">Stay checklist</span>
+                <span className="font-semibold">Stay checklist <span aria-hidden>→</span></span>
                 <span className="text-white/70">
                   {completed} of {total}
                 </span>
@@ -94,10 +93,7 @@ export function MyVisitCard({
               <p className="mt-1.5 text-xs text-white/60">
                 {total > 0 ? `${percent}% complete` : "Ready when your visit begins"}
               </p>
-            </div>
-            <Suspense fallback={<VisitWeatherFallback />}>
-              <VisitWeatherSummary />
-            </Suspense>
+            </Link>
           </div>
         </div>
 

@@ -195,56 +195,6 @@ export function LiveWeatherFallback() {
   );
 }
 
-export function VisitWeatherFallback() {
-  return <div className="h-14 animate-pulse rounded-lh bg-white/10" />;
-}
-
-export async function VisitWeatherSummary() {
-  const weather = await lakeWeather();
-
-  if (!weather) {
-    return (
-      <Link
-        href={FORECAST_URL}
-        target="_blank"
-        rel="noreferrer"
-        className="flex items-center justify-between gap-3 rounded-lh bg-white/10 px-3 py-2 text-sm text-white transition-colors hover:bg-white/15"
-      >
-        <span>Lake Palestine forecast</span>
-        <span aria-hidden>↗</span>
-      </Link>
-    );
-  }
-
-  const current = weather.current;
-  const theme = weatherTheme(current.weather_code, current.is_day === 1);
-  const high = weather.daily.temperature_2m_max[0];
-  const low = weather.daily.temperature_2m_min[0];
-
-  return (
-    <Link
-      href={FORECAST_URL}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center gap-3 rounded-lh bg-white/10 px-3 py-2 text-white transition-colors hover:bg-white/15"
-      aria-label={`Lake Palestine weather: ${theme.label}, ${Math.round(current.temperature_2m)} degrees. Open the full forecast.`}
-    >
-      <span className="text-2xl" role="img" aria-label={theme.label}>
-        {theme.icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold">
-          {Math.round(current.temperature_2m)}° · {theme.label}
-        </span>
-        <span className="block text-xs text-white/70">
-          H {Math.round(high)}° / L {Math.round(low)}°
-        </span>
-      </span>
-      <span className="text-xs font-semibold text-white/80">Forecast ↗</span>
-    </Link>
-  );
-}
-
 const SEVERITY_ORDER: Record<string, number> = {
   Extreme: 0,
   Severe: 1,
