@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
+import { upload } from "@vercel/blob/client";
 
 function ToolButton({
   title,
@@ -31,10 +32,13 @@ export function RichTextEditor({
   initialHtml?: string;
 }) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
   const [html, setHtml] = useState(initialHtml);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [hasContent, setHasContent] = useState(
-    () => initialHtml.replace(/<[^>]*>/g, "").trim().length > 0
+    () => initialHtml.replace(/<[^>]*>/g, "").trim().length > 0 || /<img\b/i.test(initialHtml)
   );
 
   function rememberSelection() {
@@ -62,8 +66,55 @@ export function RichTextEditor({
     const editor = editorRef.current;
     if (!editor) return;
     setHtml(editor.innerHTML);
-    setHasContent(Boolean(editor.textContent?.trim()));
+    setHasContent(Boolean(editor.textContent?.trim() || editor.querySelector("img")));
     rememberSelection();
+  }
+
+  async function addImage(file: File) {
+    setImageError(null);
+    setUploadingImage(true);
+    rememberSelection();
+    try {
+      const blob = await upload(`notes/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/notes/upload",
+      });
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      editor.focus();
+      restoreSelection();
+      const image = document.createElement("img");
+      image.src = blob.url;
+      image.alt = "Image attached to a family note";
+
+      const selection = window.getSelection();
+      if (
+        selection?.rangeCount &&
+        editor.contains(selection.anchorNode)
+      ) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(image);
+        range.setStartAfter(image);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        editor.append(image);
+      }
+      syncEditor();
+    } catch (caught) {
+      const message = (caught as Error).message;
+      setImageError(
+        message.includes("store")
+          ? "Photo storage is not set up yet."
+          : message || "The image could not be added."
+      );
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
   }
 
   function runCommand(command: string, value?: string) {
@@ -133,6 +184,12 @@ export function RichTextEditor({
         </label>
 
         <ToolButton title="Add link" onClick={addLink}>Link</ToolButton>
+        <ToolButton
+          title={uploadingImage ? "Uploading image" : "Add image"}
+          onClick={() => imageInputRef.current?.click()}
+        >
+          {uploadingImage ? "Uploading…" : "Image"}
+        </ToolButton>
         <ToolButton title="Bulleted list" onClick={() => runCommand("insertUnorderedList")}>
           • List
         </ToolButton>
@@ -185,6 +242,21 @@ export function RichTextEditor({
           {...(initialHtml ? { dangerouslySetInnerHTML: { __html: initialHtml } } : {})}
         />
       </div>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/gif"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0];
+          if (file) void addImage(file);
+        }}
+      />
+      {imageError ? (
+        <p role="status" className="border-t border-sand-line px-3 py-2 text-xs font-medium text-rust">
+          {imageError}
+        </p>
+      ) : null}
       <input type="hidden" name="body" value={html} />
     </div>
   );

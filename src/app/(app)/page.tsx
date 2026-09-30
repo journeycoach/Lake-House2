@@ -96,6 +96,29 @@ export default async function HomePage() {
           .map((item) => ({ id: item.id, title: item.task, urgency: "soon" as const })),
       ]
     : [];
+  const assignedItems = [
+    ...fixes
+      .filter((item) => item.assignedTo?.trim())
+      .map((item) => ({
+        id: `fixit-${item.id}`,
+        title: item.title,
+        assignedTo: item.assignedTo!,
+        category: "Issue" as const,
+        href: "/upkeep?tab=fixit",
+      })),
+    ...maintenance
+      .filter((item) => item.assignedTo?.trim())
+      .map((item) => ({
+        id: `maintenance-${item.id}`,
+        title: item.task,
+        assignedTo: item.assignedTo!,
+        category: "Maintenance" as const,
+        href: `/upkeep?tab=maintenance#maintenance-${item.id}`,
+      })),
+  ];
+  const myAssignedItems = assignedItems.filter(
+    (item) => item.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase()
+  );
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -128,13 +151,13 @@ export default async function HomePage() {
               <>
                 <Link
                   href="/calendar?plan=open#plan"
-                  className="btn btn-primary min-w-0 px-2 text-[11px] sm:px-3 sm:text-xs"
+                  className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
                 >
                   Plan a stay
                 </Link>
                 <Link
-                  href="/upkeep?tab=fixit&report=open#report-an-issue"
-                  className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
+                  href="/upkeep/report-issue"
+                  className="btn min-w-0 bg-care px-2 text-[11px] text-white hover:bg-care/90 sm:px-3 sm:text-xs"
                 >
                   Report an Issue
                 </Link>
@@ -144,7 +167,7 @@ export default async function HomePage() {
               href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
               className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
             >
-              Check-in list
+              Check-in checklist
             </Link>
           </div>
         </div>
@@ -158,6 +181,7 @@ export default async function HomePage() {
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
           issues={visitIssues}
+          assignedItems={myAssignedItems}
           overdueMaintenance={overdueMaintenance.map(({ id, task, nextDue }) => ({
             id,
             task,
@@ -262,10 +286,20 @@ export default async function HomePage() {
         <div className="contents lg:col-span-2 lg:grid lg:content-start lg:gap-6">
         {/* Checklist */}
         <section className="card order-2 p-4 sm:p-6">
-          <p className="section-label">Shopping List</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="section-label">Shopping List</p>
+            {canEdit(user.effectiveRole) ? (
+              <Link
+                href="/shopping-list"
+                className="shrink-0 text-xs font-semibold text-water hover:text-deep-2 hover:underline"
+              >
+                Add items +
+              </Link>
+            ) : null}
+          </div>
           <Link
             href="/shopping-list"
-            className="block font-display text-xl leading-tight transition-colors hover:text-water"
+            className="block whitespace-nowrap font-display text-base leading-tight transition-colors hover:text-water lg:text-lg"
           >
             {openChecks.length > 0
               ? `Pick up ${openChecks.length} item${openChecks.length === 1 ? "" : "s"} before the next trip`
@@ -321,7 +355,11 @@ export default async function HomePage() {
           <div className="flex items-center justify-between gap-2">
             <p className="section-label">Fix-it list</p>
             <Link
-              href="/upkeep"
+              href={
+                canEdit(user.effectiveRole)
+                  ? "/upkeep/report-issue"
+                  : "/upkeep"
+              }
               className="shrink-0 whitespace-nowrap text-xs font-medium text-water hover:text-deep-2 sm:text-sm"
             >
               {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}
@@ -367,15 +405,14 @@ export default async function HomePage() {
       {/* Quick reference */}
       <Link
         href="/guide"
-        className="card mt-4 flex items-center justify-between gap-4 p-4 transition-colors hover:border-water sm:mt-6 sm:p-6"
+        className="card mt-4 block p-4 transition-colors hover:border-water sm:mt-6 sm:p-6"
       >
         <div>
           <p className="section-label">Quick reference</p>
           <p className="mt-1 font-semibold">
-            Wi-Fi, lock code, marina, septic, emergency contacts & house rules
+            Wi-Fi, lock code, marina, emergency contacts, check-in & check-out procedure, and house rules
           </p>
         </div>
-        <span className="btn btn-quiet shrink-0">Open house guide</span>
       </Link>
     </div>
   );

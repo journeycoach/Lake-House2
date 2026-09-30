@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { fmtDay, fmtRange } from "@/lib/dates";
 import type { StayChecklistProgress, StayRow } from "@/lib/queries";
+import {
+  VisitWeatherForecast,
+  VisitWeatherForecastFallback,
+} from "@/components/live-weather-card";
 
 type VisitIssue = {
   id: number;
@@ -41,6 +46,7 @@ export function MyVisitCard({
   progress,
   shoppingItems,
   issues,
+  assignedItems,
   overdueMaintenance,
 }: {
   stay: StayRow;
@@ -49,6 +55,13 @@ export function MyVisitCard({
   progress?: StayChecklistProgress;
   shoppingItems: { id: number; title: string }[];
   issues: VisitIssue[];
+  assignedItems: {
+    id: string;
+    title: string;
+    assignedTo: string;
+    category: "Issue" | "Maintenance";
+    href: string;
+  }[];
   overdueMaintenance: { id: number; task: string; nextDue: string | null }[];
 }) {
   const isCurrent = stay.start <= today && today <= stay.end;
@@ -57,213 +70,184 @@ export function MyVisitCard({
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
   const checkoutTotal = progress?.checkoutTotal ?? 0;
   const checkoutCompleted = progress?.checkoutCompleted ?? 0;
-  const checkoutPercent =
-    checkoutTotal > 0 ? Math.round((checkoutCompleted / checkoutTotal) * 100) : 0;
+  const checkoutPercent = checkoutTotal > 0
+    ? Math.round((checkoutCompleted / checkoutTotal) * 100)
+    : 0;
   const guestCount = stay.adults + stay.kids;
 
   return (
     <section className="mb-4 overflow-hidden rounded-lh bg-deep text-white shadow-sm sm:mb-6">
-      <div className="grid gap-5 p-4 sm:p-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
-              My Visit
-            </p>
-            <span className="rounded-full bg-white/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/85">
-              {isCurrent ? "At the lake now" : "Upcoming"}
-            </span>
-          </div>
-          <h2 className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-display text-2xl sm:text-3xl">
-            <span>{stay.label}</span>
-            {stay.note ? (
-              <span className="font-sans text-sm font-normal text-white/75">
-                Arrival note: {stay.note}
-              </span>
-            ) : null}
-          </h2>
-          <p className="mt-1 text-sm text-white/75">
-            {fmtRange(stay.start, stay.end)}
-            {guestCount > 0
-              ? ` · ${guestCount} guest${guestCount === 1 ? "" : "s"}`
-              : ""}
-          </p>
-
-          {overlappingVisits.length > 0 ? (
-            <div
-              role="status"
-              className="mt-3 rounded-lg border border-amber-200/40 bg-amber-100/10 px-3 py-2 text-sm text-white/90"
-            >
-              <p className="font-semibold text-amber-100">
-                Another family visit overlaps
+      <div className="p-4 sm:px-5 sm:py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
+                My Visit
               </p>
-              <ul className="mt-1 space-y-1 text-xs text-white/80">
-                {overlappingVisits.slice(0, 2).map((visit) => {
-                  const overlapStart = visit.start > stay.start ? visit.start : stay.start;
-                  const overlapEnd = visit.end < stay.end ? visit.end : stay.end;
-                  return (
-                    <li key={visit.id}>
-                      {visit.label} · {fmtRange(overlapStart, overlapEnd)}
-                    </li>
-                  );
-                })}
-              </ul>
-              {overlappingVisits.length > 2 ? (
-                <p className="mt-1 text-xs text-white/70">
-                  And {overlappingVisits.length - 2} more overlapping visit
-                  {overlappingVisits.length - 2 === 1 ? "" : "s"}.
-                </p>
-              ) : null}
-              <Link
-                href="/calendar#upcoming-stays"
-                className="mt-1 inline-block text-xs font-semibold text-amber-100 underline decoration-amber-100/50 underline-offset-2 hover:text-white"
-              >
-                View calendar
-              </Link>
+              <span className="rounded-full bg-white/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/85">
+                {isCurrent ? "At the lake now" : "Upcoming"}
+              </span>
             </div>
-          ) : null}
+            <h2 className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-display text-xl sm:text-2xl">
+              <span>{stay.label}</span>
+              {stay.note ? (
+                <span className="font-sans text-xs font-normal text-white/75">
+                  Arrival note: {stay.note}
+                </span>
+              ) : null}
+            </h2>
+            <p className="mt-0.5 text-xs text-white/70">
+              {fmtRange(stay.start, stay.end)}
+              {guestCount > 0
+                ? ` · ${guestCount} guest${guestCount === 1 ? "" : "s"}`
+                : ""}
+            </p>
+            <Suspense fallback={<VisitWeatherForecastFallback />}>
+              <VisitWeatherForecast start={stay.start} end={stay.end} today={today} />
+            </Suspense>
+          </div>
 
-          <div className="mt-4 max-w-md">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 pt-3 lg:border-0 lg:pt-0">
             <Link
               href={`/calendar/${stay.id}/checklist`}
-              aria-label={`Open stay checklist for ${stay.label}`}
-              className="group block rounded-lh bg-white/10 p-3 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              aria-label={`Open stay checklist for ${stay.label}: ${completed} of ${total} complete`}
+              className="group inline-flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="inline-flex items-center gap-1.5 font-semibold">
-                  <span aria-hidden="true">🏠</span>
-                  Stay checklist <span aria-hidden>→</span>
-                </span>
-                <span className="text-white/70">
-                  {completed} of {total}
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
-                <div
-                  className="h-full rounded-full bg-sage"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-white/60">
-                {total > 0 ? `${percent}% complete` : "Ready when your visit begins"}
-              </p>
+              <span aria-hidden="true">🏠</span>
+              <span>Stay checklist</span>
+              <span className="text-xs font-medium text-white/70">{completed}/{total}</span>
+              <span aria-hidden="true">→</span>
             </Link>
+            <span
+              role="progressbar"
+              aria-label="Stay checklist progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percent}
+              className="h-1.5 w-20 overflow-hidden rounded-full bg-white/20"
+            >
+              <span className="block h-full rounded-full bg-sage" style={{ width: `${percent}%` }} />
+            </span>
             <Link
               href={`/calendar/${stay.id}/checklist#boat-checklist`}
-              className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-md px-2 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <span aria-hidden="true">⛵</span>
-              Boat checklist <span aria-hidden="true">→</span>
+              <span aria-hidden="true">⛵</span> Boat Checklist <span aria-hidden="true">→</span>
             </Link>
-          </div>
-
-          {isCurrent && stay.end === today ? (
-            <div className="mt-2 max-w-md">
-              <Link
-                href={`/calendar/${stay.id}/checklist`}
-                aria-label={`Check-out checklist: ${checkoutCompleted} of ${checkoutTotal} complete`}
-                className="group block rounded-lh border border-white/15 bg-white/10 p-3 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="font-semibold">Check-out progress <span aria-hidden>→</span></span>
-                  <span className="text-white/75">
-                    {checkoutCompleted} of {checkoutTotal}
+            {isCurrent && stay.end === today ? (
+              <span className="inline-flex items-center gap-2">
+                <Link
+                  href={`/calendar/${stay.id}/checklist`}
+                  aria-label={`Open check-out checklist: ${checkoutCompleted} of ${checkoutTotal} complete`}
+                  className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <svg
+                    aria-hidden="true"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2.5 14V2.5h7V14" />
+                    <path d="M5 5.5h2M5 8h2" />
+                    <path d="M8 11h5m-2-2 2 2-2 2" />
+                  </svg>
+                  <span>Check-out</span>
+                  <span className="text-xs font-medium text-white/70">
+                    {checkoutCompleted}/{checkoutTotal}
                   </span>
-                </div>
-                {checkoutTotal > 0 ? (
-                  <>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
-                      <div
-                        className="h-full rounded-full bg-sage"
-                        style={{ width: `${checkoutPercent}%` }}
-                      />
-                    </div>
-                    <p className="mt-1.5 text-xs text-white/65">
-                      {checkoutCompleted === checkoutTotal
-                        ? "All check-out tasks complete"
-                        : `${checkoutTotal - checkoutCompleted} task${checkoutTotal - checkoutCompleted === 1 ? "" : "s"} remaining`}
-                    </p>
-                  </>
-                ) : (
-                  <p className="mt-1.5 text-xs text-white/65">No check-out tasks for this visit</p>
-                )}
-              </Link>
-            </div>
-          ) : null}
+                  <span aria-hidden="true">→</span>
+                </Link>
+                <span
+                  role="progressbar"
+                  aria-label="Check-out checklist progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={checkoutPercent}
+                  className="h-1.5 w-20 overflow-hidden rounded-full bg-white/20"
+                >
+                  <span
+                    className="block h-full rounded-full bg-sage"
+                    style={{ width: `${checkoutPercent}%` }}
+                  />
+                </span>
+              </span>
+            ) : null}
+          </div>
         </div>
 
-        <div className="rounded-lh bg-white p-4 text-ink">
-          <div className="grid grid-cols-2 gap-3">
-            <Link href="/shopping-list" className="rounded-lh bg-mist p-3 hover:bg-water/10">
-              <span className="section-label">Shopping</span>
-              <span className="mt-1 block font-display text-xl">
-                {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
-              </span>
-              <span className="mt-1 block truncate text-xs text-ink-soft">
-                {shoppingItems[0]?.title ?? "Nothing needed"}
-              </span>
-            </Link>
-            <Link
-              href="/upkeep?tab=fixit"
-              className="rounded-lh bg-mist p-3 hover:bg-water/10"
-            >
-              <span className="section-label">Property care</span>
-              <span className="mt-1 block font-display text-xl">
-                {issues.length} open
-              </span>
-              {issues[0] ? (
-                <span className="mt-1 flex min-w-0 items-center gap-2">
-                  <span className="min-w-0 flex-1 truncate text-xs text-ink-soft">
-                    {issues[0].title}
-                  </span>
-                  <span className={`chip chip-${issues[0].urgency} shrink-0 text-[10px]`}>
-                    {issues[0].urgency === "urgent"
-                      ? "Urgent"
-                      : issues[0].urgency === "soon"
-                        ? "Soon"
-                        : "Whenever"}
-                  </span>
-                </span>
-              ) : (
-                <span className="mt-1 block truncate text-xs text-ink-soft">
-                  No open items
-                </span>
-              )}
+        {overlappingVisits.length > 0 ? (
+          <div role="status" className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-amber-100">
+            <span aria-hidden="true">⚠</span>
+            <span className="font-semibold">Overlapping visit:</span>
+            <span className="truncate">
+              {overlappingVisits.slice(0, 2).map((visit) => visit.label).join(", ")}
+              {overlappingVisits.length > 2 ? ` +${overlappingVisits.length - 2} more` : ""}
+            </span>
+            <Link href="/calendar#upcoming-stays" className="shrink-0 font-semibold hover:underline">
+              Calendar →
             </Link>
           </div>
-          {overdueMaintenance.length > 0 ? (
-            <div className="mt-3 rounded-lh border border-red-200 bg-red-50 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-red-800">
-                  Overdue maintenance
-                </span>
-                <span className="text-xs font-semibold text-red-800">
-                  {overdueMaintenance.length} item{overdueMaintenance.length === 1 ? "" : "s"}
-                </span>
-              </div>
-              <ul className="mt-1 space-y-1">
-                {overdueMaintenance.slice(0, 2).map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      href={`/upkeep?tab=maintenance#maintenance-${item.id}`}
-                      className="flex min-w-0 items-baseline justify-between gap-2 text-xs text-red-900 hover:underline"
-                    >
-                      <span className="truncate font-medium">{item.task}</span>
-                      {item.nextDue ? (
-                        <span className="shrink-0 text-red-800/75">{fmtDay(item.nextDue)}</span>
-                      ) : null}
-                    </Link>
-                  </li>
+        ) : null}
+
+        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 md:grid-cols-4">
+          <Link href="/shopping-list" className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist">
+            <span className="section-label text-[9px]">Shopping</span>
+            <span className="mt-0.5 block text-sm font-semibold">
+              {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
+              <span className="ml-1 font-normal text-ink-soft">· {shoppingItems[0]?.title ?? "All set"}</span>
+            </span>
+          </Link>
+
+          <Link href="/upkeep?tab=fixit" className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist">
+            <span className="section-label text-[9px]">Property care</span>
+            <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-sm font-semibold">
+              <span className="shrink-0">{issues.length} open</span>
+              {issues[0] ? (
+                <>
+                  <span className="min-w-0 truncate font-normal text-ink-soft">· {issues[0].title}</span>
+                  <span className={`chip chip-${issues[0].urgency} shrink-0 text-[9px]`}>
+                    {issues[0].urgency === "urgent" ? "Urgent" : issues[0].urgency === "soon" ? "Soon" : "Whenever"}
+                  </span>
+                </>
+              ) : <span className="font-normal text-ink-soft">· All clear</span>}
+            </span>
+          </Link>
+
+          {assignedItems.length > 0 ? (
+            <div className="min-w-0 rounded-md bg-white px-3 py-2 text-ink">
+              <span className="section-label text-[9px]">Assigned · {assignedItems.length}</span>
+              <div className="mt-0.5 space-y-0.5">
+                {assignedItems.slice(0, 2).map((item) => (
+                  <Link key={item.id} href={item.href} className="block truncate text-xs hover:text-water">
+                    <span className="font-semibold">{item.assignedTo}:</span> {item.title}
+                  </Link>
                 ))}
-              </ul>
-              {overdueMaintenance.length > 2 ? (
-                <Link
-                  href="/upkeep?tab=maintenance"
-                  className="mt-1 inline-block text-xs font-semibold text-red-900 hover:underline"
-                >
-                  View all overdue maintenance →
-                </Link>
-              ) : null}
+                {assignedItems.length > 2 ? (
+                  <Link href="/upkeep" className="block text-[10px] font-semibold text-water hover:underline">
+                    +{assignedItems.length - 2} more →
+                  </Link>
+                ) : null}
+              </div>
             </div>
+          ) : null}
+
+          {overdueMaintenance.length > 0 ? (
+            <Link href="/upkeep?tab=maintenance" className="min-w-0 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-900 transition-colors hover:bg-red-100">
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-red-800">
+                Overdue · {overdueMaintenance.length}
+              </span>
+              <span className="mt-0.5 block truncate text-sm font-semibold">
+                {overdueMaintenance[0].task}
+                {overdueMaintenance[0].nextDue ? (
+                  <span className="ml-1 font-normal text-red-800/75">· {fmtDay(overdueMaintenance[0].nextDue)}</span>
+                ) : null}
+              </span>
+            </Link>
           ) : null}
         </div>
       </div>

@@ -22,9 +22,11 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     "a",
     "font",
     "center",
+    "img",
   ],
   allowedAttributes: {
     a: ["href", "target", "rel"],
+    img: ["src", "alt"],
     font: ["color", "size"],
     p: ["style"],
     div: ["style"],
@@ -48,6 +50,18 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
         rel: "noopener noreferrer",
       },
     }),
+  },
+  exclusiveFilter: (frame) => {
+    if (frame.tag !== "img") return false;
+    try {
+      const imageUrl = new URL(frame.attribs.src ?? "");
+      return (
+        imageUrl.protocol !== "https:" ||
+        !imageUrl.hostname.endsWith(".blob.vercel-storage.com")
+      );
+    } catch {
+      return true;
+    }
   },
 };
 
@@ -78,7 +92,7 @@ export function notePlainText(value: string) {
 
 export function sanitizeNoteForStorage(value: string) {
   const cleanHtml = sanitizeHtml(stripRichPrefix(value), SANITIZE_OPTIONS).trim();
-  if (!notePlainText(cleanHtml)) return "";
+  if (!notePlainText(cleanHtml) && !/<img\b/i.test(cleanHtml)) return "";
   return `${RICH_NOTE_PREFIX}${cleanHtml}`;
 }
 

@@ -81,7 +81,7 @@ export function StayForm({
             defaultValue={values?.label ?? stay?.label}
             maxLength={200}
             className="field"
-            placeholder="John & Jenn, Guys Weekend"
+            placeholder="Family weekend at the lake"
           />
         </div>
         <div>
@@ -165,7 +165,7 @@ export function StayForm({
           defaultValue={values?.note ?? stay?.note ?? ""}
           maxLength={4000}
           className="field"
-          placeholder="Arriving after lunch Friday"
+          placeholder="Arriving Friday afternoon"
         />
       </div>
       {state.error ? (

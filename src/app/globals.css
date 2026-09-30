@@ -43,6 +43,9 @@
   --hh-plum: #725e83;
   --hh-ember: #c47a2c;
   --hh-iris: #7d5eaa;
+  --hh-lagoon: #2e8c9f;
+  --hh-marigold: #b18a1e;
+  --hh-cranberry: #ae4f68;
 }
 
 @theme inline {
@@ -272,6 +275,15 @@ body {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+.rich-note img {
+  display: block;
+  max-width: 100%;
+  max-height: 24rem;
+  height: auto;
+  margin: 0.5rem 0;
+  border-radius: var(--radius-lh);
+  object-fit: contain;
 }
 
 } /* end @layer components */

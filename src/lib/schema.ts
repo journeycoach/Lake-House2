@@ -17,7 +17,7 @@ import {
 export const households = pgTable("households", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
-  color: text("color").notNull(), // token: steel | pine | drift | huckle | dusk | reed
+  color: text("color").notNull(), // Household color token from src/lib/colors.ts.
 });
 
 export const users = pgTable("users", {
