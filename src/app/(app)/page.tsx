@@ -130,7 +130,9 @@ export default async function HomePage() {
           >
             Who&apos;s at the lake?{" "}
             <span className="font-semibold text-ink">
-              {here.length > 0 ? here.map((s) => s.label).join(", ") : "Nobody"}
+              {here.length > 0
+                ? here.map((s) => s.householdName ?? s.label).join(", ")
+                : "Nobody"}
             </span>
           </Link>
           <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
