@@ -17,7 +17,6 @@ import {
   removeSchedule,
 } from "./maintenance-actions";
 import { EquipmentSection } from "./equipment-section";
-import { ReportIssueForm } from "./report-issue-form";
 
 export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
 
@@ -45,11 +44,10 @@ function Chevron({ className = "" }: { className?: string }) {
 export default async function UpkeepPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; report?: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const params = await searchParams;
   const activeTab = params.tab === "maintenance" ? "maintenance" : "fixit";
-  const shouldOpenReport = activeTab === "fixit" && params.report === "open";
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const [open, done, items, equipment, serviceRecords] = await Promise.all([
@@ -72,7 +70,19 @@ export default async function UpkeepPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Fix It List" />
+      <PageHeader
+        title="Fix It List"
+        action={
+          editor ? (
+            <Link
+              href="/upkeep/report-issue"
+              className="btn bg-care text-white hover:bg-care/90"
+            >
+              Report an Issue
+            </Link>
+          ) : null
+        }
+      />
 
       <nav
         aria-label="Fix It List sections"
@@ -105,66 +115,10 @@ export default async function UpkeepPage({
       {activeTab === "fixit" ? (
         <>
 
-      {/* Report an issue */}
-      <details
-        id="report-an-issue"
-        open={shouldOpenReport}
-        className={`group mb-6 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint ${
-          editor ? "" : "hidden"
-        }`}
-      >
-        <summary className="flex w-full cursor-pointer list-none items-center justify-between gap-4 rounded-lh p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water [&::-webkit-details-marker]:hidden">
-          <div className="flex items-center gap-3">
-            <span
-              aria-hidden
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
-            >
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 18 18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 2.5 16 15H2L9 2.5Z" />
-                <path d="M9 6.5v4M9 13h.01" />
-              </svg>
-            </span>
-            <div>
-              <p className="section-label text-water">Report an issue</p>
-              <h2 className="font-display mt-0.5 text-xl">What needs fixing</h2>
-            </div>
-          </div>
-          <span className="flex items-center gap-2 text-sm font-semibold text-water">
-            Report an Issue
-            <svg
-              aria-hidden
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="transition-transform group-open:rotate-180"
-            >
-              <path d="m3 5 4 4 4-4" />
-            </svg>
-          </span>
-        </summary>
-        <div className="mx-4 mb-4 hidden border-t border-sand-line pt-4 group-open:block">
-          <ReportIssueForm />
-        </div>
-      </details>
-
       {/* Fix-it list */}
       <section className="card p-4 sm:p-6">
         <p className="section-label">Fix-it list</p>
-        <h2 className="font-display text-2xl mt-1">Keep the place cared for</h2>
+        <h2 className="font-display mt-1 text-2xl">Keep the place cared for</h2>
         <ul className="mt-4">
           {open.map((f) => {
             const summary = (
@@ -419,13 +373,13 @@ export default async function UpkeepPage({
                   <label htmlFor="task" className="flabel">
                     Task
                   </label>
-                  <input id="task" name="task" required maxLength={200} className="field" placeholder="Clean gutters" />
+                  <input id="task" name="task" required maxLength={200} className="field" placeholder="Inspect dock boards and hardware" />
                 </div>
                 <div>
                   <label htmlFor="cadence" className="flabel">
                     How often
                   </label>
-                  <input id="cadence" name="cadence" maxLength={200} className="field" placeholder="Every spring and fall" />
+                  <input id="cadence" name="cadence" maxLength={200} className="field" placeholder="Before each lake season" />
                 </div>
                 <div>
                   <label htmlFor="nextDue" className="flabel">

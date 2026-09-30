@@ -21,7 +21,11 @@ export async function addNote(formData: FormData) {
     tag,
     createdAt: new Date().toISOString(),
   });
-  await logActivity(user, "shared a note", notePlainText(body).slice(0, 80));
+  await logActivity(
+    user,
+    "shared a note",
+    notePlainText(body).slice(0, 80) || "Attached an image"
+  );
   revalidatePath("/notes");
   revalidatePath("/");
   return true;
@@ -41,7 +45,11 @@ export async function updateNote(formData: FormData) {
   if (!body) return;
   const tag = String(formData.get("tag") ?? note.tag);
   await getDb().update(schema.notes).set({ body, tag }).where(eq(schema.notes.id, id));
-  await logActivity(user, "updated a note", notePlainText(body).slice(0, 80));
+  await logActivity(
+    user,
+    "updated a note",
+    notePlainText(body).slice(0, 80) || "Attached an image"
+  );
   revalidatePath("/notes");
   revalidatePath("/");
 }

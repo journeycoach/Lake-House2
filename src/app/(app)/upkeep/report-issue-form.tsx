@@ -30,8 +30,6 @@ export function ReportIssueForm() {
           await reportIssue(formData);
           formRef.current?.reset();
           setAdded(true);
-          const details = document.getElementById("report-an-issue");
-          if (details instanceof HTMLDetailsElement) details.open = false;
         } catch (caught) {
           const message = (caught as Error).message;
           setError(
@@ -56,7 +54,7 @@ export function ReportIssueForm() {
             required
             maxLength={200}
             className="field"
-            placeholder="Dock light is flickering"
+            placeholder="Dock light flickers after rain"
           />
         </div>
         <div>
@@ -109,7 +107,7 @@ export function ReportIssueForm() {
           rows={2}
           maxLength={4000}
           className="field"
-          placeholder="Check the fixture and replace it if needed."
+          placeholder="Describe when it happens and what you have already checked."
         />
       </div>
       <div>
@@ -124,7 +122,7 @@ export function ReportIssueForm() {
           className="field text-sm"
         />
         <p className="mt-1 text-xs text-ink-faint">
-          Add a photo from your phone so everyone can see exactly what needs attention.
+          Please include a picture to help clarify the issue you see.
         </p>
       </div>
       <button type="submit" disabled={saving} className="btn btn-primary">

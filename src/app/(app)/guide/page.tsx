@@ -111,6 +111,13 @@ export default async function GuidePage() {
               : isBoatChecklist
                 ? "boat"
                 : "arrival";
+            const checklistSectionTitle = isArrivalChecklist
+              ? "Arrival Checklist"
+              : isDepartureChecklist
+                ? "Departure Checklist"
+                : isBoatChecklist
+                  ? "Boat Checklist"
+                  : s.title;
             const guideChecklistItems = isDepartureChecklist
               ? departureItems
               : isBoatChecklist
@@ -126,7 +133,7 @@ export default async function GuidePage() {
             return (
               <SectionCard
                 key={s.id}
-                section={s}
+                section={{ ...s, title: checklistSectionTitle }}
                 blocks={sectionBlocks}
                 canEdit={editor}
                 anchorId={isArrivalChecklist ? "arrival-check-list" : undefined}

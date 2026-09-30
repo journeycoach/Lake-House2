@@ -11,6 +11,9 @@ const TOKENS = [
   "plum",
   "ember",
   "iris",
+  "lagoon",
+  "marigold",
+  "cranberry",
 ] as const;
 export type HouseholdColor = (typeof TOKENS)[number];
 

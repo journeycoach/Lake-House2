@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const WEATHER_URL =
-  "https://api.open-meteo.com/v1/forecast?latitude=32.18&longitude=-95.478333&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=1";
+  "https://api.open-meteo.com/v1/forecast?latitude=32.18&longitude=-95.478333&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=16";
 
 const FORECAST_URL =
   "https://forecast.weather.gov/MapClick.php?lat=32.18&lon=-95.478333";
@@ -76,6 +76,8 @@ type WeatherResponse = {
     wind_speed_10m: number;
   };
   daily: {
+    time: string[];
+    weather_code: number[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
     precipitation_probability_max?: number[];
@@ -214,7 +216,7 @@ export async function VisitWeatherBadge() {
         className="inline-flex items-center gap-1.5 rounded-full border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water"
       >
         <span aria-hidden>🌤️</span>
-        <span>Weather</span>
+        <span>Current</span>
         {hasSevereAlert ? (
           <span aria-hidden="true" className="ml-0.5 h-2 w-2 rounded-full bg-red-400 ring-2 ring-white/40" />
         ) : null}
@@ -243,6 +245,9 @@ export async function VisitWeatherBadge() {
         {theme.icon}
       </span>
       <span className="flex flex-col items-start leading-tight">
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-white/70">
+          Current
+        </span>
         <span className="flex items-center gap-1.5">
           <span className="text-sm font-bold">{Math.round(current.temperature_2m)}°</span>
           {hasSevereAlert ? (
@@ -256,6 +261,89 @@ export async function VisitWeatherBadge() {
           {secondaryDetails}
         </span>
       </span>
+    </Link>
+  );
+}
+
+function forecastPriority(code: number) {
+  if (code >= 95) return 6;
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 5;
+  if (code >= 80) return 4;
+  if (code >= 51) return 3;
+  if (code === 45 || code === 48) return 2;
+  if (code === 3) return 1;
+  return 0;
+}
+
+export function VisitWeatherForecastFallback() {
+  return <div className="mt-2 h-7 w-48 animate-pulse rounded-full bg-white/10" />;
+}
+
+export async function VisitWeatherForecast({
+  start,
+  end,
+  today,
+}: {
+  start: string;
+  end: string;
+  today: string;
+}) {
+  const weather = await lakeWeather();
+  const firstVisitDay = start > today ? start : today;
+  const coveredDays = weather?.daily.time
+    .map((date, index) => ({ date, index }))
+    .filter(({ date }) => date >= firstVisitDay && date <= end) ?? [];
+
+  if (!weather || coveredDays.length === 0) {
+    return (
+      <Link
+        href={FORECAST_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white/85 hover:bg-white/15"
+      >
+        <span aria-hidden="true" className="text-base">🌤️</span>
+        <span className="text-xs">Forecast available closer to your stay</span>
+      </Link>
+    );
+  }
+
+  const high = Math.round(
+    Math.max(...coveredDays.map(({ index }) => weather.daily.temperature_2m_max[index]))
+  );
+  const low = Math.round(
+    Math.min(...coveredDays.map(({ index }) => weather.daily.temperature_2m_min[index]))
+  );
+  const rainChance = Math.max(
+    ...coveredDays.map(({ index }) => weather.daily.precipitation_probability_max?.[index] ?? 0)
+  );
+  const representativeCode = coveredDays
+    .map(({ index }) => weather.daily.weather_code[index])
+    .filter(Number.isFinite)
+    .sort((a, b) => forecastPriority(b) - forecastPriority(a))[0] ?? 0;
+  const theme = weatherTheme(representativeCode, true);
+  const dateLabel = coveredDays.length === 1
+    ? "1-day forecast"
+    : `${coveredDays.length}-day forecast`;
+  const rainLabel = rainChance >= 30 ? ` · Rain up to ${Math.round(rainChance)}%` : "";
+
+  return (
+    <Link
+      href={FORECAST_URL}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Visit weather forecast: ${theme.label}, high ${high}, low ${low} degrees${rainChance >= 30 ? `, rain chance up to ${Math.round(rainChance)} percent` : ""}. Open full forecast.`}
+      className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white transition-colors hover:bg-white/15"
+    >
+      <span role="img" aria-label={theme.label} className="text-base leading-none">
+        {theme.icon}
+      </span>
+      <span className="min-w-0 truncate text-xs">
+        <span className="font-semibold">Visit forecast</span>
+        <span className="text-white/65"> · {dateLabel} · </span>
+        {theme.label} · H {high}° / L {low}°{rainLabel}
+      </span>
+      <span aria-hidden="true" className="shrink-0 text-xs text-white/60">↗</span>
     </Link>
   );
 }

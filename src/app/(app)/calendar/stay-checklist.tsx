@@ -140,11 +140,11 @@ export function StayChecklist({
       {open ? (
         <div className="mt-3 border-t border-sand-line pt-3">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StayChecklistPhase label="Check in" items={checkin} canToggle={canToggle} />
+            <StayChecklistPhase label="Check-in" items={checkin} canToggle={canToggle} />
             {boat.length > 0 ? (
               <StayChecklistPhase label="Boat" items={boat} canToggle={canToggle} />
             ) : null}
-            <StayChecklistPhase label="Check out" items={checkout} canToggle={canToggle} />
+            <StayChecklistPhase label="Check-out" items={checkout} canToggle={canToggle} />
           </div>
           {!canToggle ? (
             <p className="mt-3 text-xs text-ink-faint">

@@ -360,7 +360,7 @@ export function EquipmentSection({
                         required
                         maxLength={200}
                         className="field py-2"
-                        placeholder="Annual tune-up"
+                        placeholder="Annual HVAC service"
                       />
                     </label>
                     <label>

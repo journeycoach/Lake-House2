@@ -10,8 +10,8 @@ const KINDS = [
   { value: "list", label: "List", placeholder: "One item per line" },
   { value: "secret", label: "Code or password", placeholder: "The code itself" },
   { value: "photo", label: "Photo", placeholder: "" },
-  { value: "contact", label: "Phone number", placeholder: "512 555 0134" },
-  { value: "address", label: "Address", placeholder: "1200 Lakeshore Dr, Kingsland TX" },
+  { value: "contact", label: "Phone number", placeholder: "903-555-0123 (example)" },
+  { value: "address", label: "Address", placeholder: "123 Lake Road, Palestine, TX (example)" },
 ];
 
 const LABEL_HINT: Record<string, string> = {
