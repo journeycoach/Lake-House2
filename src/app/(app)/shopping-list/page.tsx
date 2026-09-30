@@ -46,8 +46,8 @@ export default async function ChecklistPage() {
           >
             {item.done ? (
               <svg
-                width="14"
-                height="14"
+                width="12"
+                height="12"
                 viewBox="0 0 10 10"
                 fill="none"
                 stroke="currentColor"
