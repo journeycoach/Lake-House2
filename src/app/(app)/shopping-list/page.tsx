@@ -38,7 +38,7 @@ export default async function ChecklistPage() {
             type="submit"
             aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
             aria-pressed={Boolean(item.done)}
-            className={`flex h-11 w-11 items-center justify-center rounded-md border transition-colors sm:h-9 sm:w-9 ${
+            className={`check-control flex items-center justify-center rounded-md border transition-colors ${
               item.done
                 ? "border-sage bg-sage text-white hover:bg-deep"
                 : "border-sand-line bg-white hover:border-water hover:bg-mist"

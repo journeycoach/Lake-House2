@@ -180,7 +180,12 @@ export function StayForm({
         <div className="rounded-lh border border-amber/40 bg-amber/10 p-3 text-sm">
           <p className="font-medium text-ink">{state.conflict}</p>
           <label className="mt-2 flex items-center gap-2 text-ink-soft">
-            <input type="checkbox" name="confirmConflict" value="1" />
+            <input
+              type="checkbox"
+              name="confirmConflict"
+              value="1"
+              className="h-4 w-4 shrink-0 accent-water"
+            />
             Save anyway, we are overlapping on purpose
           </label>
         </div>

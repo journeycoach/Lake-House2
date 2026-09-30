@@ -52,7 +52,7 @@ export function StayChecklistPhase({
                 aria-label={`${item.done ? "Uncheck" : "Check"} ${item.title}`}
                 aria-pressed={item.done}
                 title={canToggle ? undefined : "Available to the current resident during this stay"}
-                className={`flex h-6 w-6 items-center justify-center rounded-[5px] border transition-colors ${
+                className={`check-control flex items-center justify-center rounded-[5px] border transition-colors ${
                   !canToggle
                     ? "cursor-not-allowed border-sand-line bg-mist text-ink-faint opacity-60"
                     : item.done
