@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const WEATHER_URL =
-  "https://api.open-meteo.com/v1/forecast?latitude=32.18&longitude=-95.478333&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=1";
+  "https://api.open-meteo.com/v1/forecast?latitude=32.18&longitude=-95.478333&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=1";
 
 const FORECAST_URL =
   "https://forecast.weather.gov/MapClick.php?lat=32.18&lon=-95.478333";
@@ -78,6 +78,7 @@ type WeatherResponse = {
   daily: {
     temperature_2m_max: number[];
     temperature_2m_min: number[];
+    precipitation_probability_max?: number[];
   };
 };
 
@@ -192,6 +193,70 @@ async function lakeWeather(): Promise<WeatherResponse | null> {
 export function LiveWeatherFallback() {
   return (
     <div className="min-h-32 w-full animate-pulse rounded-lh bg-water/15" />
+  );
+}
+
+export function VisitWeatherBadgeFallback() {
+  return <span className="h-9 w-16 animate-pulse rounded-full border border-deep bg-deep/70" />;
+}
+
+export async function VisitWeatherBadge() {
+  const [weather, alerts] = await Promise.all([lakeWeather(), lakeAlerts()]);
+  const hasSevereAlert = alerts.some((alert) => alertIsSevere(alert.severity));
+
+  if (!weather) {
+    return (
+      <Link
+        href={FORECAST_URL}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`Open the Lake Palestine weather forecast${hasSevereAlert ? "; severe weather alert active" : ""}`}
+        className="inline-flex items-center gap-1.5 rounded-full border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water"
+      >
+        <span aria-hidden>🌤️</span>
+        <span>Weather</span>
+        {hasSevereAlert ? (
+          <span aria-hidden="true" className="ml-0.5 h-2 w-2 rounded-full bg-red-400 ring-2 ring-white/40" />
+        ) : null}
+      </Link>
+    );
+  }
+
+  const current = weather.current;
+  const theme = weatherTheme(current.weather_code, current.is_day === 1);
+  const rainChance = weather.daily.precipitation_probability_max?.[0];
+  const showRainChance = typeof rainChance === "number" && rainChance >= 30;
+  const secondaryDetails = [
+    `Feels ${Math.round(current.apparent_temperature)}°`,
+    ...(showRainChance ? [`Rain ${Math.round(rainChance)}%`] : []),
+  ].join(" · ");
+
+  return (
+    <Link
+      href={FORECAST_URL}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Lake Palestine weather: ${theme.label}, ${Math.round(current.temperature_2m)} degrees, feels like ${Math.round(current.apparent_temperature)} degrees${showRainChance ? `, ${Math.round(rainChance)} percent chance of rain` : ""}${hasSevereAlert ? ". Severe weather alert active" : ""}. Open the full forecast.`}
+      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-deep bg-deep px-2.5 py-1.5 text-white transition-colors hover:bg-water"
+    >
+      <span role="img" aria-label={theme.label} className="text-lg leading-none">
+        {theme.icon}
+      </span>
+      <span className="flex flex-col items-start leading-tight">
+        <span className="flex items-center gap-1.5">
+          <span className="text-sm font-bold">{Math.round(current.temperature_2m)}°</span>
+          {hasSevereAlert ? (
+            <span
+              aria-hidden="true"
+              className="h-2 w-2 rounded-full bg-red-400 ring-2 ring-white/40"
+            />
+          ) : null}
+        </span>
+        <span className="whitespace-nowrap text-[9px] font-medium text-white/75">
+          {secondaryDetails}
+        </span>
+      </span>
+    </Link>
   );
 }
 

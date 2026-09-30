@@ -92,7 +92,11 @@ export default async function VisitChecklistPage({
             const complete = items.length > 0 && completed === items.length;
 
             return (
-              <section key={phase} className="rounded-lh border border-sand-line p-4">
+              <section
+                key={phase}
+                id={phase === "boat" ? "boat-checklist" : undefined}
+                className="rounded-lh border border-sand-line p-4"
+              >
                 <div className="flex items-center justify-between gap-3 border-b border-sand-line pb-4">
                   <h2 className="font-display text-2xl">{title}</h2>
                   <span className={`chip shrink-0 ${complete ? "chip-ready" : "chip-whenever"}`}>

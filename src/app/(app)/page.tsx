@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
-import { fmtDay, fmtLong, fmtRange, parseISO, todayISO } from "@/lib/dates";
+import { fmtLong, fmtRange, parseISO, todayISO } from "@/lib/dates";
 import { householdVar } from "@/lib/colors";
 import { canEdit } from "@/lib/roles";
 import {
@@ -19,8 +17,8 @@ import {
 import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
 import { RichNote } from "@/components/rich-note";
 import {
-  LiveWeatherCard,
-  LiveWeatherFallback,
+  VisitWeatherBadge,
+  VisitWeatherBadgeFallback,
 } from "@/components/live-weather-card";
 import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
 import { toggleItem } from "./shopping-list/actions";
@@ -55,36 +53,9 @@ export default async function HomePage() {
   );
   const progressByStay = await stayChecklistProgress(progressStayIds);
 
-  // Attention: only the handful of things someone should actually act on.
-  const upcomingOrCurrent = stays
-    .filter((s) => s.end >= today)
-    .sort((a, b) => a.start.localeCompare(b.start));
-  const overlaps: { a: (typeof stays)[number]; b: (typeof stays)[number] }[] = [];
-  for (let i = 0; i < upcomingOrCurrent.length; i++) {
-    for (let j = i + 1; j < upcomingOrCurrent.length; j++) {
-      const a = upcomingOrCurrent[i];
-      const b = upcomingOrCurrent[j];
-      if (a.householdId !== b.householdId && a.start <= b.end && b.start <= a.end) {
-        overlaps.push({ a, b });
-      }
-    }
-  }
   const overdueMaintenance = maintenance.filter(
     (item) => item.nextDue && item.nextDue < today
   );
-  const urgentFixes = fixes.filter((f) => f.priority === "urgent");
-  const departingToday = here.filter((s) => s.end === today);
-  const incompleteDepartures = departingToday
-    .map((s) => ({ stay: s, progress: progressByStay.get(s.id) }))
-    .filter(
-      ({ progress }) =>
-        progress && progress.checkoutTotal > 0 && progress.checkoutCompleted < progress.checkoutTotal
-    );
-  const hasAttention =
-    overlaps.length > 0 ||
-    overdueMaintenance.length > 0 ||
-    urgentFixes.length > 0 ||
-    incompleteDepartures.length > 0;
   const { y, m } = (() => {
     const t = parseISO(today);
     return { y: t.y, m: t.m };
@@ -102,7 +73,11 @@ export default async function HomePage() {
   const currentChecks = openChecks.slice(0, 4);
   const visitIssues = myVisit
     ? [
-        ...urgentFixes.map((item) => ({ id: item.id, title: item.title })),
+        ...fixes.map((item) => ({
+          id: item.id,
+          title: item.title,
+          urgency: item.priority as "urgent" | "soon" | "whenever",
+        })),
         ...maintenance
           .filter(
             (item) =>
@@ -110,7 +85,7 @@ export default async function HomePage() {
               item.nextDue >= today &&
               item.nextDue <= myVisit.end
           )
-          .map((item) => ({ id: item.id, title: item.task })),
+          .map((item) => ({ id: item.id, title: item.task, urgency: "soon" as const })),
       ]
     : [];
 
@@ -124,17 +99,22 @@ export default async function HomePage() {
           </h1>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-          <Link
-            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
-            className="btn btn-quiet min-w-0 bg-card px-3 text-xs sm:text-xs"
-          >
-            Who&apos;s at the lake?{" "}
-            <span className="font-semibold text-ink">
-              {here.length > 0
-                ? here.map((s) => s.householdName ?? s.label).join(", ")
+          <div className="flex min-w-0 items-center gap-2">
+            <Suspense fallback={<VisitWeatherBadgeFallback />}>
+              <VisitWeatherBadge />
+            </Suspense>
+            <Link
+              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
+              className="btn btn-quiet min-w-0 flex-1 bg-card px-3 text-xs sm:text-xs"
+            >
+              Who&apos;s at the lake?{" "}
+              <span className="font-semibold text-ink">
+                {here.length > 0
+                  ? here.map((s) => s.householdName ?? s.label).join(", ")
                 : "Nobody"}
-            </span>
-          </Link>
+              </span>
+            </Link>
+          </div>
           <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
             {canEdit(user.effectiveRole) ? (
               <>
@@ -169,90 +149,20 @@ export default async function HomePage() {
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
           issues={visitIssues}
+          overdueMaintenance={overdueMaintenance.map(({ id, task, nextDue }) => ({
+            id,
+            task,
+            nextDue,
+          }))}
         />
       ) : (
         <MyVisitEmptyState canPlan={canEdit(user.effectiveRole)} />
       )}
 
-      {/* Hero: needs-attention + weather; "who's at the lake" now lives in the header as a compact button. */}
-      <div className="grid gap-2 sm:gap-4 lg:grid-cols-2 lg:items-start">
-      {hasAttention ? (
-        <section className="card p-4 sm:p-6">
-          <p className="section-label">Needs attention</p>
-          <ul className="mt-2 space-y-0.5 sm:mt-3 sm:space-y-1">
-            {overlaps.map(({ a, b }) => (
-              <li key={`overlap-${a.id}-${b.id}`}>
-                <Link
-                  href="/calendar"
-                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
-                >
-                  <span className="chip chip-soon shrink-0">Overlap</span>
-                  <span className="shrink-0 text-xs font-medium text-ink-soft">
-                    {fmtRange(
-                      a.start > b.start ? a.start : b.start,
-                      a.end < b.end ? a.end : b.end
-                    )}
-                  </span>
-                  <span className="truncate text-sm font-semibold">
-                    {a.label} & {b.label}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            {overdueMaintenance.map((item) => (
-              <li key={`maint-${item.id}`}>
-                <Link
-                  href="/upkeep?tab=maintenance"
-                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
-                >
-                  <span className="chip chip-urgent shrink-0">Overdue</span>
-                  <span className="shrink-0 text-xs font-medium text-ink-soft">
-                    due {fmtDay(item.nextDue as string)}
-                  </span>
-                  <span className="truncate text-sm font-semibold">{item.task}</span>
-                </Link>
-              </li>
-            ))}
-            {urgentFixes.map((f) => (
-              <li key={`fix-${f.id}`}>
-                <Link
-                  href="/upkeep?tab=fixit"
-                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
-                >
-                  <span className="chip chip-urgent shrink-0">Urgent</span>
-                  <span className="truncate text-sm">
-                    <span className="font-semibold">{f.title}</span>
-                    {f.location ? ` · ${f.location}` : ""}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            {incompleteDepartures.map(({ stay, progress }) => (
-              <li key={`departure-${stay.id}`}>
-                <Link
-                  href={`/calendar/${stay.id}/checklist`}
-                  className="flex min-w-0 items-center gap-2 rounded-lh px-2 py-1 sm:py-1.5 -mx-2 hover:bg-mist/60"
-                >
-                  <span className="chip chip-urgent shrink-0">Leaving today</span>
-                  <span className="shrink-0 text-xs font-medium text-ink-soft">
-                    {(progress?.checkoutTotal ?? 0) - (progress?.checkoutCompleted ?? 0)} left
-                  </span>
-                  <span className="truncate text-sm font-semibold">{stay.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <Suspense fallback={<LiveWeatherFallback />}>
-        <LiveWeatherCard />
-      </Suspense>
-      </div>
-
-      <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5">
+      <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5 lg:items-start">
+        <div className="contents lg:col-span-3 lg:grid lg:content-start lg:gap-6">
         {/* Calendar preview: grid on desktop, agenda on mobile */}
-        <div className="card p-4 sm:p-6 lg:col-span-3">
+        <div className="card order-1 p-4 sm:p-6">
           <Link href="/calendar" className="group flex items-baseline justify-between gap-4">
             <div>
               <p className="section-label">Family calendar</p>
@@ -309,14 +219,48 @@ export default async function HomePage() {
           </div>
         </div>
 
+        {/* Notes */}
+        <section className="card order-4 p-4 sm:p-6">
+          <div className="flex items-baseline justify-between gap-4">
+            <div>
+              <Link
+                href="/notes"
+                className="font-display text-2xl hover:text-water transition-colors"
+              >
+                FYI Everyone
+              </Link>
+            </div>
+            <Link
+              href="/notes"
+              className="text-sm font-medium text-water hover:text-deep-2"
+            >
+              All notes
+            </Link>
+          </div>
+          <ul className="mt-4 space-y-4">
+            {notes.map((n) => (
+              <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
+                <RichNote body={n.body} />
+                <p className="mt-1 text-xs text-ink-faint">
+                  {n.authorName} · {n.tag}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+        </div>
+
+        <div className="contents lg:col-span-2 lg:grid lg:content-start lg:gap-6">
         {/* Checklist */}
-        <section className="card p-4 sm:p-6 lg:col-span-2">
+        <section className="card order-2 p-4 sm:p-6">
           <p className="section-label">Shopping List</p>
           <Link
             href="/shopping-list"
-            className="font-display text-2xl hover:text-water transition-colors"
+            className="block font-display text-xl leading-tight transition-colors hover:text-water"
           >
-            Pickup before the next trip
+            {openChecks.length > 0
+              ? `Pick up ${openChecks.length} item${openChecks.length === 1 ? "" : "s"} before the next trip`
+              : "Nothing to pick up before the next trip"}
           </Link>
           <div className="mt-4">
             <p className="section-label">Current</p>
@@ -364,26 +308,24 @@ export default async function HomePage() {
         </section>
 
         {/* Fix-it */}
-        <section className="card p-4 sm:p-6 lg:col-span-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <div>
-              <p className="section-label">Fix-it list</p>
-              <Link
-                href="/upkeep"
-                className="font-display text-2xl hover:text-water transition-colors"
-              >
-                {fixes.length === 0
-                  ? "Nothing needs attention"
-                  : `${fixes.length} thing${fixes.length === 1 ? "" : "s"} need${fixes.length === 1 ? "s" : ""} attention`}
-              </Link>
-            </div>
+        <section className="card order-3 p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-2">
+            <p className="section-label">Fix-it list</p>
             <Link
               href="/upkeep"
-              className="text-sm font-medium text-water hover:text-deep-2"
+              className="shrink-0 whitespace-nowrap text-xs font-medium text-water hover:text-deep-2 sm:text-sm"
             >
               {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}
             </Link>
           </div>
+          <Link
+            href="/upkeep"
+            className="mt-1 block font-display text-xl leading-tight transition-colors hover:text-water"
+          >
+            {fixes.length === 0
+              ? "Nothing needs attention"
+              : `${fixes.length} thing${fixes.length === 1 ? "" : "s"} need${fixes.length === 1 ? "s" : ""} attention`}
+          </Link>
           <ul className="mt-4">
             {fixes.slice(0, 5).map((f) => (
               <li
@@ -410,36 +352,7 @@ export default async function HomePage() {
             </Link>
           ) : null}
         </section>
-
-        {/* Notes */}
-        <section className="card p-4 sm:p-6 lg:col-span-2">
-          <div className="flex items-baseline justify-between gap-4">
-            <div>
-              <Link
-                href="/notes"
-                className="font-display text-2xl hover:text-water transition-colors"
-              >
-                FYI Everyone
-              </Link>
-            </div>
-            <Link
-              href="/notes"
-              className="text-sm font-medium text-water hover:text-deep-2"
-            >
-              All notes
-            </Link>
-          </div>
-          <ul className="mt-4 space-y-4">
-            {notes.map((n) => (
-              <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
-                <RichNote body={n.body} />
-                <p className="mt-1 text-xs text-ink-faint">
-                  {n.authorName} · {n.tag}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
+        </div>
       </div>
 
       {/* Quick reference */}
