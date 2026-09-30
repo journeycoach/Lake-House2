@@ -192,13 +192,13 @@ export default async function UpkeepPage({
                     <button
                       type="submit"
                       aria-label={`Mark "${f.title}" done`}
-                      className="h-5 w-5 rounded-[4px] border border-sand-line hover:border-water"
+                      className="check-control rounded-[4px] border border-sand-line hover:border-water"
                     />
                   </form>
                 ) : (
                   <span
                     aria-hidden
-                    className="h-5 w-5 shrink-0 rounded-[4px] border border-sand-line"
+                    className="check-control shrink-0 rounded-[4px] border border-sand-line"
                   />
                 )}
                 {f.photoUrl ? (
@@ -522,7 +522,7 @@ export default async function UpkeepPage({
                               ? "Mark done"
                               : "Marked done — set a new due date to schedule it again"
                           }
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md border transition-colors sm:h-9 sm:w-9 ${
+                          className={`check-control flex shrink-0 items-center justify-center rounded-md border transition-colors ${
                             !m.nextDue
                               ? "border-sage bg-sage text-white"
                               : "border-sand-line bg-white hover:border-sage hover:bg-mist"

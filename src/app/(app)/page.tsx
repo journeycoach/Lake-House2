@@ -332,7 +332,7 @@ export default async function HomePage() {
                       type="submit"
                       aria-label={`Mark "${check.title}" done`}
                       aria-pressed="false"
-                      className="flex h-7 w-7 items-center justify-center rounded-md border border-sand-line bg-white transition-colors hover:border-water hover:bg-mist"
+                      className="check-control flex items-center justify-center rounded-md border border-sand-line bg-white transition-colors hover:border-water hover:bg-mist"
                     />
                   </form>
                   <div className="min-w-0 flex-1">

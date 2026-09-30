@@ -185,6 +185,21 @@ body {
   margin-bottom: 4px;
 }
 
+/* Shared, compact checklist control size across the site. */
+.check-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+@media (min-width: 640px) {
+  .check-control {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 /* Status chip: small on purpose. House status never outranks people. */
 .chip {
   display: inline-flex;
