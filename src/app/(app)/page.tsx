@@ -45,6 +45,14 @@ export default async function HomePage() {
   const myVisit =
     householdStays.find((stay) => stay.start <= today && today <= stay.end) ??
     householdStays[0];
+  const overlappingVisits = myVisit
+    ? stays.filter(
+        (stay) =>
+          stay.id !== myVisit.id &&
+          stay.start <= myVisit.end &&
+          myVisit.start <= stay.end
+      )
+    : [];
   const progressStayIds = Array.from(
     new Set([
       ...here.map((stay) => stay.id),
@@ -146,6 +154,7 @@ export default async function HomePage() {
         <MyVisitCard
           stay={myVisit}
           today={today}
+          overlappingVisits={overlappingVisits}
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
           issues={visitIssues}

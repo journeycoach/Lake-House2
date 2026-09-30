@@ -37,6 +37,7 @@ export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
 export function MyVisitCard({
   stay,
   today,
+  overlappingVisits,
   progress,
   shoppingItems,
   issues,
@@ -44,6 +45,7 @@ export function MyVisitCard({
 }: {
   stay: StayRow;
   today: string;
+  overlappingVisits: StayRow[];
   progress?: StayChecklistProgress;
   shoppingItems: { id: number; title: string }[];
   issues: VisitIssue[];
@@ -71,13 +73,54 @@ export function MyVisitCard({
               {isCurrent ? "At the lake now" : "Upcoming"}
             </span>
           </div>
-          <h2 className="mt-1 font-display text-2xl sm:text-3xl">{stay.label}</h2>
+          <h2 className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-display text-2xl sm:text-3xl">
+            <span>{stay.label}</span>
+            {stay.note ? (
+              <span className="font-sans text-sm font-normal text-white/75">
+                Arrival note: {stay.note}
+              </span>
+            ) : null}
+          </h2>
           <p className="mt-1 text-sm text-white/75">
             {fmtRange(stay.start, stay.end)}
             {guestCount > 0
               ? ` · ${guestCount} guest${guestCount === 1 ? "" : "s"}`
               : ""}
           </p>
+
+          {overlappingVisits.length > 0 ? (
+            <div
+              role="status"
+              className="mt-3 rounded-lg border border-amber-200/40 bg-amber-100/10 px-3 py-2 text-sm text-white/90"
+            >
+              <p className="font-semibold text-amber-100">
+                Another family visit overlaps
+              </p>
+              <ul className="mt-1 space-y-1 text-xs text-white/80">
+                {overlappingVisits.slice(0, 2).map((visit) => {
+                  const overlapStart = visit.start > stay.start ? visit.start : stay.start;
+                  const overlapEnd = visit.end < stay.end ? visit.end : stay.end;
+                  return (
+                    <li key={visit.id}>
+                      {visit.label} · {fmtRange(overlapStart, overlapEnd)}
+                    </li>
+                  );
+                })}
+              </ul>
+              {overlappingVisits.length > 2 ? (
+                <p className="mt-1 text-xs text-white/70">
+                  And {overlappingVisits.length - 2} more overlapping visit
+                  {overlappingVisits.length - 2 === 1 ? "" : "s"}.
+                </p>
+              ) : null}
+              <Link
+                href="/calendar#upcoming-stays"
+                className="mt-1 inline-block text-xs font-semibold text-amber-100 underline decoration-amber-100/50 underline-offset-2 hover:text-white"
+              >
+                View calendar
+              </Link>
+            </div>
+          ) : null}
 
           <div className="mt-4 max-w-md">
             <Link
