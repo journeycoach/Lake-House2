@@ -167,7 +167,7 @@ export default async function HomePage() {
               href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
               className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
             >
-              Check-in checklist
+              Stay Checklist
             </Link>
           </div>
         </div>

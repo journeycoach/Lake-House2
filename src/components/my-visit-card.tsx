@@ -110,17 +110,17 @@ export function MyVisitCard({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 pt-3 lg:border-0 lg:pt-0">
             <Link
               href={`/calendar/${stay.id}/checklist`}
-              aria-label={`Open stay checklist for ${stay.label}: ${completed} of ${total} complete`}
+              aria-label={`Open Stay Checklist for ${stay.label}: ${completed} of ${total} complete`}
               className="group inline-flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <span aria-hidden="true">🏠</span>
-              <span>Stay checklist</span>
+              <span>Stay Checklist</span>
               <span className="text-xs font-medium text-white/70">{completed}/{total}</span>
               <span aria-hidden="true">→</span>
             </Link>
             <span
               role="progressbar"
-              aria-label="Stay checklist progress"
+              aria-label="Stay Checklist progress"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={percent}
@@ -138,7 +138,7 @@ export function MyVisitCard({
               <span className="inline-flex items-center gap-2">
                 <Link
                   href={`/calendar/${stay.id}/checklist`}
-                  aria-label={`Open check-out checklist: ${checkoutCompleted} of ${checkoutTotal} complete`}
+                  aria-label={`Open Leave Checklist: ${checkoutCompleted} of ${checkoutTotal} complete`}
                   className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <svg
@@ -156,7 +156,7 @@ export function MyVisitCard({
                     <path d="M5 5.5h2M5 8h2" />
                     <path d="M8 11h5m-2-2 2 2-2 2" />
                   </svg>
-                  <span>Check-out</span>
+                  <span>Leave Checklist</span>
                   <span className="text-xs font-medium text-white/70">
                     {checkoutCompleted}/{checkoutTotal}
                   </span>
@@ -164,7 +164,7 @@ export function MyVisitCard({
                 </Link>
                 <span
                   role="progressbar"
-                  aria-label="Check-out checklist progress"
+                  aria-label="Leave Checklist progress"
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={checkoutPercent}
