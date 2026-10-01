@@ -111,7 +111,7 @@ export function EquipmentSection({
               className="field sm:col-span-2 lg:col-span-3"
               placeholder="Filter sizes, service notes, or anything else worth keeping"
             />
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="mobile-form-actions sm:col-span-2 lg:col-span-3">
               <SubmitButton>Add equipment</SubmitButton>
             </div>
           </form>

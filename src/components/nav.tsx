@@ -7,6 +7,9 @@ import { BrandMark } from "./brand-mark";
 
 export type NavUser = { name: string; role: string };
 
+const MAP_URL =
+  "https://www.google.com/maps/place/22082+Blue+Water+Rd,+Chandler,+TX+75758/@32.1995742,-95.4879946,18.06z/data=!4m6!3m5!1s0x86484c8512a9e5c5:0xb35bce62845f2a7c!8m2!3d32.2011789!4d-95.4869285!16s%2Fg%2F11j7mkmsj7?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D";
+
 const LINKS: {
   href: string;
   label: string;
@@ -29,7 +32,15 @@ const LINKS: {
   },
 ];
 
-const MOBILE_PRIMARY_LINKS = LINKS.filter((link) => !link.adminOnly);
+const MOBILE_PRIMARY_HREFS = new Set([
+  "/",
+  "/calendar",
+  "/upkeep",
+  "/shopping-list",
+]);
+const MOBILE_PRIMARY_LINKS = LINKS.filter((link) =>
+  MOBILE_PRIMARY_HREFS.has(link.href)
+);
 
 function MobileBottomNav({
   open,
@@ -45,7 +56,7 @@ function MobileBottomNav({
   return (
     <nav
       aria-label="Primary mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-7 border-t border-white/15 bg-deep/98 px-0.5 pt-1 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.25rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/15 bg-deep/98 px-1 pt-1.5 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       {MOBILE_PRIMARY_LINKS.map((link) => {
         const active =
@@ -58,14 +69,16 @@ function MobileBottomNav({
             href={link.href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[9px] font-semibold transition-colors ${
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
               active ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
             }`}
           >
-            <span aria-hidden className="text-sm leading-none">
+            <span aria-hidden className="text-base leading-none">
               {link.icon}
             </span>
-            <span className="max-w-full truncate">{link.label}</span>
+            <span className="max-w-full break-words text-center leading-tight">
+              {link.label}
+            </span>
           </Link>
         );
       })}
@@ -74,11 +87,11 @@ function MobileBottomNav({
         aria-label={open ? "Close more navigation" : "Open more navigation"}
         aria-expanded={open}
         onClick={onMore}
-        className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[9px] font-semibold transition-colors ${
+        className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
           open ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
         }`}
       >
-        <span aria-hidden className="text-sm leading-none">•••</span>
+        <span aria-hidden className="text-base leading-none">•••</span>
         <span>More</span>
       </button>
     </nav>
@@ -88,14 +101,19 @@ function MobileBottomNav({
 function NavLinks({
   user,
   onNavigate,
+  secondaryOnly = false,
 }: {
   user: NavUser;
   onNavigate?: () => void;
+  secondaryOnly?: boolean;
 }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
-      {LINKS.filter((l) => !l.adminOnly || user.role === "admin").map((l) => {
+      {LINKS.filter((link) =>
+        (!link.adminOnly || user.role === "admin") &&
+        (!secondaryOnly || !MOBILE_PRIMARY_HREFS.has(link.href))
+      ).map((l) => {
         const active =
           l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
@@ -136,9 +154,11 @@ function Mark() {
 
 function SearchLink({
   onNavigate,
+  showLabel = false,
   className = "",
 }: {
   onNavigate?: () => void;
+  showLabel?: boolean;
   className?: string;
 }) {
   return (
@@ -147,11 +167,12 @@ function SearchLink({
       onClick={onNavigate}
       aria-label="Search"
       title="Search"
-      className={`flex h-11 w-11 items-center justify-center rounded-lh border border-white/25 text-white hover:bg-white/10 transition-colors ${className}`}
+      className={`flex h-11 w-11 ${showLabel ? "flex-col gap-0.5" : "items-center justify-center"} items-center justify-center rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10 ${className}`}
     >
-      <span aria-hidden className="text-base leading-none">
+      <span aria-hidden className={`${showLabel ? "text-sm" : "text-base"} leading-none`}>
         🔍
       </span>
+      {showLabel ? <span className="text-[9px] font-semibold leading-none">Search</span> : null}
     </Link>
   );
 }
@@ -220,7 +241,18 @@ export function MobileHeader({
       <div className="flex items-center justify-between gap-2 p-4">
         <Mark />
         <div className="flex items-center gap-2">
-        <SearchLink onNavigate={() => setOpen(false)} />
+        <SearchLink onNavigate={() => setOpen(false)} showLabel />
+        <a
+          href={MAP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open Google Maps directions to Paine Pointe in a new tab"
+          title="Map & directions"
+          className="flex h-11 w-11 flex-col items-center justify-center gap-0.5 rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
+        >
+          <span aria-hidden className="text-sm leading-none">📍</span>
+          <span className="text-[9px] font-semibold leading-none">Map</span>
+        </a>
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -255,7 +287,11 @@ export function MobileHeader({
       </div>
       {open ? (
         <div className="border-t border-white/15 p-4 pb-6 space-y-4">
-          <NavLinks user={user} onNavigate={() => setOpen(false)} />
+          <NavLinks
+            user={user}
+            onNavigate={() => setOpen(false)}
+            secondaryOnly
+          />
           <div className="border-t border-white/15 pt-4 space-y-3">
             {previewSlot}
             <div className="flex items-center justify-between">
