@@ -420,7 +420,9 @@ export default async function UpkeepPage({
                   placeholder="Steps, service provider, supplies, or anything else to remember"
                 />
               </div>
-              <SubmitButton>Add schedule</SubmitButton>
+              <div className="mobile-form-actions">
+                <SubmitButton>Add schedule</SubmitButton>
+              </div>
             </form>
           </div>
         </details>
@@ -624,7 +626,7 @@ export default async function UpkeepPage({
                           className="field"
                         />
                       </label>
-                      <div className="sm:col-span-2">
+                      <div className="mobile-form-actions sm:col-span-2">
                         <SubmitButton className="btn btn-primary">
                           Save changes
                         </SubmitButton>

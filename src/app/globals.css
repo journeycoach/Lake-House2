@@ -162,9 +162,16 @@ body {
 }
 
 @media (max-width: 639px) {
+  input.field,
+  select.field,
+  textarea.field {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
   .mobile-form-actions {
     position: sticky;
-    bottom: calc(76px + env(safe-area-inset-bottom));
+    bottom: calc(80px + env(safe-area-inset-bottom));
     z-index: 20;
     margin-inline: -4px;
     padding: 10px 4px;

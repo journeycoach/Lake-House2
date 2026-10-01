@@ -125,19 +125,21 @@ export function ReportIssueForm() {
           Please include a picture to help clarify the issue you see.
         </p>
       </div>
-      <button type="submit" disabled={saving} className="btn btn-primary">
-        {saving ? "Uploading and saving" : "Add to the list"}
-      </button>
-      {error ? (
-        <p aria-live="polite" className="text-sm font-medium text-rust">
-          {error}
-        </p>
-      ) : null}
-      {added && !error ? (
-        <p aria-live="polite" className="text-sm font-medium text-sage">
-          Added.
-        </p>
-      ) : null}
+      <div className="mobile-form-actions flex-wrap">
+        <button type="submit" disabled={saving} className="btn btn-primary">
+          {saving ? "Uploading and saving" : "Add to the list"}
+        </button>
+        {error ? (
+          <p aria-live="polite" className="w-full text-sm font-medium text-rust">
+            {error}
+          </p>
+        ) : null}
+        {added && !error ? (
+          <p aria-live="polite" className="w-full text-sm font-medium text-sage">
+            Added.
+          </p>
+        ) : null}
+      </div>
     </form>
   );
 }

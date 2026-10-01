@@ -25,7 +25,7 @@ function menuButtonClass(
         ? "border-sand-line bg-white text-sage hover:border-sage hover:bg-sage/5"
         : "border-sand-line bg-white text-water hover:border-water hover:bg-water-tint";
 
-  return `btn min-w-0 border px-2 text-xs shadow-sm disabled:cursor-default disabled:opacity-40 sm:px-4 sm:text-sm ${colors}`;
+  return `btn min-h-[52px] min-w-0 border px-1.5 text-[13px] leading-tight shadow-sm disabled:cursor-default disabled:opacity-40 sm:px-4 sm:text-sm ${colors}`;
 }
 
 export function AddSection({ sections }: { sections: SectionOption[] }) {
@@ -182,7 +182,7 @@ export function AddSection({ sections }: { sections: SectionOption[] }) {
       <div
         role="toolbar"
         aria-label="House Guide section actions"
-        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-sand-line bg-sand/95 p-2 shadow-[0_-8px_24px_rgba(17,51,53,0.12)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]"
+        className="sticky bottom-0 z-30 grid grid-cols-3 gap-2 rounded-lh border border-sand-line bg-sand/95 p-2.5 shadow-[0_-8px_24px_rgba(17,51,53,0.12)] backdrop-blur-sm [padding-bottom:max(0.625rem,env(safe-area-inset-bottom))]"
       >
         <button
           type="button"
