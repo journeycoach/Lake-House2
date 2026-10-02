@@ -100,14 +100,19 @@ function MobileBottomNav({
 function NavLinks({
   user,
   onNavigate,
+  secondaryOnly = false,
 }: {
   user: NavUser;
   onNavigate?: () => void;
+  secondaryOnly?: boolean;
 }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
-      {LINKS.filter((link) => !link.adminOnly || user.role === "admin").map((l) => {
+      {LINKS.filter((link) =>
+        (!link.adminOnly || user.role === "admin") &&
+        (!secondaryOnly || !MOBILE_PRIMARY_HREFS.has(link.href))
+      ).map((l) => {
         const active =
           l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
@@ -330,7 +335,11 @@ export function MobileHeader({
       </div>
       {open ? (
         <div className="border-t border-white/15 p-4 pb-6 space-y-4">
-          <NavLinks user={user} onNavigate={() => setOpen(false)} />
+          <NavLinks
+            user={user}
+            onNavigate={() => setOpen(false)}
+            secondaryOnly
+          />
           <div className="border-t border-white/15 pt-4 space-y-3">
             {previewSlot}
             <div className="flex items-center justify-between">
