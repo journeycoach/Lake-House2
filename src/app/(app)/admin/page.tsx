@@ -5,7 +5,6 @@ import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { fmtRange, todayISO } from "@/lib/dates";
 import { allStays } from "@/lib/queries";
-import { approveRequest, declineRequest } from "./request-actions";
 import { clearHistory } from "./storage-actions";
 import { storageReport } from "@/lib/backup";
 import { householdVar, HOUSEHOLD_TOKENS } from "@/lib/colors";
@@ -42,7 +41,6 @@ export default async function AdminPage() {
     users,
     households,
     mails,
-    requests,
     storage,
     stayTemplates,
     stays,
@@ -55,11 +53,6 @@ export default async function AdminPage() {
       .orderBy(asc(schema.users.createdAt), asc(schema.users.id)),
     getDb().select().from(schema.households).orderBy(asc(schema.households.name)),
     getDb().select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
-    getDb()
-      .select()
-      .from(schema.accessRequests)
-      .where(eq(schema.accessRequests.status, "pending"))
-      .orderBy(asc(schema.accessRequests.id)),
     storageReport(),
     getDb()
       .select()
@@ -376,69 +369,6 @@ export default async function AdminPage() {
         </ul>
       </CollapsibleCard>
 
-      {/* Pending access requests. Only rendered when someone is waiting, so
-          the page stays quiet the rest of the time. */}
-      {requests.length > 0 ? (
-        <CollapsibleCard
-          id="requests"
-          className="border-rust"
-          label="Waiting on you"
-          title={`${requests.length} ${
-            requests.length === 1 ? "person wants" : "people want"
-          } in`}
-        >
-          <ul className="mt-4">
-            {requests.map((r) => (
-              <li
-                key={r.id}
-                className="border-t border-sand-line py-4 first:border-0 first:pt-0"
-              >
-                <p className="font-semibold">{r.name}</p>
-                <p className="text-sm text-ink-soft">{r.email}</p>
-                {r.message ? (
-                  <p className="mt-2 text-sm">{r.message}</p>
-                ) : null}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <form action={approveRequest} className="flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="id" value={r.id} />
-                    <select name="role" defaultValue="family" className="field w-full py-2 text-sm sm:w-44">
-                      {ROLES.map((role) => (
-                        <option key={role.value} value={role.value}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select name="householdId" defaultValue="" className="field w-full py-2 text-sm sm:w-44">
-                      <option value="">No household</option>
-                      {households.map((h) => (
-                        <option key={h.id} value={h.id}>
-                          {h.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="submit" className="btn btn-primary py-2">
-                      Approve
-                    </button>
-                  </form>
-                  <form action={declineRequest}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <button
-                      type="submit"
-                      className="text-xs font-medium text-ink-faint hover:text-rust"
-                    >
-                      Decline
-                    </button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-xs text-ink-faint">
-            Approving creates the account and emails them a link to set their
-            own password.
-          </p>
-        </CollapsibleCard>
-      ) : null}
 
       {/* Storage and backups */}
       <CollapsibleCard

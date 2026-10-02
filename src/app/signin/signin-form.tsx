@@ -48,10 +48,7 @@ export function SignInForm() {
         <a href="/forgot" className="underline hover:text-water">
           Forgot your password?
         </a>{" "}
-        New to the family?{" "}
-        <a href="/request" className="underline hover:text-water">
-          Ask to join.
-        </a>
+        New to the family? Ask an admin to add you.
       </p>
     </form>
   );

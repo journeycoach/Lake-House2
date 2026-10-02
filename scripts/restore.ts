@@ -31,7 +31,6 @@ const ORDER = [
   "loginEvents",
   "outbox",
   "passwordTokens",
-  "accessRequests",
 ] as const;
 
 async function main() {
