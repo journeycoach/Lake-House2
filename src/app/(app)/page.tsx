@@ -131,9 +131,6 @@ export default async function HomePage() {
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex min-w-0 items-center gap-2">
-            <Suspense fallback={<VisitWeatherBadgeFallback />}>
-              <VisitWeatherBadge />
-            </Suspense>
             <Link
               href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
               className="btn btn-quiet min-w-0 flex-1 bg-card px-3 text-xs sm:text-xs"
@@ -145,6 +142,9 @@ export default async function HomePage() {
                 : "Nobody"}
               </span>
             </Link>
+            <Suspense fallback={<VisitWeatherBadgeFallback />}>
+              <VisitWeatherBadge />
+            </Suspense>
           </div>
           {canEdit(user.effectiveRole) ? (
             <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
