@@ -31,10 +31,9 @@ Merging to `main` deploys production on its own, and every pull request gets
 its own preview URL. The command above is for deploying without waiting on a
 merge.
 
-An admin sets each new account's first password directly on the Admin page
-(at least 8 characters); someone who requests access instead gets a one-time
-invite link by email and picks their own password. Admins can add people,
-reset passwords, and see sign-in activity.
+An admin adds each new person directly on the Admin page and sets their
+first password there (at least 8 characters). There is no self-service
+sign-up; admins can add people, reset passwords, and see sign-in activity.
 
 ## How it is put together
 
@@ -42,10 +41,13 @@ reset passwords, and see sign-in activity.
 - Neon Postgres via Drizzle and the serverless HTTP driver.
 - Sign-in is email + password with a signed session cookie. `src/proxy.ts`
   guards every route.
-- Email lives in `src/lib/mail.ts`. Without a `RESEND_API_KEY` in `.env.local`,
-  messages are logged to the outbox (visible on Admin) instead of sent.
-  `GET /api/reminders` (with `Authorization: Bearer CRON_SECRET`) queues
-  check-in and checkout reminders; point a scheduler at it in production.
+- Notifications are Web Push, not email: `src/lib/push.ts` sends to every
+  subscribed device for a user, via VAPID keys. People turn it on per device
+  from the Account page. Without `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` set,
+  sends are silently skipped. `GET /api/reminders` (with
+  `Authorization: Bearer CRON_SECRET`) queues check-in and checkout
+  reminders, and `GET /api/weekly` nudges admins to grab that week's backup
+  from `GET /api/backup`; point a scheduler at both in production.
 - The calendar is subscribable: `/api/feed/<token>.ics` serves an iCalendar
   feed (token lives in the settings table; the Calendar page shows the
   subscribe links). Each stay also has a one-off "Add to calendar" download.
@@ -56,9 +58,13 @@ reset passwords, and see sign-in activity.
 
 - `AUTH_SECRET` - required, any long random string
 - `DATABASE_URL` - required, pooled Neon Postgres connection string
-- `RESEND_API_KEY` - optional, enables real email
-- `MAIL_FROM` - optional, the from address for reminders
-- `CRON_SECRET` - optional, protects the reminders endpoint
+- `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` - optional, enables push
+  notifications (generate with `npx web-push generate-vapid-keys`)
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` - same value as `VAPID_PUBLIC_KEY`, exposed
+  to the browser so it can subscribe
+- `VAPID_SUBJECT` - optional, a `mailto:` contact for push services to reach
+  if something's wrong
+- `CRON_SECRET` - optional, protects the reminders and weekly endpoints
 
 ## Design rules
 

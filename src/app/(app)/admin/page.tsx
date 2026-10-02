@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { fmtRange, todayISO } from "@/lib/dates";
@@ -25,22 +25,11 @@ import {
 
 export const metadata: Metadata = { title: "Admin · Paine Pointe" };
 
-function fmtStamp(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export default async function AdminPage() {
   const admin = await requireAdmin();
   const [
     users,
     households,
-    mails,
     storage,
     stayTemplates,
     stays,
@@ -52,7 +41,6 @@ export default async function AdminPage() {
       .from(schema.users)
       .orderBy(asc(schema.users.createdAt), asc(schema.users.id)),
     getDb().select().from(schema.households).orderBy(asc(schema.households.name)),
-    getDb().select().from(schema.outbox).orderBy(desc(schema.outbox.id)).limit(30),
     storageReport(),
     getDb()
       .select()
@@ -420,31 +408,6 @@ export default async function AdminPage() {
         </div>
       </CollapsibleCard>
 
-      {/* Outbox */}
-      <CollapsibleCard
-        label="Mail outbox"
-        title="What the app has sent"
-        description="Without a mail key set, messages are logged here instead of sent."
-      >
-          <ul className="mt-4 space-y-2">
-            {mails.map((m) => (
-              <li key={m.id} className="text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate font-medium">{m.subject}</span>
-                  <span className={`chip shrink-0 ${m.status === "sent" ? "chip-ready" : m.status === "failed" ? "chip-urgent" : "chip-whenever"}`}>
-                    {m.status}
-                  </span>
-                </div>
-                <p className="text-xs text-ink-faint">
-                  to {m.toEmail} · {m.kind} · {fmtStamp(m.createdAt)}
-                </p>
-              </li>
-            ))}
-            {mails.length === 0 ? (
-              <li className="text-sm text-ink-soft">Nothing sent yet.</li>
-            ) : null}
-          </ul>
-      </CollapsibleCard>
     </div>
   );
 }

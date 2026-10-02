@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getDb, schema } from "@/lib/db";
-import { sendMail } from "@/lib/mail";
+import { sendPushToUsers } from "@/lib/push";
 import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { eq } from "drizzle-orm";
 
 /*
   Reminder cron. Point a scheduler (Vercel cron later) at
   GET /api/reminders with Authorization: Bearer CRON_SECRET.
-  Sends check-in reminders the day before a stay starts and checkout
+  Pushes check-in reminders the day before a stay starts and checkout
   reminders on the last morning, to the stay's household members.
 */
 export async function GET(request: NextRequest) {
@@ -30,28 +30,25 @@ export async function GET(request: NextRequest) {
     if (!stay.householdId) continue;
 
     const members = await getDb()
-      .select()
+      .select({ id: schema.users.id })
       .from(schema.users)
       .where(eq(schema.users.householdId, stay.householdId));
+    if (members.length === 0) continue;
 
-    for (const member of members) {
-      if (isCheckin) {
-        await sendMail({
-          to: member.email,
-          subject: `Paine Pointe tomorrow: ${stay.label}`,
-          body: `Your stay starts tomorrow, ${fmtDay(stay.start)}.\n\nBefore you head up, open the family calendar to review and complete the check-in steps, and glance at the shared checklist for anything to bring.\n\nPaine Pointe`,
-          kind: "checkin-reminder",
-        });
-      } else {
-        await sendMail({
-          to: member.email,
-          subject: "Paine Pointe checkout today",
-          body: `Today is checkout day, ${fmtDay(stay.end)}.\n\nOpen the family calendar and complete the check-out steps before leaving.\n\nPaine Pointe`,
-          kind: "checkout-reminder",
-        });
-      }
-      queued++;
+    if (isCheckin) {
+      await sendPushToUsers(members.map((m) => m.id), {
+        title: `Paine Pointe tomorrow: ${stay.label}`,
+        body: `Your stay starts tomorrow, ${fmtDay(stay.start)}. Review the check-in steps and the shared checklist before you head up.`,
+        url: "/calendar",
+      });
+    } else {
+      await sendPushToUsers(members.map((m) => m.id), {
+        title: "Paine Pointe checkout today",
+        body: `Today is checkout day, ${fmtDay(stay.end)}. Complete the check-out steps before leaving.`,
+        url: "/calendar",
+      });
     }
+    queued += members.length;
   }
 
   return NextResponse.json({ ok: true, queued });

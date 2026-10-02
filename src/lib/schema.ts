@@ -244,40 +244,18 @@ export const activityLog = pgTable("activity_log", {
   at: text("at").notNull(),
 });
 
-/* Single-use tokens for setting a password without being signed in: either a
-   forgotten-password reset, or the first password on a newly approved account.
-   Only the hash is stored, so a leaked database row cannot be used as a link. */
-export const passwordTokens = pgTable("password_tokens", {
+/* One row per browser/device that has opted in to push notifications. A
+   person can have several (phone, laptop); each endpoint is its own row so
+   one going stale (uninstalled, permission revoked) does not affect the
+   others. Removed automatically if the account goes away. */
+export const pushSubscriptions = pgTable("push_subscriptions", {
   id: serial("id").primaryKey(),
-  // A token is meaningless once its account is gone, so it goes with it.
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  tokenHash: text("token_hash").notNull(),
-  purpose: text("purpose").notNull(), // reset | invite
-  expiresAt: text("expires_at").notNull(),
-  usedAt: text("used_at"),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("user_agent"),
   createdAt: text("created_at").notNull(),
-});
-
-/* Every email the app wants to send lands here first. If RESEND_API_KEY is
-   set it also actually sends. Admin can read the outbox either way. */
-export const outbox = pgTable("outbox", {
-  id: serial("id").primaryKey(),
-  toEmail: text("to_email").notNull(),
-  subject: text("subject").notNull(),
-  body: text("body").notNull(),
-  kind: text("kind").notNull(), // checkin-reminder | checkout-reminder | overlap-notice | note | manual
-  status: text("status").notNull().default("logged"), // logged | sent | failed
-  createdAt: text("created_at").notNull(),
-});
-
-/* One row per forgot-password request, hit or miss on the email. Nothing
-   else records a miss (requestReset does nothing else for an email with no
-   account), so this is what throttling a flood of reset requests against
-   one address, or a sweep across many, counts against. */
-export const resetAttempts = pgTable("reset_attempts", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull(),
-  at: text("at").notNull(),
 });
