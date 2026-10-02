@@ -135,7 +135,7 @@ export default async function HomePage() {
               <VisitWeatherBadge />
             </Suspense>
             <Link
-              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
+              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
               className="btn btn-quiet min-w-0 flex-1 bg-card px-3 text-xs sm:text-xs"
             >
               Who&apos;s at the lake?{" "}
@@ -146,30 +146,22 @@ export default async function HomePage() {
               </span>
             </Link>
           </div>
-          <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
-            {canEdit(user.effectiveRole) ? (
-              <>
-                <Link
-                  href="/calendar?plan=open#plan"
-                  className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
-                >
-                  Plan a stay
-                </Link>
-                <Link
-                  href="/upkeep/report-issue"
-                  className="btn min-w-0 bg-care px-2 text-[11px] text-white hover:bg-care/90 sm:px-3 sm:text-xs"
-                >
-                  Report an Issue
-                </Link>
-              </>
-            ) : null}
-            <Link
-              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar#plan"}
-              className="btn min-w-0 bg-sage px-2 text-[11px] text-white hover:bg-deep sm:px-3 sm:text-xs"
-            >
-              Stay Checklist
-            </Link>
-          </div>
+          {canEdit(user.effectiveRole) ? (
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+              <Link
+                href="/calendar/plan"
+                className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
+              >
+                Plan a stay
+              </Link>
+              <Link
+                href="/upkeep/report-issue"
+                className="btn min-w-0 bg-care px-2 text-[11px] text-white hover:bg-care/90 sm:px-3 sm:text-xs"
+              >
+                Report an Issue
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
 

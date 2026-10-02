@@ -89,7 +89,7 @@ export function MiniMonthGrid({
           const monthKey = `${year}-${String(month).padStart(2, "0")}`;
           const editorHref = firstStay
             ? `/calendar?view=month&m=${monthKey}&editStay=${firstStay.id}#edit-stay`
-            : `/calendar?view=month&m=${monthKey}&start=${dayIso}#plan`;
+            : `/calendar/plan?m=${monthKey}&start=${dayIso}#plan-form`;
           const editorLabel = firstStay
             ? `Edit stay: ${firstStay.label}`
             : `Plan a stay beginning ${dayIso}`;
@@ -241,7 +241,7 @@ export function MonthGrid({
           const monthKey = `${year}-${String(month).padStart(2, "0")}`;
           const editorHref = first
             ? `/calendar?view=month&m=${monthKey}&editStay=${first.id}#edit-stay`
-            : `/calendar?view=month&m=${monthKey}&start=${dayIso}#plan`;
+            : `/calendar/plan?m=${monthKey}&start=${dayIso}#plan-form`;
           const editorLabel = first
             ? `Edit stay: ${first.label}`
             : `Plan a stay beginning ${dayIso}`;

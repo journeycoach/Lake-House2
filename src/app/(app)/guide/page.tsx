@@ -91,16 +91,6 @@ export default async function GuidePage() {
           Everything about arriving, lake days, emergencies, and looking after
           the house. {editor ? "Family and admins can add to it." : null}
         </p>
-        <a
-          href="https://www.google.com/maps/place/22082+Blue+Water+Rd,+Chandler,+TX+75758/@32.1995742,-95.4879946,18.06z/data=!4m6!3m5!1s0x86484c8512a9e5c5:0xb35bce62845f2a7c!8m2!3d32.2011789!4d-95.4869285!16s%2Fg%2F11j7mkmsj7?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-md border border-sand-line bg-white px-3 text-sm font-semibold text-water transition-colors hover:border-water hover:bg-water-tint"
-          aria-label="Open Google Maps directions to Paine Pointe in a new tab"
-        >
-          Map &amp; directions <span aria-hidden="true">↗</span>
-        </a>
-
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleSections.map((s) => {
             const normalizedTitle = s.title.toLowerCase().replace(/[^a-z]/g, "");
@@ -174,7 +164,7 @@ export default async function GuidePage() {
                           Schedule a stay to start a fresh {checklistType} checklist.
                         </p>
                         <Link
-                          href="/calendar#plan"
+                          href="/calendar/plan"
                           className="mt-2 inline-block text-sm font-semibold text-water hover:text-deep-2"
                         >
                           Plan a stay
