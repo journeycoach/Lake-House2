@@ -174,7 +174,7 @@ export default async function CalendarPage({
               }))}
               canToggleChecklist={canUpdateStayChecklist(user, s, today)}
               dateBadge={fmtDay(s.start)}
-              meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}${s.householdName ? ` · Booked by ${s.householdName}` : ""}`}
+              meta={`${fmtRange(s.start, s.end)} · ${s.guestNames ? s.guestNames : `${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}${s.householdName ? ` · Booked by ${s.householdName}` : ""}`}
               canEdit={editor}
             />
           ))}

@@ -25,8 +25,9 @@ function readStay(formData: FormData) {
   const end = String(formData.get("end") ?? "");
   const adults = Number(formData.get("adults") || 0);
   const kids = Number(formData.get("kids") || 0);
+  const guestNames = readText(formData.get("guestNames"), 500) || null;
   const note = readText(formData.get("note"), 4000) || null;
-  return { label, householdId, start, end, adults, kids, note };
+  return { label, householdId, start, end, adults, kids, guestNames, note };
 }
 
 async function findConflicts(start: string, end: string, excludeId?: number) {
