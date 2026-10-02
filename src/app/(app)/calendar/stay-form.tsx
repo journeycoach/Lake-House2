@@ -19,6 +19,7 @@ export type EditableStay = {
   end: string;
   adults: number;
   kids: number;
+  guestNames: string | null;
   note: string | null;
 };
 
@@ -154,6 +155,19 @@ export function StayForm({
             className="field"
           />
         </div>
+      </div>
+      <div>
+        <label htmlFor="guestNames" className="flabel">
+          Guest names (optional)
+        </label>
+        <input
+          id="guestNames"
+          name="guestNames"
+          defaultValue={values?.guestNames ?? stay?.guestNames ?? ""}
+          maxLength={500}
+          className="field"
+          placeholder="Jenn, John, Emma + kids Lily & Theo"
+        />
       </div>
       <div>
         <label htmlFor="note" className="flabel">

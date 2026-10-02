@@ -98,9 +98,11 @@ export function MyVisitCard({
             </h2>
             <p className="mt-0.5 text-xs text-white/70">
               {fmtRange(stay.start, stay.end)}
-              {guestCount > 0
-                ? ` · ${guestCount} guest${guestCount === 1 ? "" : "s"}`
-                : ""}
+              {stay.guestNames
+                ? ` · ${stay.guestNames}`
+                : guestCount > 0
+                  ? ` · ${guestCount} guest${guestCount === 1 ? "" : "s"}`
+                  : ""}
             </p>
             <Suspense fallback={<VisitWeatherForecastFallback />}>
               <VisitWeatherForecast start={stay.start} end={stay.end} today={today} />
@@ -184,7 +186,12 @@ export function MyVisitCard({
           <div role="status" className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-amber-100">
             <span aria-hidden="true">⚠</span>
             <span className="font-semibold">Overlapping visit:</span>
-            <span className="truncate">
+            <span
+              className="truncate"
+              title={overlappingVisits
+                .map((visit) => visit.guestNames ? `${visit.label} (${visit.guestNames})` : visit.label)
+                .join(", ")}
+            >
               {overlappingVisits.slice(0, 2).map((visit) => visit.label).join(", ")}
               {overlappingVisits.length > 2 ? ` +${overlappingVisits.length - 2} more` : ""}
             </span>

@@ -43,6 +43,9 @@ export const stays = pgTable("stays", {
   end: text("end").notNull(), // YYYY-MM-DD, last night
   adults: integer("adults").notNull().default(0),
   kids: integer("kids").notNull().default(0),
+  // Free text, e.g. "Jenn, John, Emma + kids Lily & Theo". Optional: counts
+  // alone are still fine for a quick hold.
+  guestNames: text("guest_names"),
   note: text("note"),
   // A stay outlives whoever booked it; removing that person keeps the
   // reservation and just clears who created it.
@@ -255,18 +258,6 @@ export const passwordTokens = pgTable("password_tokens", {
   expiresAt: text("expires_at").notNull(),
   usedAt: text("used_at"),
   createdAt: text("created_at").notNull(),
-});
-
-/* Someone asking to join. No account exists until an admin approves. */
-export const accessRequests = pgTable("access_requests", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  message: text("message"),
-  status: text("status").notNull().default("pending"), // pending | approved | declined
-  createdAt: text("created_at").notNull(),
-  decidedBy: text("decided_by"),
-  decidedAt: text("decided_at"),
 });
 
 /* Every email the app wants to send lands here first. If RESEND_API_KEY is

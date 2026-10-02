@@ -64,6 +64,20 @@
       "when": 1790804862477,
       "tag": "0008_standardize_checklist_titles",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790960667990,
+      "tag": "0009_drop-access-requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790960834250,
+      "tag": "0010_stay-guest-names",
+      "breakpoints": true
     }
   ]
 }

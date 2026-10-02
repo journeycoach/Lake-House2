@@ -12,6 +12,7 @@ export type StayRow = {
   end: string;
   adults: number;
   kids: number;
+  guestNames: string | null;
   note: string | null;
   color: string;
 };
@@ -29,6 +30,7 @@ export async function allStays(): Promise<StayRow[]> {
       end: schema.stays.end,
       adults: schema.stays.adults,
       kids: schema.stays.kids,
+      guestNames: schema.stays.guestNames,
       note: schema.stays.note,
       color: schema.households.color,
     })
