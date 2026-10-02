@@ -33,7 +33,6 @@ const LINKS: {
 ];
 
 const MOBILE_PRIMARY_HREFS = new Set([
-  "/",
   "/calendar",
   "/upkeep",
   "/shopping-list",
@@ -56,7 +55,7 @@ function MobileBottomNav({
   return (
     <nav
       aria-label="Primary mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/15 bg-deep/98 px-1 pt-1.5 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-white/15 bg-deep/98 px-1 pt-1.5 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       {MOBILE_PRIMARY_LINKS.map((link) => {
         const active =
@@ -101,19 +100,14 @@ function MobileBottomNav({
 function NavLinks({
   user,
   onNavigate,
-  secondaryOnly = false,
 }: {
   user: NavUser;
   onNavigate?: () => void;
-  secondaryOnly?: boolean;
 }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
-      {LINKS.filter((link) =>
-        (!link.adminOnly || user.role === "admin") &&
-        (!secondaryOnly || !MOBILE_PRIMARY_HREFS.has(link.href))
-      ).map((l) => {
+      {LINKS.filter((link) => !link.adminOnly || user.role === "admin").map((l) => {
         const active =
           l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
@@ -146,7 +140,7 @@ function NavLinks({
 
 function Mark() {
   return (
-    <Link href="/" className="inline-flex">
+    <Link href="/" aria-label="Paine Pointe home" className="inline-flex">
       <BrandMark size="sm" />
     </Link>
   );
@@ -177,14 +171,66 @@ function SearchLink({
   );
 }
 
+function StayChecklistLink({
+  href,
+  onNavigate,
+}: {
+  href: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      aria-label="Open Stay Checklist"
+      title="Stay Checklist"
+      className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
+    >
+      <svg
+        aria-hidden="true"
+        width="18"
+        height="18"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="3.5" y="3.5" width="13" height="14" rx="2" />
+        <path d="M8 3.5V2h4v1.5M5.5 8l1.2 1.2 2-2.2M10.5 8h4M5.5 12.5l1.2 1.2 2-2.2M10.5 12.5h4M5.5 16h9" />
+      </svg>
+      <span className="whitespace-nowrap text-[8px] font-semibold leading-none">Checklist</span>
+    </Link>
+  );
+}
+
+function MapLink() {
+  return (
+    <a
+      href={MAP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open Google Maps directions to Paine Pointe in a new tab"
+      title="Map & directions"
+      className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
+    >
+      <span aria-hidden className="text-sm leading-none">📍</span>
+      <span className="text-[9px] font-semibold leading-none">Map</span>
+    </a>
+  );
+}
+
 export function Sidebar({
   user,
+  stayChecklistHref,
   status,
   version,
   signOutSlot,
   previewSlot,
 }: {
   user: NavUser;
+  stayChecklistHref: string;
   status: string;
   version: string;
   signOutSlot: React.ReactNode;
@@ -192,9 +238,13 @@ export function Sidebar({
 }) {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-deep p-6 sticky top-0 h-screen">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4">
         <Mark />
-        <SearchLink />
+        <div className="flex items-center gap-2">
+          <StayChecklistLink href={stayChecklistHref} />
+          <MapLink />
+          <SearchLink showLabel />
+        </div>
       </div>
       <div className="mt-10 flex-1">
         <NavLinks user={user} />
@@ -223,12 +273,14 @@ export function Sidebar({
 
 export function MobileHeader({
   user,
+  stayChecklistHref,
   status,
   version,
   signOutSlot,
   previewSlot,
 }: {
   user: NavUser;
+  stayChecklistHref: string;
   status: string;
   version: string;
   signOutSlot: React.ReactNode;
@@ -241,18 +293,9 @@ export function MobileHeader({
       <div className="flex items-center justify-between gap-2 p-4">
         <Mark />
         <div className="flex items-center gap-2">
+        <StayChecklistLink href={stayChecklistHref} onNavigate={() => setOpen(false)} />
+        <MapLink />
         <SearchLink onNavigate={() => setOpen(false)} showLabel />
-        <a
-          href={MAP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open Google Maps directions to Paine Pointe in a new tab"
-          title="Map & directions"
-          className="flex h-11 w-11 flex-col items-center justify-center gap-0.5 rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
-        >
-          <span aria-hidden className="text-sm leading-none">📍</span>
-          <span className="text-[9px] font-semibold leading-none">Map</span>
-        </a>
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -287,11 +330,7 @@ export function MobileHeader({
       </div>
       {open ? (
         <div className="border-t border-white/15 p-4 pb-6 space-y-4">
-          <NavLinks
-            user={user}
-            onNavigate={() => setOpen(false)}
-            secondaryOnly
-          />
+          <NavLinks user={user} onNavigate={() => setOpen(false)} />
           <div className="border-t border-white/15 pt-4 space-y-3">
             {previewSlot}
             <div className="flex items-center justify-between">

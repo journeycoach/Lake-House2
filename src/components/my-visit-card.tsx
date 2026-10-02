@@ -27,7 +27,7 @@ export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
         </p>
       </div>
       {canPlan ? (
-        <Link href="/calendar?plan=open#plan" className="btn bg-white text-deep hover:bg-mist">
+        <Link href="/calendar/plan" className="btn bg-white text-deep hover:bg-mist">
           Plan my next visit
         </Link>
       ) : (

@@ -23,7 +23,7 @@ import {
 import { YearGrid } from "@/components/year-grid";
 import { CopyField } from "@/components/copy-field";
 import { PageHeader } from "@/components/page-header";
-import { StayForm, StayListItem, EditStayForm } from "./stay-form";
+import { StayListItem, EditStayForm } from "./stay-form";
 
 export const metadata: Metadata = { title: "Calendar · Paine Pointe" };
 
@@ -41,7 +41,6 @@ export default async function CalendarPage({
     y?: string;
     view?: string;
     start?: string;
-    plan?: string;
     stays?: string;
     editStay?: string;
   }>;
@@ -50,10 +49,6 @@ export default async function CalendarPage({
   const editor = canEdit(user.effectiveRole);
   const params = await searchParams;
   const view = params.view === "year" ? "year" : "month";
-  const selectedStart = /^\d{4}-\d{2}-\d{2}$/.test(params.start ?? "")
-    ? params.start
-    : undefined;
-  const shouldOpenPlan = Boolean(selectedStart) || params.plan === "open";
   const today = todayISO();
   const t = parseISO(today);
   let y = t.y;
@@ -115,7 +110,7 @@ export default async function CalendarPage({
   const showAllUpcoming = params.stays === "all";
   const visibleUpcoming = showAllUpcoming ? upcoming : upcoming.slice(0, 3);
   const upcomingLinkParams = new URLSearchParams();
-  for (const key of ["m", "y", "view", "start", "plan"] as const) {
+  for (const key of ["m", "y", "view", "start"] as const) {
     const value = params[key];
     if (value) upcomingLinkParams.set(key, value);
   }
@@ -143,7 +138,19 @@ export default async function CalendarPage({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Calendar" />
+      <PageHeader
+        title="Calendar"
+        action={
+          editor ? (
+            <Link
+              href="/calendar/plan"
+              className="btn bg-water text-white hover:bg-deep-2"
+            >
+              Plan a stay
+            </Link>
+          ) : null
+        }
+      />
 
       <section id="upcoming-stays" className="card mb-5 scroll-mt-6 p-3 md:p-4">
         <div>
@@ -167,7 +174,7 @@ export default async function CalendarPage({
               }))}
               canToggleChecklist={canUpdateStayChecklist(user, s, today)}
               dateBadge={fmtDay(s.start)}
-              meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}`}
+              meta={`${fmtRange(s.start, s.end)} · ${s.adults} adult${s.adults === 1 ? "" : "s"} · ${s.kids} kid${s.kids === 1 ? "" : "s"}${s.householdName ? ` · Booked by ${s.householdName}` : ""}`}
               canEdit={editor}
             />
           ))}
@@ -224,65 +231,6 @@ export default async function CalendarPage({
             closeHref={editCloseHref}
           />
         </section>
-      ) : null}
-
-      {editor ? (
-        <details
-          id="plan"
-          open={shouldOpenPlan}
-          className="group mb-5 scroll-mt-6 rounded-lh border border-water/30 border-l-4 bg-water-tint p-4"
-        >
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lh bg-water text-white"
-              >
-                <svg
-                  width="17"
-                  height="17"
-                  viewBox="0 0 17 17"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="3.5" width="13" height="11.5" rx="1.5" />
-                  <path d="M5 2v3M12 2v3M2 7h13M8.5 9v4M6.5 11h4" />
-                </svg>
-              </span>
-              <div>
-                <p className="section-label text-water">Plan a stay</p>
-                <h2 className="font-display mt-0.5 text-xl">Put it on the calendar</h2>
-              </div>
-            </div>
-            <span className="flex items-center gap-2 text-sm font-semibold text-water">
-              Add a stay
-              <svg
-                aria-hidden
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform group-open:rotate-180"
-              >
-                <path d="m3 5 4 4 4-4" />
-              </svg>
-            </span>
-          </summary>
-          <div className="mt-4 border-t border-sand-line pt-4">
-            <StayForm
-              households={households}
-              defaultDate={selectedStart}
-              closeDetailsId="plan"
-            />
-          </div>
-        </details>
       ) : null}
 
       <section className="card p-4 md:p-6">
@@ -401,21 +349,11 @@ export default async function CalendarPage({
         id="calendar-details"
         className="card mt-4 scroll-mt-24 rounded-t-2xl border-water/30 p-4 shadow-[0_-8px_24px_rgba(17,51,53,0.1)] md:hidden"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="section-label">Month details</p>
-            <h2 className="font-display mt-1 text-xl">
-              Stays and maintenance
-            </h2>
-          </div>
-          {editor ? (
-            <Link
-              href="/calendar?plan=open#plan"
-              className="btn btn-primary shrink-0 px-3 text-xs"
-            >
-              Plan a stay
-            </Link>
-          ) : null}
+        <div>
+          <p className="section-label">Month details</p>
+          <h2 className="font-display mt-1 text-xl">
+            Stays and maintenance
+          </h2>
         </div>
         <ul className="mt-3 divide-y divide-sand-line">
           {monthStays.map((stay) => (

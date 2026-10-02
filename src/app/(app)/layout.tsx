@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { roleLabel } from "@/lib/roles";
+import { todayISO } from "@/lib/dates";
+import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
 import { Sidebar, MobileHeader } from "@/components/nav";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { signOut } from "@/app/signin/actions";
@@ -58,7 +60,12 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const status = await houseStatus();
+  const [status, stays] = await Promise.all([houseStatus(), allStays()]);
+  const today = todayISO();
+  const checklistStay = staysNow(stays, today)[0] ?? staysUpcoming(stays, today)[0];
+  const stayChecklistHref = checklistStay
+    ? `/calendar/${checklistStay.id}/checklist`
+    : "/calendar/plan";
   const navUser = { name: user.name, role: user.effectiveRole };
   const isRealAdmin = user.role === "admin";
   const commitSha = process.env.VERCEL_GIT_COMMIT_SHA;
@@ -97,6 +104,7 @@ export default async function AppLayout({
       <div className="flex-1 flex flex-col lg:flex-row">
         <Sidebar
           user={navUser}
+          stayChecklistHref={stayChecklistHref}
           status={status}
           version={version}
           signOutSlot={<SignOutButton />}
@@ -106,6 +114,7 @@ export default async function AppLayout({
         />
         <MobileHeader
           user={navUser}
+          stayChecklistHref={stayChecklistHref}
           status={status}
           version={version}
           signOutSlot={<SignOutButton />}

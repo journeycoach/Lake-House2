@@ -75,7 +75,7 @@ export function YearGrid({
                 ].filter(Boolean).join(" · ") || undefined;
                 const editorHref = stay
                   ? `/calendar?view=year&y=${year}&editStay=${stay.id}#edit-stay`
-                  : `/calendar?view=year&y=${year}&start=${dayIso}#plan`;
+                  : `/calendar/plan?m=${dayIso.slice(0, 7)}&start=${dayIso}#plan-form`;
                 const editorLabel = stay
                   ? `Edit stay: ${stay.label}`
                   : `Plan a stay beginning ${dayIso}`;

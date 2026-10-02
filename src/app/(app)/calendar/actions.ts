@@ -153,6 +153,7 @@ export async function createStay(
   await logActivity(user, "booked a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");
+  revalidatePath("/calendar/plan");
   revalidatePath("/");
   return { added: true };
 }
@@ -186,6 +187,7 @@ export async function updateStay(
   await logActivity(user, "edited a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
   if (confirmed) await notifyOverlap(stay, conflicts);
   revalidatePath("/calendar");
+  revalidatePath("/calendar/plan");
   revalidatePath("/");
   return {};
 }
@@ -202,6 +204,7 @@ export async function deleteStay(formData: FormData) {
       await logActivity(user, "removed a stay", `${stay.label}, ${fmtRange(stay.start, stay.end)}`);
     }
     revalidatePath("/calendar");
+    revalidatePath("/calendar/plan");
     revalidatePath("/");
   }
 }
