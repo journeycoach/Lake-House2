@@ -29,7 +29,7 @@ const db = drizzle(neon(databaseUrl), { schema });
 const now = new Date().toISOString();
 
 // Clear dependent tables first so foreign-key constraints remain valid.
-await db.delete(schema.outbox);
+await db.delete(schema.pushSubscriptions);
 await db.delete(schema.activityLog);
 await db.delete(schema.loginEvents);
 await db.delete(schema.stays);

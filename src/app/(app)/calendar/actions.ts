@@ -7,8 +7,7 @@ import { requireEditor } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
 import { readText } from "@/lib/forms";
-import { sendTemplateMail } from "@/lib/mail";
-import { siteUrl } from "@/lib/email-template";
+import { sendPushToUsers } from "@/lib/push";
 
 export type StayFormValues = ReturnType<typeof readStay>;
 export type StayFormState = {
@@ -54,49 +53,22 @@ async function notifyOverlap(
     )
   );
   const users = await getDb().select().from(schema.users);
-  const recipients = new Map(
+  const recipientIds = new Set(
     users
       .filter(
         (member) =>
           member.role === "admin" ||
           (member.householdId ? householdIds.has(member.householdId) : false)
       )
-      .map((member) => [member.email.toLowerCase(), member])
+      .map((member) => member.id)
   );
   const otherNames = conflicts.map((conflict) => conflict.label).join(", ");
 
-  await Promise.all(
-    [...recipients.values()].map((member) =>
-      sendTemplateMail({
-        to: member.email,
-        kind: "overlap-notice",
-        subject: `Shared dates at Paine Pointe: ${stay.label} and ${otherNames}`,
-        heading: "Two family visits overlap",
-        preview: `${stay.label} shares dates with ${otherNames}.`,
-        blocks: [
-          {
-            type: "text",
-            text: "The visits were saved as an intentional overlap. Please coordinate sleeping arrangements, arrival timing, and anything the house needs before the shared dates.",
-          },
-          {
-            type: "detail",
-            label: stay.label,
-            value: fmtRange(stay.start, stay.end),
-          },
-          ...conflicts.map((conflict) => ({
-            type: "detail" as const,
-            label: conflict.label,
-            value: fmtRange(conflict.start, conflict.end),
-          })),
-          {
-            type: "button",
-            label: "Open the family calendar",
-            href: `${siteUrl()}/calendar`,
-          },
-        ],
-      })
-    )
-  );
+  await sendPushToUsers([...recipientIds], {
+    title: "Shared dates at Paine Pointe",
+    body: `${stay.label} (${fmtRange(stay.start, stay.end)}) shares dates with ${otherNames}. Coordinate sleeping arrangements and arrival timing before the overlap.`,
+    url: "/calendar",
+  });
 }
 
 export async function createStay(

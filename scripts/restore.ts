@@ -1,6 +1,6 @@
 /*
-  Restores a backup file produced by the Download a backup button or the
-  weekly backup email.
+  Restores a backup file produced by the Download a backup button on the
+  Admin page.
 
   Run: SEED_CONFIRM=wipe npm run restore -- path/to/lakehouse-backup-2026-07-27.json
 
@@ -29,8 +29,6 @@ const ORDER = [
   "settings",
   "activityLog",
   "loginEvents",
-  "outbox",
-  "passwordTokens",
 ] as const;
 
 async function main() {
