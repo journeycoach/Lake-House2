@@ -45,10 +45,7 @@ export function SignInForm() {
         {pending ? "Signing in" : "Sign in"}
       </button>
       <p className="text-xs text-ink-faint">
-        <a href="/forgot" className="underline hover:text-water">
-          Forgot your password?
-        </a>{" "}
-        New to the family? Ask an admin to add you.
+        Forgot your password, or new to the family? Ask an admin.
       </p>
     </form>
   );

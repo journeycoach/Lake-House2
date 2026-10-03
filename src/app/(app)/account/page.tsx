@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { roleLabel } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
 import { ProfileForm, PasswordForm } from "./account-forms";
+import { PushNotificationsToggle } from "@/components/push-notifications-toggle";
 
 export const metadata: Metadata = { title: "Account · Paine Pointe" };
 
@@ -31,6 +32,14 @@ export default async function AccountPage() {
           If you are still on the shared starting password, change it here.
         </p>
         <PasswordForm />
+      </section>
+
+      <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
+        <p className="section-label">Notifications</p>
+        <h2 className="font-display text-2xl mt-1">Alerts on this device</h2>
+        <div className="mt-3">
+          <PushNotificationsToggle />
+        </div>
       </section>
     </div>
   );

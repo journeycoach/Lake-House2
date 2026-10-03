@@ -9,8 +9,8 @@ import { getDb, schema } from "./db";
 
   - Content the family wrote (bookings, notes, the guide, accounts, households)
     is small, irreplaceable, and never deleted by anything in this file.
-  - History (activity log, sign-in records, the mail outbox) grows forever and
-    is only interesting for a while. This is the only thing clearing touches.
+  - History (activity log, sign-in records) grows forever and is only
+    interesting for a while. This is the only thing clearing touches.
 */
 
 export const CONTENT_TABLES = [
@@ -30,7 +30,7 @@ export const CONTENT_TABLES = [
   "settings",
 ] as const;
 
-export const HISTORY_TABLES = ["activityLog", "loginEvents", "outbox"] as const;
+export const HISTORY_TABLES = ["activityLog", "loginEvents"] as const;
 
 export type BackupFile = {
   takenAt: string;
@@ -90,7 +90,6 @@ const LABELS: Record<string, string> = {
   settings: "Settings",
   activityLog: "Activity history",
   loginEvents: "Sign-in history",
-  outbox: "Sent mail",
 };
 
 const COMFORTABLE_ROWS = 50_000;
@@ -142,12 +141,6 @@ export async function clearHistoryBefore(cutoffISO: string): Promise<number> {
     .where(lt(schema.loginEvents.at, cutoffISO))
     .returning({ id: schema.loginEvents.id });
   removed += l.length;
-
-  const o = await db
-    .delete(schema.outbox)
-    .where(lt(schema.outbox.createdAt, cutoffISO))
-    .returning({ id: schema.outbox.id });
-  removed += o.length;
 
   return removed;
 }
