@@ -36,6 +36,7 @@ const MOBILE_PRIMARY_HREFS = new Set([
   "/calendar",
   "/upkeep",
   "/shopping-list",
+  "/guide",
 ]);
 const MOBILE_PRIMARY_LINKS = LINKS.filter((link) =>
   MOBILE_PRIMARY_HREFS.has(link.href)
@@ -55,7 +56,7 @@ function MobileBottomNav({
   return (
     <nav
       aria-label="Primary mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-white/15 bg-deep/98 px-1 pt-1.5 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/15 bg-deep/98 px-1 pt-1.5 text-white shadow-[0_-8px_24px_rgba(17,51,53,0.2)] backdrop-blur-sm [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       {MOBILE_PRIMARY_LINKS.map((link) => {
         const active =
