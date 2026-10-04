@@ -264,7 +264,7 @@ export function Sidebar({
             href="/account"
             className="text-sm font-semibold text-white hover:underline"
           >
-            {user.name}
+            Edit account
           </Link>
           {signOutSlot}
         </div>
@@ -349,7 +349,7 @@ export function MobileHeader({
                   onClick={() => setOpen(false)}
                   className="font-semibold text-white hover:underline"
                 >
-                  {user.name}
+                  Edit account
                 </Link>{" "}
                 · house is {status.toLowerCase()}
               </p>
