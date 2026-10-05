@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { fmtDay, fmtRange } from "@/lib/dates";
+import { addDays, fmtDay, fmtRange } from "@/lib/dates";
 import type { StayChecklistProgress, StayRow } from "@/lib/queries";
 import {
   VisitWeatherForecast,
@@ -65,6 +65,8 @@ export function MyVisitCard({
   overdueMaintenance: { id: number; task: string; nextDue: string | null }[];
 }) {
   const isCurrent = stay.start <= today && today <= stay.end;
+  const arrivesTomorrow = stay.start === addDays(today, 1);
+  const leavesToday = isCurrent && stay.end === today;
   const total = progress?.total ?? 0;
   const completed = progress?.completed ?? 0;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -181,6 +183,34 @@ export function MyVisitCard({
             ) : null}
           </div>
         </div>
+
+        {arrivesTomorrow || leavesToday ? (
+          <Link
+            href={
+              arrivesTomorrow
+                ? `/calendar/${stay.id}/checklist#stay-checklist`
+                : `/calendar/${stay.id}/checklist#leave-checklist`
+            }
+            className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <span aria-hidden="true">{arrivesTomorrow ? "🔔" : "🚪"}</span>
+              <span className="min-w-0">
+                <span className="font-semibold">
+                  {arrivesTomorrow ? "Arrives tomorrow" : "Leaving today"}
+                </span>
+                <span className="ml-1 text-xs text-white/75">
+                  {arrivesTomorrow
+                    ? "Review the Stay Checklist"
+                    : "Finish the Leave Checklist"}
+                </span>
+              </span>
+            </span>
+            <span className="shrink-0 text-xs font-semibold text-white/85">
+              Open →
+            </span>
+          </Link>
+        ) : null}
 
         {overlappingVisits.length > 0 ? (
           <div role="status" className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-amber-100">

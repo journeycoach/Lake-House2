@@ -94,8 +94,14 @@ export default async function VisitChecklistPage({
             return (
               <section
                 key={phase}
-                id={phase === "boat" ? "boat-checklist" : undefined}
-                className="rounded-lh border border-sand-line p-4"
+                id={
+                  phase === "checkin"
+                    ? "stay-checklist"
+                    : phase === "boat"
+                      ? "boat-checklist"
+                      : "leave-checklist"
+                }
+                className="scroll-mt-4 rounded-lh border border-sand-line p-4"
               >
                 <div className="flex items-center justify-between gap-3 border-b border-sand-line pb-4">
                   <h2 className="font-display text-2xl">{title}</h2>
