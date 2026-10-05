@@ -6,10 +6,11 @@ import { addDays, fmtDay, todayISO } from "@/lib/dates";
 import { eq } from "drizzle-orm";
 
 /*
-  Reminder cron. Point a scheduler (Vercel cron later) at
-  GET /api/reminders with Authorization: Bearer CRON_SECRET.
+  Vercel Cron calls GET /api/reminders daily with
+  Authorization: Bearer CRON_SECRET.
   Pushes check-in reminders the day before a stay starts and checkout
-  reminders on the last morning, to the stay's household members.
+  reminders on the last morning, to the stay's household members. Each
+  notification opens the relevant section of that visit's checklist.
 */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -38,14 +39,14 @@ export async function GET(request: NextRequest) {
     if (isCheckin) {
       await sendPushToUsers(members.map((m) => m.id), {
         title: `Paine Pointe tomorrow: ${stay.label}`,
-        body: `Your stay starts tomorrow, ${fmtDay(stay.start)}. Review the check-in steps and the shared checklist before you head up.`,
-        url: "/calendar",
+        body: `Your stay starts tomorrow, ${fmtDay(stay.start)}. Review the Stay Checklist before you head up.`,
+        url: `/calendar/${stay.id}/checklist#stay-checklist`,
       });
     } else {
       await sendPushToUsers(members.map((m) => m.id), {
-        title: "Paine Pointe checkout today",
-        body: `Today is checkout day, ${fmtDay(stay.end)}. Complete the check-out steps before leaving.`,
-        url: "/calendar",
+        title: "Paine Pointe: Leave Checklist today",
+        body: `Today is your last day, ${fmtDay(stay.end)}. Review the Leave Checklist before heading home.`,
+        url: `/calendar/${stay.id}/checklist#leave-checklist`,
       });
     }
     queued += members.length;
