@@ -402,16 +402,16 @@ export default async function HomePage() {
             Wi-Fi, lock code, marina, emergency contacts, check-in & check-out procedure, and house rules
           </p>
         </Link>
-        <a
-          href="https://www.google.com/maps/place/22082+Blue+Water+Rd,+Chandler,+TX+75758/@32.1995742,-95.4879946,18.06z/data=!4m6!3m5!1s0x86484c8512a9e5c5:0xb35bce62845f2a7c!8m2!3d32.2011789!4d-95.4869285!16s%2Fg%2F11j7mkmsj7?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-quiet shrink-0 text-sm"
-          aria-label="Open Google Maps directions to Paine Pointe in a new tab"
-        >
-          Map &amp; directions <span aria-hidden="true">↗</span>
-        </a>
       </section>
+
+      <div className="mt-5 flex justify-center pb-2">
+        <Link
+          href="/install"
+          className="text-sm font-semibold text-water transition-colors hover:text-deep-2"
+        >
+          Install Paine Pointe on your phone →
+        </Link>
+      </div>
     </div>
   );
 }
