@@ -124,14 +124,6 @@ export default async function AppLayout({
         />
         <main className="min-w-0 flex-1 p-4 pb-28 lg:p-10">
           {children}
-          <footer className="mx-auto mt-10 flex max-w-5xl justify-center border-t border-sand-line pt-5">
-            <Link
-              href="/install"
-              className="text-sm font-semibold text-water transition-colors hover:text-deep-2"
-            >
-              Install Paine Pointe on your phone →
-            </Link>
-          </footer>
         </main>
       </div>
     </div>

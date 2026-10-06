@@ -43,6 +43,39 @@ export function ReportIssueForm() {
       }}
       className="space-y-4"
     >
+      <div>
+        <label
+          htmlFor="issuePhoto"
+          className="flabel inline-flex items-center gap-2"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-4 w-4 text-water"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 7.5h3l1.4-2h7.2l1.4 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"
+            />
+            <circle cx="12" cy="13" r="3.25" />
+          </svg>
+          Photo (optional)
+        </label>
+        <input
+          ref={fileRef}
+          id="issuePhoto"
+          type="file"
+          accept="image/*"
+          className="field text-sm"
+        />
+        <p className="mt-1 text-xs text-ink-faint">
+          Please include a picture to help clarify the issue you see.
+        </p>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="title" className="flabel">
@@ -69,32 +102,34 @@ export function ReportIssueForm() {
             placeholder="Dock"
           />
         </div>
-        <div>
-          <label htmlFor="priority" className="flabel">
-            How urgent
-          </label>
-          <select
-            id="priority"
-            name="priority"
-            className="field"
-            defaultValue="whenever"
-          >
-            <option value="urgent">Urgent</option>
-            <option value="soon">Soon</option>
-            <option value="whenever">Whenever</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="assignedTo" className="flabel">
-            Who is on it (optional)
-          </label>
-          <input
-            id="assignedTo"
-            name="assignedTo"
-            maxLength={200}
-            className="field"
-            placeholder="Unassigned"
-          />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:col-span-2 sm:gap-4">
+          <div className="min-w-0">
+            <label htmlFor="priority" className="flabel">
+              How urgent
+            </label>
+            <select
+              id="priority"
+              name="priority"
+              className="field"
+              defaultValue="whenever"
+            >
+              <option value="urgent">Urgent</option>
+              <option value="soon">Soon</option>
+              <option value="whenever">Whenever</option>
+            </select>
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="assignedTo" className="flabel">
+              Who is on it (optional)
+            </label>
+            <input
+              id="assignedTo"
+              name="assignedTo"
+              maxLength={200}
+              className="field"
+              placeholder="Unassigned"
+            />
+          </div>
         </div>
       </div>
       <div>
@@ -109,21 +144,6 @@ export function ReportIssueForm() {
           className="field"
           placeholder="Describe when it happens and what you have already checked."
         />
-      </div>
-      <div>
-        <label htmlFor="issuePhoto" className="flabel">
-          Photo (optional)
-        </label>
-        <input
-          ref={fileRef}
-          id="issuePhoto"
-          type="file"
-          accept="image/*"
-          className="field text-sm"
-        />
-        <p className="mt-1 text-xs text-ink-faint">
-          Please include a picture to help clarify the issue you see.
-        </p>
       </div>
       <div className="mobile-form-actions flex-wrap">
         <button type="submit" disabled={saving} className="btn btn-primary">
