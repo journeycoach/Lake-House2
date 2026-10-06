@@ -15,7 +15,7 @@ export default function NotFound() {
           The page you followed does not exist anymore.
         </p>
         <Link href="/" className="btn btn-primary mt-6">
-          Back to the house
+          ← Back to the house
         </Link>
       </div>
     </main>

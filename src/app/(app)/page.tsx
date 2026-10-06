@@ -45,14 +45,6 @@ export default async function HomePage() {
   const myVisit =
     householdStays.find((stay) => stay.start <= today && today <= stay.end) ??
     householdStays[0];
-  const overlappingVisits = myVisit
-    ? stays.filter(
-        (stay) =>
-          stay.id !== myVisit.id &&
-          stay.start <= myVisit.end &&
-          myVisit.start <= stay.end
-      )
-    : [];
   const progressStayIds = Array.from(
     new Set([
       ...here.map((stay) => stay.id),
@@ -61,9 +53,6 @@ export default async function HomePage() {
   );
   const progressByStay = await stayChecklistProgress(progressStayIds);
 
-  const overdueMaintenance = maintenance.filter(
-    (item) => item.nextDue && item.nextDue < today
-  );
   const { y, m } = (() => {
     const t = parseISO(today);
     return { y: t.y, m: t.m };
@@ -119,49 +108,58 @@ export default async function HomePage() {
   const myAssignedItems = assignedItems.filter(
     (item) => item.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase()
   );
-
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="section-label">{fmtLong(today)}</p>
-          <h1 className="font-display text-3xl lg:text-4xl mt-1">
-            Good morning, {user.name}
-          </h1>
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-          <div className="flex min-w-0 items-center gap-2">
-            <Link
-              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
-              className="btn btn-quiet min-w-0 flex-1 bg-card px-3 text-xs sm:text-xs"
-            >
-              Who&apos;s at the lake?{" "}
-              <span className="font-semibold text-ink">
-                {here.length > 0
-                  ? here.map((s) => s.householdName ?? s.label).join(", ")
-                : "Nobody"}
-              </span>
-            </Link>
+      <div className="mb-6 space-y-3">
+        <div className="flex items-end justify-between gap-2">
+          <div>
+            <p className="section-label">{fmtLong(today)}</p>
+            <h1 className="font-display text-3xl lg:text-4xl mt-1">
+              Hello, {user.name}
+            </h1>
+          </div>
+          <div className="shrink-0">
             <Suspense fallback={<VisitWeatherBadgeFallback />}>
               <VisitWeatherBadge />
             </Suspense>
           </div>
-          {canEdit(user.effectiveRole) ? (
-            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+        </div>
+        {canEdit(user.effectiveRole) ? (
+          <div className="flex justify-end">
+            <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
               <Link
                 href="/calendar/plan"
-                className="btn min-w-0 bg-water px-2 text-[11px] text-white hover:bg-deep-2 sm:px-3 sm:text-xs"
+                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-water hover:bg-deep-2 sm:px-3 sm:text-xs"
               >
                 Plan a stay
               </Link>
               <Link
                 href="/upkeep/report-issue"
-                className="btn min-w-0 bg-care px-2 text-[11px] text-white hover:bg-care/90 sm:px-3 sm:text-xs"
+                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-care hover:bg-care/90 sm:px-3 sm:text-xs"
               >
                 Report an Issue
               </Link>
+              <Link
+                href="/shopping-list#add-item"
+                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-sage hover:bg-deep sm:px-3 sm:text-xs"
+              >
+                Add to Shopping List
+              </Link>
             </div>
-          ) : null}
+          </div>
+        ) : null}
+        <div className="flex justify-center">
+          <Link
+            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
+            className="btn btn-quiet min-w-0 bg-card px-3 text-xs sm:text-xs"
+          >
+            Who&apos;s at the lake?{" "}
+            <span className="font-semibold text-ink">
+              {here.length > 0
+                ? here.map((s) => s.householdName ?? s.label).join(", ")
+                : "Nobody"}
+            </span>
+          </Link>
         </div>
       </div>
 
@@ -169,16 +167,10 @@ export default async function HomePage() {
         <MyVisitCard
           stay={myVisit}
           today={today}
-          overlappingVisits={overlappingVisits}
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
           issues={visitIssues}
           assignedItems={myAssignedItems}
-          overdueMaintenance={overdueMaintenance.map(({ id, task, nextDue }) => ({
-            id,
-            task,
-            nextDue,
-          }))}
         />
       ) : (
         <MyVisitEmptyState canPlan={canEdit(user.effectiveRole)} />
@@ -345,7 +337,7 @@ export default async function HomePage() {
         {/* Fix-it */}
         <section className="card order-3 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-2">
-            <p className="section-label">Fix-it list</p>
+            <p className="section-label">Property Care</p>
             <Link
               href={
                 canEdit(user.effectiveRole)

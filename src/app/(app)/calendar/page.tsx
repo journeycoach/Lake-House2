@@ -141,14 +141,22 @@ export default async function CalendarPage({
       <PageHeader
         title="Calendar"
         action={
-          editor ? (
+          <div className="flex flex-wrap gap-2">
             <Link
-              href="/calendar/plan"
-              className="btn bg-water text-white hover:bg-deep-2"
+              href={upcoming[0] ? `/calendar/${upcoming[0].id}/checklist` : "#upcoming-stays"}
+              className="btn border border-sand-line bg-white text-water hover:bg-mist"
             >
-              Plan a stay
+              View Checklists
             </Link>
-          ) : null
+            {editor ? (
+              <Link
+                href="/calendar/plan"
+                className="btn bg-water text-white hover:bg-deep-2"
+              >
+                Plan a stay
+              </Link>
+            ) : null}
+          </div>
         }
       />
 

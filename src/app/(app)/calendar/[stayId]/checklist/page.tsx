@@ -64,26 +64,25 @@ export default async function VisitChecklistPage({
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-5">
-        <Link href="/calendar" className="text-sm font-semibold text-water hover:text-deep-2">
-          ← Back to calendar
-        </Link>
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="section-label">Visit checklist</p>
-            <h1 className="font-display mt-1 text-3xl">{stay.label}</h1>
-            <p className="mt-1 text-sm text-ink-soft">{fmtRange(stay.start, stay.end)}</p>
-          </div>
-          <span className={`chip ${totalCompleted === rows.length && rows.length > 0 ? "chip-ready" : "chip-whenever"}`}>
-            {totalCompleted} of {rows.length} complete
-          </span>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="min-w-0 font-display text-2xl sm:text-3xl">
+            Visit Checklists
+          </h1>
+          <Link href="/calendar" className="btn btn-quiet shrink-0">
+            ← Back to calendar
+          </Link>
         </div>
+        <p className="mt-1 text-sm text-ink-soft">{fmtRange(stay.start, stay.end)}</p>
+        <span className={`chip mt-2 ${totalCompleted === rows.length && rows.length > 0 ? "chip-ready" : "chip-whenever"}`}>
+          {totalCompleted} of {rows.length} complete
+        </span>
       </div>
 
       <section className="card p-4 md:p-6">
         <p className="text-sm text-ink-soft">
           {canToggle
             ? "You can update this visit’s progress while your household is at the lake."
-            : "Everyone can view these lists. Checkboxes are available only to the resident household during its stay."}
+            : "Checkboxes will appear to the resident only during their stay."}
         </p>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">

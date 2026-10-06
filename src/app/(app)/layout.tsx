@@ -3,9 +3,16 @@ import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { roleLabel } from "@/lib/roles";
-import { todayISO } from "@/lib/dates";
-import { allStays, staysNow, staysUpcoming } from "@/lib/queries";
+import { addDays, todayISO } from "@/lib/dates";
+import {
+  allStays,
+  maintenanceItems,
+  openFixit,
+  staysNow,
+  staysUpcoming,
+} from "@/lib/queries";
 import { Sidebar, MobileHeader } from "@/components/nav";
+import type { HomeNotification } from "@/components/home-notification-bell";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { signOut } from "@/app/signin/actions";
 import { setViewAs, clearViewAs } from "./view-as-actions";
@@ -60,13 +67,99 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const [status, stays] = await Promise.all([houseStatus(), allStays()]);
+  const [status, stays, maintenance, issues] = await Promise.all([
+    houseStatus(),
+    allStays(),
+    maintenanceItems(),
+    openFixit(),
+  ]);
   const today = todayISO();
   const checklistStay = staysNow(stays, today)[0] ?? staysUpcoming(stays, today)[0];
   const stayChecklistHref = checklistStay
     ? `/calendar/${checklistStay.id}/checklist`
     : "/calendar/plan";
   const navUser = { name: user.name, role: user.effectiveRole };
+  const householdStays = user.householdId
+    ? stays
+        .filter((stay) => stay.householdId === user.householdId && stay.end >= today)
+        .sort((a, b) => a.start.localeCompare(b.start))
+    : [];
+  const myVisit =
+    householdStays.find((stay) => stay.start <= today && today <= stay.end) ??
+    householdStays[0];
+  const overlappingVisits = myVisit
+    ? stays.filter(
+        (stay) =>
+          stay.id !== myVisit.id &&
+          stay.start <= myVisit.end &&
+          myVisit.start <= stay.end
+      )
+    : [];
+  const notifications: HomeNotification[] = [];
+  if (myVisit && overlappingVisits.length > 0) {
+    notifications.push({
+      title: "Overlapping family visits",
+      detail: overlappingVisits.map((stay) => stay.label).join(", "),
+      href: "/calendar#upcoming-stays",
+      urgent: true,
+    });
+  }
+  if (myVisit?.start === addDays(today, 1)) {
+    notifications.push({
+      title: "Your stay starts tomorrow",
+      detail: "Review the Stay Checklist before arriving.",
+      href: `/calendar/${myVisit.id}/checklist#stay-checklist`,
+    });
+  }
+  if (myVisit && myVisit.start <= today && myVisit.end === today) {
+    notifications.push({
+      title: "Check-out today",
+      detail: "Finish the Leave Checklist before you go.",
+      href: `/calendar/${myVisit.id}/checklist#leave-checklist`,
+    });
+  }
+  const overdueMaintenance = maintenance.filter(
+    (item) => item.nextDue && item.nextDue < today
+  );
+  if (overdueMaintenance.length > 0) {
+    notifications.push({
+      title: `${overdueMaintenance.length} overdue maintenance item${overdueMaintenance.length === 1 ? "" : "s"}`,
+      detail: overdueMaintenance[0].task,
+      href: "/upkeep?tab=maintenance",
+      urgent: true,
+    });
+  }
+  const urgentIssues = issues.filter((issue) => issue.priority === "urgent");
+  if (urgentIssues.length > 0) {
+    notifications.push({
+      title: `${urgentIssues.length} urgent property issue${urgentIssues.length === 1 ? "" : "s"}`,
+      detail: urgentIssues[0].title,
+      href: "/upkeep?tab=fixit",
+      urgent: true,
+    });
+  }
+  const assignedToUser = [
+    ...issues.map((issue) => ({
+      title: issue.title,
+      href: "/upkeep?tab=fixit",
+      assignedTo: issue.assignedTo,
+    })),
+    ...maintenance.map((item) => ({
+      title: item.task,
+      href: "/upkeep?tab=maintenance",
+      assignedTo: item.assignedTo,
+    })),
+  ].filter(
+    (item) =>
+      item.assignedTo?.trim().toLowerCase() === user.name.trim().toLowerCase()
+  );
+  if (assignedToUser.length > 0) {
+    notifications.push({
+      title: `${assignedToUser.length} item${assignedToUser.length === 1 ? "" : "s"} assigned to you`,
+      detail: assignedToUser[0].title,
+      href: assignedToUser[0].href,
+    });
+  }
   const isRealAdmin = user.role === "admin";
   const commitSha = process.env.VERCEL_GIT_COMMIT_SHA;
   const version = commitSha ? commitSha.slice(0, 7) : "Local";
@@ -105,6 +198,7 @@ export default async function AppLayout({
         <Sidebar
           user={navUser}
           stayChecklistHref={stayChecklistHref}
+          notifications={notifications}
           status={status}
           version={version}
           signOutSlot={<SignOutButton />}
@@ -115,6 +209,7 @@ export default async function AppLayout({
         <MobileHeader
           user={navUser}
           stayChecklistHref={stayChecklistHref}
+          notifications={notifications}
           status={status}
           version={version}
           signOutSlot={<SignOutButton />}

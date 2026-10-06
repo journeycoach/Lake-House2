@@ -63,7 +63,7 @@ export default async function PlanStayPage({
         title="Plan a Stay"
         action={
           <Link href="/calendar" className="btn btn-quiet">
-            Back to calendar
+            ← Back to calendar
           </Link>
         }
       />

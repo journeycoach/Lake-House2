@@ -35,7 +35,7 @@ async function normalizeGroup(done: number) {
   );
 }
 
-export type AddItemState = { error?: string; added?: boolean };
+export type AddItemState = { error?: string; added?: boolean; addedTitle?: string };
 
 export async function addItem(
   _prev: AddItemState,
@@ -55,7 +55,7 @@ export async function addItem(
   });
   await logActivity(user, "added a checklist item", title);
   refresh();
-  return { added: true };
+  return { added: true, addedTitle: title };
 }
 
 export async function updateItem(formData: FormData) {

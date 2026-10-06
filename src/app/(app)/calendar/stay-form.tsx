@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -53,6 +54,7 @@ export function StayForm({
     },
     initial
   );
+  const router = useRouter();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const values = state.values;
@@ -61,6 +63,50 @@ export function StayForm({
   useEffect(() => {
     if (state.added) formRef.current?.reset();
   }, [state.added]);
+
+  useEffect(() => {
+    if (!state.added || stay) return;
+    const timeout = window.setTimeout(() => {
+      router.replace("/calendar");
+    }, 2200);
+    return () => window.clearTimeout(timeout);
+  }, [router, state.added, stay]);
+
+  if (state.added && !stay) {
+    return (
+      <section
+        role="status"
+        aria-live="polite"
+        className="rounded-lh border border-sage/30 bg-sage/10 p-5 text-center sm:p-7"
+      >
+        <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-sage text-white">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            className="h-6 w-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m5 12.5 4.5 4L19 7"
+            />
+          </svg>
+        </span>
+        <h2 className="mt-3 font-display text-2xl text-ink">
+          Stay added to the calendar
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Your visit is booked. Returning to the Calendar…
+        </p>
+        <Link href="/calendar" className="btn btn-quiet mt-4">
+          Go to Calendar now
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <form
@@ -156,19 +202,21 @@ export function StayForm({
           />
         </div>
       </div>
-      <div>
-        <label htmlFor="guestNames" className="flabel">
-          Guest names (optional)
-        </label>
-        <input
-          id="guestNames"
-          name="guestNames"
-          defaultValue={values?.guestNames ?? stay?.guestNames ?? ""}
-          maxLength={500}
-          className="field"
-          placeholder="Jenn, John, Emma + kids Lily & Theo"
-        />
-      </div>
+      {stay ? (
+        <div>
+          <label htmlFor="guestNames" className="flabel">
+            Guest names (optional)
+          </label>
+          <input
+            id="guestNames"
+            name="guestNames"
+            defaultValue={values?.guestNames ?? stay.guestNames ?? ""}
+            maxLength={500}
+            className="field"
+            placeholder="Jenn, John, Emma + kids Lily & Theo"
+          />
+        </div>
+      ) : null}
       <div>
         <label htmlFor="note" className="flabel">
           Arrival note
