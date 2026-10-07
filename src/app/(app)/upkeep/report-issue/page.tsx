@@ -18,7 +18,7 @@ export default async function ReportIssuePage() {
         action={
           <Link
             href="/upkeep?tab=fixit"
-            className="text-sm font-semibold text-water hover:text-deep-2"
+            className="btn btn-quiet"
           >
             ← Back to Property Care
           </Link>

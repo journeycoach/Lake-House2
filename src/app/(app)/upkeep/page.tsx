@@ -18,7 +18,7 @@ import {
 } from "./maintenance-actions";
 import { EquipmentSection } from "./equipment-section";
 
-export const metadata: Metadata = { title: "Fix It List · Paine Pointe" };
+export const metadata: Metadata = { title: "Property Care · Paine Pointe" };
 
 function Chevron({ className = "" }: { className?: string }) {
   return (
@@ -67,11 +67,14 @@ export default async function UpkeepPage({
   const equipmentById = new Map(equipment.map((item) => [item.id, item]));
   const today = todayISO();
   const soon = addDays(today, 14);
+  const currentUserName = user.name.trim().toLowerCase();
+  const isCurrentUser = (name: string | null | undefined) =>
+    name?.trim().toLowerCase() === currentUserName;
 
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        title="Fix It List"
+        title="Property Care"
         action={
           editor ? (
             <Link
@@ -85,13 +88,13 @@ export default async function UpkeepPage({
       />
 
       <nav
-        aria-label="Fix It List sections"
+        aria-label="Property Care sections"
         className="mb-6 flex gap-1 rounded-lh border border-sand-line bg-white/60 p-1"
       >
         <Link
           href="/upkeep?tab=fixit"
           aria-current={activeTab === "fixit" ? "page" : undefined}
-          className={`flex-1 rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
+          className={`flex flex-1 items-center justify-center rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
             activeTab === "fixit"
               ? "bg-deep text-white shadow-sm"
               : "text-ink-soft hover:bg-white hover:text-ink"
@@ -102,7 +105,7 @@ export default async function UpkeepPage({
         <Link
           href="/upkeep?tab=maintenance"
           aria-current={activeTab === "maintenance" ? "page" : undefined}
-          className={`flex-1 rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
+          className={`flex flex-1 items-center justify-center rounded-[8px] px-4 py-3 text-center text-sm font-semibold transition-colors ${
             activeTab === "maintenance"
               ? "bg-deep text-white shadow-sm"
               : "text-ink-soft hover:bg-white hover:text-ink"
@@ -115,9 +118,9 @@ export default async function UpkeepPage({
       {activeTab === "fixit" ? (
         <>
 
-      {/* Fix-it list */}
+      {/* Property care list */}
       <section className="card p-4 sm:p-6">
-        <p className="section-label">Fix-it list</p>
+        <p className="section-label">Property Care</p>
         <h2 className="font-display mt-1 text-2xl">Keep the place cared for</h2>
         <ul className="mt-4">
           {open.map((f) => {
@@ -129,7 +132,14 @@ export default async function UpkeepPage({
                 ) : null}
                 <p className="text-xs text-ink-faint">
                   {f.location}
-                  {f.assignedTo ? ` · Assigned to ${f.assignedTo}` : " · Unassigned"}
+                  {f.assignedTo ? (
+                    <>
+                      {" · Assigned to "}
+                      <span className={isCurrentUser(f.assignedTo) ? "font-semibold text-care" : ""}>
+                        {f.assignedTo}
+                      </span>
+                    </>
+                  ) : " · Unassigned"}
                   {f.reportedBy ? ` · Reported by ${f.reportedBy}` : ""}
                 </p>
               </div>
@@ -453,7 +463,14 @@ export default async function UpkeepPage({
                   <p className="mt-1 text-sm text-ink-soft">{m.details}</p>
                 ) : null}
                 <p className="mt-2 text-xs text-ink-faint">
-                  {m.cadence ?? "No cadence"} · {m.assignedTo ? `Assigned to ${m.assignedTo}` : "Unassigned"}
+                  {m.cadence ?? "No cadence"} · {m.assignedTo ? (
+                    <>
+                      Assigned to{" "}
+                      <span className={isCurrentUser(m.assignedTo) ? "font-semibold text-care" : ""}>
+                        {m.assignedTo}
+                      </span>
+                    </>
+                  ) : "Unassigned"}
                 </p>
               </>
             );

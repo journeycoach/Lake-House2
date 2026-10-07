@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { addDays, fmtDay, fmtRange } from "@/lib/dates";
+import { fmtRange } from "@/lib/dates";
 import type { StayChecklistProgress, StayRow } from "@/lib/queries";
 import {
   VisitWeatherForecast,
@@ -42,16 +42,13 @@ export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
 export function MyVisitCard({
   stay,
   today,
-  overlappingVisits,
   progress,
   shoppingItems,
   issues,
   assignedItems,
-  overdueMaintenance,
 }: {
   stay: StayRow;
   today: string;
-  overlappingVisits: StayRow[];
   progress?: StayChecklistProgress;
   shoppingItems: { id: number; title: string }[];
   issues: VisitIssue[];
@@ -62,10 +59,8 @@ export function MyVisitCard({
     category: "Issue" | "Maintenance";
     href: string;
   }[];
-  overdueMaintenance: { id: number; task: string; nextDue: string | null }[];
 }) {
   const isCurrent = stay.start <= today && today <= stay.end;
-  const arrivesTomorrow = stay.start === addDays(today, 1);
   const leavesToday = isCurrent && stay.end === today;
   const total = progress?.total ?? 0;
   const completed = progress?.completed ?? 0;
@@ -184,53 +179,6 @@ export function MyVisitCard({
           </div>
         </div>
 
-        {arrivesTomorrow || leavesToday ? (
-          <Link
-            href={
-              arrivesTomorrow
-                ? `/calendar/${stay.id}/checklist#stay-checklist`
-                : `/calendar/${stay.id}/checklist#leave-checklist`
-            }
-            className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              <span aria-hidden="true">{arrivesTomorrow ? "🔔" : "🚪"}</span>
-              <span className="min-w-0">
-                <span className="font-semibold">
-                  {arrivesTomorrow ? "Arrives tomorrow" : "Leaving today"}
-                </span>
-                <span className="ml-1 text-xs text-white/75">
-                  {arrivesTomorrow
-                    ? "Review the Stay Checklist"
-                    : "Finish the Leave Checklist"}
-                </span>
-              </span>
-            </span>
-            <span className="shrink-0 text-xs font-semibold text-white/85">
-              Open →
-            </span>
-          </Link>
-        ) : null}
-
-        {overlappingVisits.length > 0 ? (
-          <div role="status" className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-amber-100">
-            <span aria-hidden="true">⚠</span>
-            <span className="font-semibold">Overlapping visit:</span>
-            <span
-              className="truncate"
-              title={overlappingVisits
-                .map((visit) => visit.guestNames ? `${visit.label} (${visit.guestNames})` : visit.label)
-                .join(", ")}
-            >
-              {overlappingVisits.slice(0, 2).map((visit) => visit.label).join(", ")}
-              {overlappingVisits.length > 2 ? ` +${overlappingVisits.length - 2} more` : ""}
-            </span>
-            <Link href="/calendar#upcoming-stays" className="shrink-0 font-semibold hover:underline">
-              Calendar →
-            </Link>
-          </div>
-        ) : null}
-
         <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 md:grid-cols-4">
           <Link href="/shopping-list" className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist">
             <span className="section-label text-[9px]">Shopping</span>
@@ -273,19 +221,6 @@ export function MyVisitCard({
             </div>
           ) : null}
 
-          {overdueMaintenance.length > 0 ? (
-            <Link href="/upkeep?tab=maintenance" className="min-w-0 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-900 transition-colors hover:bg-red-100">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-red-800">
-                Overdue · {overdueMaintenance.length}
-              </span>
-              <span className="mt-0.5 block truncate text-sm font-semibold">
-                {overdueMaintenance[0].task}
-                {overdueMaintenance[0].nextDue ? (
-                  <span className="ml-1 font-normal text-red-800/75">· {fmtDay(overdueMaintenance[0].nextDue)}</span>
-                ) : null}
-              </span>
-            </Link>
-          ) : null}
         </div>
       </div>
     </section>

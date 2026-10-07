@@ -1,15 +1,61 @@
 "use client";
 
-import { useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { reportIssue } from "./fixit-actions";
 
 export function ReportIssueForm() {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!added) return;
+    const timeout = window.setTimeout(() => {
+      router.replace("/upkeep?tab=fixit");
+    }, 2200);
+    return () => window.clearTimeout(timeout);
+  }, [added, router]);
+
+  if (added) {
+    return (
+      <section
+        role="status"
+        aria-live="polite"
+        className="rounded-lh border border-sage/30 bg-sage/10 p-5 text-center sm:p-7"
+      >
+        <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-sage text-white">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            className="h-6 w-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m5 12.5 4.5 4L19 7"
+            />
+          </svg>
+        </span>
+        <h2 className="mt-3 font-display text-2xl text-ink">Issue submitted</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Thanks for letting everyone know. It’s been added to Property Care.
+        </p>
+        <p className="mt-2 text-xs text-ink-faint">Returning to Property Care…</p>
+        <Link href="/upkeep?tab=fixit" className="btn btn-quiet mt-4">
+          Go there now
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <form
@@ -147,16 +193,11 @@ export function ReportIssueForm() {
       </div>
       <div className="mobile-form-actions flex-wrap">
         <button type="submit" disabled={saving} className="btn btn-primary">
-          {saving ? "Uploading and saving" : "Add to the list"}
+          {saving ? "Uploading and saving" : "Submit issue"}
         </button>
         {error ? (
           <p aria-live="polite" className="w-full text-sm font-medium text-rust">
             {error}
-          </p>
-        ) : null}
-        {added && !error ? (
-          <p aria-live="polite" className="w-full text-sm font-medium text-sage">
-            Added.
           </p>
         ) : null}
       </div>

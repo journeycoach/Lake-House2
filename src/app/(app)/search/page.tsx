@@ -174,7 +174,7 @@ export default async function SearchPage({
 
       <form action="/search" method="GET" className="card p-4 sm:p-6">
         <label htmlFor="q" className="flabel">
-          Search notes, the house guide, fix-it list, shopping list, and
+          Search notes, the house guide, Property Care, shopping list, and
           equipment
         </label>
         <div className="mt-2 flex gap-2">

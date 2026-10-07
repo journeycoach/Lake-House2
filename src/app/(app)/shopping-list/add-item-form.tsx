@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { addItem, type AddItemState } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -11,17 +11,49 @@ function Feedback({ state }: { state: AddItemState }) {
     return <p className="text-sm font-medium text-rust">{state.error}</p>;
   if (state.added)
     return (
-      <p aria-live="polite" className="text-sm font-medium text-sage">
-        Added.
-      </p>
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex items-center gap-3 rounded-lg border border-sage/30 bg-sage/10 p-3 text-sage"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sage text-white">
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m3 8 3.2 3.2L13 4.5" />
+          </svg>
+        </span>
+        <span className="min-w-0">
+          <span className="block font-semibold">Added to Shopping List</span>
+          {state.addedTitle ? (
+            <span className="block break-words text-sm">{state.addedTitle}</span>
+          ) : null}
+        </span>
+      </div>
     );
   return null;
 }
 
 export function AddItemForm({ editor }: { editor: boolean }) {
   const [state, action] = useActionState(addItem, initial);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.added) formRef.current?.reset();
+  }, [state.added]);
+
   return (
     <form
+      id="add-item"
+      ref={formRef}
       action={action}
       className={`mt-2 gap-1.5 rounded-lh border border-water/30 border-l-4 bg-water-tint p-2 sm:mt-2 sm:gap-1.5 sm:p-2 ${
         editor

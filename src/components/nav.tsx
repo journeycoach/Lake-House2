@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useState } from "react";
 import { BrandMark } from "./brand-mark";
+import {
+  HomeNotificationBell,
+  type HomeNotification,
+} from "./home-notification-bell";
 
 export type NavUser = { name: string; role: string };
 
@@ -33,10 +37,10 @@ const LINKS: {
 ];
 
 const MOBILE_PRIMARY_HREFS = new Set([
+  "/",
   "/calendar",
   "/upkeep",
   "/shopping-list",
-  "/guide",
 ]);
 const MOBILE_PRIMARY_LINKS = LINKS.filter((link) =>
   MOBILE_PRIMARY_HREFS.has(link.href)
@@ -69,8 +73,10 @@ function MobileBottomNav({
             href={link.href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
-              active ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
+            className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
+              active
+                ? "bg-white/20 text-white ring-1 ring-inset ring-white/25 before:absolute before:left-1/2 before:top-1 before:h-1 before:w-7 before:-translate-x-1/2 before:rounded-full before:bg-sage"
+                : "text-white/65 hover:bg-white/5 hover:text-white"
             }`}
           >
             <span aria-hidden className="text-base leading-none">
@@ -87,8 +93,10 @@ function MobileBottomNav({
         aria-label={open ? "Close more navigation" : "Open more navigation"}
         aria-expanded={open}
         onClick={onMore}
-        className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
-          open ? "bg-white/10 text-white" : "text-white/65 hover:text-white"
+        className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-semibold transition-colors ${
+          open
+            ? "bg-white/20 text-white ring-1 ring-inset ring-white/25 before:absolute before:left-1/2 before:top-1 before:h-1 before:w-7 before:-translate-x-1/2 before:rounded-full before:bg-sage"
+            : "text-white/65 hover:bg-white/5 hover:text-white"
         }`}
       >
         <span aria-hidden className="text-base leading-none">•••</span>
@@ -230,6 +238,7 @@ function MapLink() {
 export function Sidebar({
   user,
   stayChecklistHref,
+  notifications,
   status,
   version,
   signOutSlot,
@@ -237,6 +246,7 @@ export function Sidebar({
 }: {
   user: NavUser;
   stayChecklistHref: string;
+  notifications: HomeNotification[];
   status: string;
   version: string;
   signOutSlot: React.ReactNode;
@@ -248,6 +258,7 @@ export function Sidebar({
         <Mark />
         <div className="flex items-center gap-2">
           <StayChecklistLink href={stayChecklistHref} />
+          <HomeNotificationBell notifications={notifications} variant="dark" />
           <MapLink />
           <SearchLink showLabel />
         </div>
@@ -280,6 +291,7 @@ export function Sidebar({
 export function MobileHeader({
   user,
   stayChecklistHref,
+  notifications,
   status,
   version,
   signOutSlot,
@@ -287,6 +299,7 @@ export function MobileHeader({
 }: {
   user: NavUser;
   stayChecklistHref: string;
+  notifications: HomeNotification[];
   status: string;
   version: string;
   signOutSlot: React.ReactNode;
@@ -296,42 +309,44 @@ export function MobileHeader({
   return (
     <>
     <header className="lg:hidden sticky top-0 z-40 bg-deep">
-      <div className="flex items-center justify-between gap-2 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 py-4 pl-2 pr-4">
         <Mark />
-        <div className="flex items-center gap-2">
-        <StayChecklistLink href={stayChecklistHref} onNavigate={() => setOpen(false)} />
-        <MapLink />
-        <SearchLink onNavigate={() => setOpen(false)} showLabel />
-        <button
-          type="button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-11 w-11 items-center justify-center rounded-lh border border-white/25 text-white"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
+        <div className="ml-auto flex items-center gap-0.5">
+          <StayChecklistLink href={stayChecklistHref} onNavigate={() => setOpen(false)} />
+          <MapLink />
+          <SearchLink onNavigate={() => setOpen(false)} showLabel />
+          <HomeNotificationBell notifications={notifications} variant="dark" />
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
           >
-            {open ? (
-              <>
-                <path d="M3 3l12 12" />
-                <path d="M15 3L3 15" />
-              </>
-            ) : (
-              <>
-                <path d="M2 4.5h14" />
-                <path d="M2 9h14" />
-                <path d="M2 13.5h14" />
-              </>
-            )}
-          </svg>
-        </button>
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            >
+              {open ? (
+                <>
+                  <path d="M3 3l12 12" />
+                  <path d="M15 3L3 15" />
+                </>
+              ) : (
+                <>
+                  <path d="M2 4.5h14" />
+                  <path d="M2 9h14" />
+                  <path d="M2 13.5h14" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
       </div>
       {open ? (
@@ -339,7 +354,6 @@ export function MobileHeader({
           <NavLinks
             user={user}
             onNavigate={() => setOpen(false)}
-            secondaryOnly
           />
           <div className="border-t border-white/15 pt-4 space-y-3">
             {previewSlot}
