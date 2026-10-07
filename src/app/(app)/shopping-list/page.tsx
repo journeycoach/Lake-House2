@@ -5,10 +5,9 @@ import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { AddItemForm } from "./add-item-form";
 import { EditableChecklistItem } from "./edit-item";
-import {
-  toggleItem,
-  moveItem,
-} from "./actions";
+import { toggleItem } from "./actions";
+import { getDb, schema } from "@/lib/db";
+import { asc } from "drizzle-orm";
 
 export const metadata: Metadata = { title: "Shopping List · Paine Pointe" };
 
@@ -16,6 +15,12 @@ export default async function ChecklistPage() {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
   const items = await checklistItems();
+  const assignees = (await getDb()
+    .select({ name: schema.users.name })
+    .from(schema.users)
+    .orderBy(asc(schema.users.name)))
+    .map((row) => row.name)
+    .filter((name, index, names) => names.indexOf(name) === index);
   const openItems = items.filter((item) => !item.done);
   const completedItems = items.filter((item) => item.done);
 
@@ -61,7 +66,7 @@ export default async function ChecklistPage() {
           </button>
         </form>
         {editor ? (
-          <EditableChecklistItem item={item} />
+              <EditableChecklistItem item={item} assignees={assignees} />
         ) : (
           <div className="min-w-0 flex-1 basis-48">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
@@ -82,6 +87,7 @@ export default async function ChecklistPage() {
                 item.done
                   ? `Checked by ${item.checkedBy ?? "Unknown"}`
                   : `Added by ${item.addedBy}`,
+                item.assignedTo ? `Assigned to ${item.assignedTo}` : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -97,103 +103,10 @@ export default async function ChecklistPage() {
             ) : null}
             <p className="hidden text-xs text-ink-faint sm:block">
               Added by {item.addedBy}
+              {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : " · Anyone"}
             </p>
           </div>
         )}
-        <div
-          className={`ml-auto shrink-0 justify-end sm:hidden ${editor ? "flex" : "hidden"}`}
-        >
-          <details className="relative">
-            <summary
-              aria-label={`Actions for ${item.title}`}
-              className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-sand-line bg-white text-lg font-bold tracking-widest text-water [&::-webkit-details-marker]:hidden"
-            >
-              ⋯
-            </summary>
-            <div className="absolute right-0 top-12 z-30 w-56 rounded-lh border border-sand-line bg-white p-2 shadow-lg">
-              <div className="grid grid-cols-2 gap-2">
-                <form action={moveItem}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <input type="hidden" name="dir" value="up" />
-                  <button
-                    type="submit"
-                    disabled={i === 0}
-                    className="flex min-h-11 w-full items-center justify-center rounded-md border border-sand-line text-sm font-semibold text-water disabled:opacity-30"
-                  >
-                    ↑ Move up
-                  </button>
-                </form>
-                <form action={moveItem}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <input type="hidden" name="dir" value="down" />
-                  <button
-                    type="submit"
-                    disabled={i === rows.length - 1}
-                    className="flex min-h-11 w-full items-center justify-center rounded-md border border-sand-line text-sm font-semibold text-water disabled:opacity-30"
-                  >
-                    ↓ Move down
-                  </button>
-                </form>
-              </div>
-            </div>
-          </details>
-        </div>
-        <div
-          className={`w-full items-center justify-end gap-2 sm:w-auto ${
-            editor ? "hidden sm:flex" : "hidden"
-          }`}
-        >
-          <form action={moveItem}>
-            <input type="hidden" name="id" value={item.id} />
-            <input type="hidden" name="dir" value="up" />
-            <button
-              type="submit"
-              disabled={i === 0}
-              aria-label={`Move "${item.title}" up`}
-              title="Move up"
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
-            >
-              <svg
-                aria-hidden
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3.5 9.5 8 5l4.5 4.5" />
-              </svg>
-            </button>
-          </form>
-          <form action={moveItem}>
-            <input type="hidden" name="id" value={item.id} />
-            <input type="hidden" name="dir" value="down" />
-            <button
-              type="submit"
-              disabled={i === rows.length - 1}
-              aria-label={`Move "${item.title}" down`}
-              title="Move down"
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-sand-line text-water transition hover:border-water hover:bg-water-tint disabled:cursor-default disabled:opacity-30"
-            >
-              <svg
-                aria-hidden
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m3.5 6.5 4.5 4.5 4.5-4.5" />
-              </svg>
-            </button>
-          </form>
-        </div>
       </li>
       );
     });
@@ -204,16 +117,14 @@ export default async function ChecklistPage() {
       <PageHeader title="Shopping List" />
 
       <section className="card p-3 sm:p-6">
-        <p className="section-label">Shopping List</p>
-        <h2 className="font-display text-2xl mt-1">
+        <h2 className="font-display text-2xl">
           Pickup before the next trip
         </h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Everyone can check items off. Family and admins can add, remove,
-          and reorder them — click an item to edit it.
+          Check items off when you get them.
         </p>
 
-        <AddItemForm editor={editor} />
+        <AddItemForm editor={editor} assignees={assignees} />
 
         <ul className="mt-2 sm:mt-4">
           {itemRows(openItems)}

@@ -1,0 +1,1 @@
+ALTER TABLE "checklist" ADD COLUMN "assigned_to" text;

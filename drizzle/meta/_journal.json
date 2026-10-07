@@ -92,6 +92,13 @@
       "when": 1790967861761,
       "tag": "0012_push-subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791333426835,
+      "tag": "0013_shopping-list-assigned-to",
+      "breakpoints": true
     }
   ]
 }

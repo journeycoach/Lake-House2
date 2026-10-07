@@ -10,8 +10,11 @@ Two people work here, each with their own AI: Jeff (Claude) and John (Codex).
 The repo is the only channel between them. Rules:
 
 - Branch names say whose agent did the work: `claude/<topic>` or `codex/<topic>`.
-- Never push directly to `main`. Open a PR and say in the description what
-  changed and why. The other side reads PRs to catch up - write for them.
+- Pull requests remain the preferred way to share changes so the other side can
+  review them, but direct pushes to `main` are allowed when the user explicitly
+  requests a production release. The phrase “Send to Production” authorizes the
+  agent to run the release checks and push the approved changes directly to
+  `main`; do not require a PR for that workflow.
 - The repo lives in the journeycoach account; Jeff and John are both
   owners, so either can manage settings, integrations, and access.
 - Hosting is the journeycoach Vercel project, serving paines.com and connected to this repo:

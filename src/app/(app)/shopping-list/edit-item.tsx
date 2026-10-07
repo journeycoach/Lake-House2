@@ -7,12 +7,19 @@ type Item = {
   id: number;
   title: string;
   details: string | null;
+  assignedTo: string | null;
   done: number;
   checkedBy: string | null;
   addedBy: string;
 };
 
-export function EditableChecklistItem({ item }: { item: Item }) {
+export function EditableChecklistItem({
+  item,
+  assignees,
+}: {
+  item: Item;
+  assignees: string[];
+}) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -25,7 +32,7 @@ export function EditableChecklistItem({ item }: { item: Item }) {
             setEditing(false);
           });
         }}
-        className="grid w-full gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto]"
+        className="grid w-full gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto]"
       >
         <input type="hidden" name="id" value={item.id} />
         <label className="min-w-0">
@@ -39,6 +46,23 @@ export function EditableChecklistItem({ item }: { item: Item }) {
             defaultValue={item.title}
             className="field"
           />
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+            Assigned to
+          </span>
+          <select
+            name="assignedTo"
+            defaultValue={item.assignedTo ?? ""}
+            className="field"
+          >
+            <option value="">Anyone</option>
+            {assignees.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="min-w-0">
           <span className="mb-1 block text-xs font-semibold text-ink-soft">
@@ -95,6 +119,7 @@ export function EditableChecklistItem({ item }: { item: Item }) {
           item.done
             ? `Checked by ${item.checkedBy ?? "Unknown"}`
             : `Added by ${item.addedBy}`,
+          item.assignedTo ? `Assigned to ${item.assignedTo}` : null,
         ]
           .filter(Boolean)
           .join(" · ")}
@@ -110,6 +135,7 @@ export function EditableChecklistItem({ item }: { item: Item }) {
       ) : null}
       <p className="hidden text-xs text-ink-faint sm:block">
         Added by {item.addedBy}
+        {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : " · Anyone"}
       </p>
     </button>
   );

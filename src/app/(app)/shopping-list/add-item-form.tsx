@@ -42,7 +42,13 @@ function Feedback({ state }: { state: AddItemState }) {
   return null;
 }
 
-export function AddItemForm({ editor }: { editor: boolean }) {
+export function AddItemForm({
+  editor,
+  assignees,
+}: {
+  editor: boolean;
+  assignees: string[];
+}) {
   const [state, action] = useActionState(addItem, initial);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -57,7 +63,7 @@ export function AddItemForm({ editor }: { editor: boolean }) {
       action={action}
       className={`mt-2 gap-1.5 rounded-lh border border-water/30 border-l-4 bg-water-tint p-2 sm:mt-2 sm:gap-1.5 sm:p-2 ${
         editor
-          ? "grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto]"
+          ? "grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto]"
           : "hidden"
       }`}
     >
@@ -84,11 +90,24 @@ export function AddItemForm({ editor }: { editor: boolean }) {
           placeholder="Quantity, brand, or preferred store"
         />
       </label>
-      <SubmitButton className="btn btn-primary col-start-2 row-start-1 self-end whitespace-nowrap sm:col-start-3">
+      <label className="col-span-2 col-start-1 row-start-3 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
+        <span className="mb-0.5 block text-xs font-semibold text-ink-soft">
+          Assigned to
+        </span>
+        <select name="assignedTo" defaultValue="" className="field">
+          <option value="">Anyone</option>
+          {assignees.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <SubmitButton className="btn btn-primary col-start-2 row-start-1 self-end whitespace-nowrap sm:col-start-4">
         Add to list
       </SubmitButton>
       {(state.error || state.added) ? (
-        <div className="col-span-2 col-start-1 row-start-3 sm:col-span-3 sm:row-start-2">
+        <div className="col-span-2 col-start-1 row-start-4 sm:col-span-4 sm:row-start-2">
           <Feedback state={state} />
         </div>
       ) : null}
