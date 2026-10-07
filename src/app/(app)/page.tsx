@@ -67,6 +67,9 @@ export default async function HomePage() {
     item.nextDue?.startsWith(monthKey)
   );
   const openChecks = checks.filter((check) => !check.done);
+  const myShoppingItems = openChecks.filter(
+    (item) => item.assignedTo?.trim().toLowerCase() === user.name.trim().toLowerCase()
+  );
   const currentChecks = openChecks.slice(0, 4);
   const visitIssues = myVisit
     ? [
@@ -169,6 +172,7 @@ export default async function HomePage() {
           today={today}
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
+          myShoppingItems={myShoppingItems}
           issues={visitIssues}
           assignedItems={myAssignedItems}
         />

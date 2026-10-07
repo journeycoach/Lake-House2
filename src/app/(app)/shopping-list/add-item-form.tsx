@@ -63,7 +63,7 @@ export function AddItemForm({
       action={action}
       className={`mt-2 gap-1.5 rounded-lh border border-water/30 border-l-4 bg-water-tint p-2 sm:mt-2 sm:gap-1.5 sm:p-2 ${
         editor
-          ? "grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto]"
+          ? "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto]"
           : "hidden"
       }`}
     >
@@ -90,7 +90,7 @@ export function AddItemForm({
           placeholder="Quantity, brand, or preferred store"
         />
       </label>
-      <label className="col-span-2 col-start-1 row-start-3 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
+      <label className="col-start-2 row-start-1 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
         <span className="mb-0.5 block text-xs font-semibold text-ink-soft">
           Assigned to
         </span>
@@ -103,7 +103,7 @@ export function AddItemForm({
           ))}
         </select>
       </label>
-      <SubmitButton className="btn btn-primary col-start-2 row-start-1 self-end whitespace-nowrap sm:col-start-4">
+      <SubmitButton className="btn btn-primary col-start-2 row-start-3 self-end justify-self-end whitespace-nowrap sm:col-start-4 sm:row-start-1">
         Add to list
       </SubmitButton>
       {(state.error || state.added) ? (

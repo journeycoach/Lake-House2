@@ -44,6 +44,7 @@ export function MyVisitCard({
   today,
   progress,
   shoppingItems,
+  myShoppingItems,
   issues,
   assignedItems,
 }: {
@@ -51,6 +52,7 @@ export function MyVisitCard({
   today: string;
   progress?: StayChecklistProgress;
   shoppingItems: { id: number; title: string }[];
+  myShoppingItems: { id: number; title: string }[];
   issues: VisitIssue[];
   assignedItems: {
     id: string;
@@ -183,8 +185,22 @@ export function MyVisitCard({
           <Link href="/shopping-list" className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist">
             <span className="section-label text-[9px]">Shopping</span>
             <span className="mt-0.5 block text-sm font-semibold">
-              {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
-              <span className="ml-1 font-normal text-ink-soft">· {shoppingItems[0]?.title ?? "All set"}</span>
+              {myShoppingItems.length > 0 ? (
+                <>
+                  {myShoppingItems.length} for you
+                  <span className="ml-1 font-normal text-ink-soft">
+                    · {myShoppingItems.slice(0, 2).map((item) => item.title).join(", ")}
+                    {myShoppingItems.length > 2 ? ` +${myShoppingItems.length - 2}` : ""}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
+                  <span className="ml-1 font-normal text-ink-soft">
+                    · {shoppingItems[0]?.title ?? "All set"}
+                  </span>
+                </>
+              )}
             </span>
           </Link>
 
