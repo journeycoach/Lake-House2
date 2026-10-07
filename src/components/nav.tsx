@@ -258,9 +258,9 @@ export function Sidebar({
         <Mark />
         <div className="flex items-center gap-2">
           <StayChecklistLink href={stayChecklistHref} />
-          <HomeNotificationBell notifications={notifications} variant="dark" />
           <MapLink />
           <SearchLink showLabel />
+          <HomeNotificationBell notifications={notifications} variant="dark" />
         </div>
       </div>
       <div className="mt-10 flex-1">

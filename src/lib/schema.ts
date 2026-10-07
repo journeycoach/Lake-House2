@@ -143,6 +143,7 @@ export const checklist = pgTable("checklist", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   details: text("details"),
+  assignedTo: text("assigned_to"),
   addedBy: text("added_by").notNull(),
   checkedBy: text("checked_by"),
   done: integer("done").notNull().default(0),

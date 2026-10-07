@@ -9,6 +9,10 @@ const WORD_SIZES = {
   sm: "text-[19px]",
   lg: "text-[38px]",
 } as const;
+const POINTE_SIZES = {
+  sm: "text-[22px]",
+  lg: "text-[44px]",
+} as const;
 
 export function BrandMark({ size = "sm" }: { size?: keyof typeof SIZES }) {
   return (
@@ -22,8 +26,16 @@ export function BrandMark({ size = "sm" }: { size?: keyof typeof SIZES }) {
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-lh bg-white/25"
+        className="pointer-events-none absolute inset-0 rounded-lh bg-deep"
       />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <svg width="91%" height="94%" viewBox="0 0 36 24" aria-hidden="true">
+          <path d="M2 7 18 0 34 7v15H2V7Z" fill="white" />
+        </svg>
+      </span>
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-[10%] top-[12%] flex h-[34%] items-center justify-center bg-white"
@@ -40,13 +52,13 @@ export function BrandMark({ size = "sm" }: { size?: keyof typeof SIZES }) {
       />
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-[13%] top-[53%] z-10 flex h-[24%] items-center justify-center font-display leading-none text-[#8b1e3f] ${WORD_SIZES[size]}`}
+        className={`pointer-events-none absolute inset-x-[13%] top-[53%] z-10 flex h-[24%] items-center justify-center font-display leading-none text-[#8b1e3f] ${POINTE_SIZES[size]}`}
       >
         Pointe
       </span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 flex items-center justify-center text-ink/55"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center text-[#8a8175]"
       >
         <svg
           width="91%"

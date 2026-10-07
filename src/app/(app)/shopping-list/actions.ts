@@ -49,6 +49,7 @@ export async function addItem(
   await getDb().insert(schema.checklist).values({
     title,
     details: readText(formData.get("details"), 4000) || null,
+    assignedTo: readText(formData.get("assignedTo"), 200) || null,
     addedBy: user.name,
     done: 0,
     position,
@@ -72,14 +73,15 @@ export async function updateItem(formData: FormData) {
     .set({
       title,
       details: readText(formData.get("details"), 4000) || null,
+      assignedTo: readText(formData.get("assignedTo"), 200) || null,
     })
     .where(eq(schema.checklist.id, id));
   await logActivity(user, "updated a checklist item", title);
   refresh();
 }
 
-/* Everyone signed in can check things off, family tier included. Clearing
-   items out (remove, reorder, add) stays with household and admin. */
+/* Everyone signed in can check things off, family tier included. Adding and
+   removing items stays with household and admin. */
 export async function toggleItem(formData: FormData) {
   const user = await requireUser();
   const id = Number(formData.get("id"));
@@ -117,31 +119,5 @@ export async function removeItem(formData: FormData) {
   await getDb().delete(schema.checklist).where(eq(schema.checklist.id, id));
   if (item) await normalizeGroup(item.done);
   if (item) await logActivity(user, "removed a checklist item", item.title);
-  refresh();
-}
-
-export async function moveItem(formData: FormData) {
-  await requireEditor();
-  const id = Number(formData.get("id"));
-  const dir = String(formData.get("dir")) === "up" ? -1 : 1;
-  const item = await getDb().query.checklist.findFirst({
-    where: eq(schema.checklist.id, id),
-  });
-  if (!item) return;
-  await normalizeGroup(item.done);
-  const rows = await groupItems(item.done);
-  const idx = rows.findIndex((r) => r.id === id);
-  if (idx === -1) return;
-  const swap = rows[idx + dir];
-  if (!swap) return;
-  const a = rows[idx];
-  await getDb()
-    .update(schema.checklist)
-    .set({ position: swap.position })
-    .where(eq(schema.checklist.id, a.id));
-  await getDb()
-    .update(schema.checklist)
-    .set({ position: a.position })
-    .where(eq(schema.checklist.id, swap.id));
   refresh();
 }

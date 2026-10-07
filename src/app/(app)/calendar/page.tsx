@@ -144,7 +144,7 @@ export default async function CalendarPage({
           <div className="flex flex-wrap gap-2">
             <Link
               href={upcoming[0] ? `/calendar/${upcoming[0].id}/checklist` : "#upcoming-stays"}
-              className="btn border border-sand-line bg-white text-water hover:bg-mist"
+              className="btn border border-care/90 bg-care/90 text-white hover:bg-care"
             >
               View Checklists
             </Link>
