@@ -75,6 +75,11 @@ export default async function ChecklistPage() {
               >
                 {item.title}
               </p>
+              {item.assignedTo ? (
+                <span className="text-xs font-medium text-ink-soft">
+                  Assigned to {item.assignedTo}
+                </span>
+              ) : null}
               {item.done ? (
                 <span className="hidden text-xs text-ink-faint sm:inline">
                   Checked by {item.checkedBy ?? "Unknown"}
@@ -87,7 +92,6 @@ export default async function ChecklistPage() {
                 item.done
                   ? `Checked by ${item.checkedBy ?? "Unknown"}`
                   : `Added by ${item.addedBy}`,
-                item.assignedTo ? `Assigned to ${item.assignedTo}` : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -103,7 +107,6 @@ export default async function ChecklistPage() {
             ) : null}
             <p className="hidden text-xs text-ink-faint sm:block">
               Added by {item.addedBy}
-              {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : " · Anyone"}
             </p>
           </div>
         )}
