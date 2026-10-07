@@ -66,7 +66,11 @@ export default async function ChecklistPage() {
           </button>
         </form>
         {editor ? (
-              <EditableChecklistItem item={item} assignees={assignees} />
+              <EditableChecklistItem
+                item={item}
+                assignees={assignees}
+                currentUser={user.name}
+              />
         ) : (
           <div className="min-w-0 flex-1 basis-48">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
@@ -76,7 +80,14 @@ export default async function ChecklistPage() {
                 {item.title}
               </p>
               {item.assignedTo ? (
-                <span className="text-xs font-medium text-ink-soft">
+                <span
+                  className={`text-xs font-medium ${
+                    item.assignedTo.trim().toLowerCase() ===
+                    user.name.trim().toLowerCase()
+                      ? "text-care"
+                      : "text-ink-soft"
+                  }`}
+                >
                   Assigned to {item.assignedTo}
                 </span>
               ) : null}
@@ -86,28 +97,23 @@ export default async function ChecklistPage() {
                 </span>
               ) : null}
             </div>
-            <p className="truncate text-xs text-ink-faint sm:hidden">
-              {[
-                item.details,
-                item.done
-                  ? `Checked by ${item.checkedBy ?? "Unknown"}`
-                  : `Added by ${item.addedBy}`,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </p>
-            {item.details ? (
-              <p
-                className={`hidden text-sm sm:block ${
-                  item.done ? "text-ink-faint line-through" : "text-ink-soft"
-                }`}
-              >
-                {item.details}
+            {item.details || item.addedBy ? (
+              <p className="text-sm text-ink-soft">
+                {item.details ? (
+                  <>
+                    <span className={item.done ? "text-ink-faint line-through" : ""}>
+                      {item.details}
+                    </span>
+                    {" · "}
+                  </>
+                ) : null}
+                <span className="text-xs text-ink-faint">
+                  {item.done
+                    ? `Checked by ${item.checkedBy ?? "Unknown"}`
+                    : `Added by ${item.addedBy}`}
+                </span>
               </p>
             ) : null}
-            <p className="hidden text-xs text-ink-faint sm:block">
-              Added by {item.addedBy}
-            </p>
           </div>
         )}
       </li>

@@ -16,9 +16,11 @@ type Item = {
 export function EditableChecklistItem({
   item,
   assignees,
+  currentUser,
 }: {
   item: Item;
   assignees: string[];
+  currentUser: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -112,31 +114,36 @@ export function EditableChecklistItem({
             Checked by {item.checkedBy ?? "Unknown"}
           </span>
         ) : null}
+        {item.assignedTo ? (
+          <span
+            className={`text-xs font-medium ${
+              item.assignedTo.trim().toLowerCase() ===
+              currentUser.trim().toLowerCase()
+                ? "text-care"
+                : "text-ink-soft"
+            }`}
+          >
+            Assigned to {item.assignedTo}
+          </span>
+        ) : null}
       </div>
-      <p className="truncate text-xs text-ink-faint sm:hidden">
-        {[
-          item.details,
-          item.done
-            ? `Checked by ${item.checkedBy ?? "Unknown"}`
-            : `Added by ${item.addedBy}`,
-          item.assignedTo ? `Assigned to ${item.assignedTo}` : null,
-        ]
-          .filter(Boolean)
-          .join(" · ")}
-      </p>
-      {item.details ? (
-        <p
-          className={`hidden text-sm sm:block ${
-            item.done ? "text-ink-faint line-through" : "text-ink-soft"
-          }`}
-        >
-          {item.details}
+      {item.details || item.addedBy ? (
+        <p className="text-sm text-ink-soft">
+          {item.details ? (
+            <>
+              <span className={item.done ? "text-ink-faint line-through" : ""}>
+                {item.details}
+              </span>
+              {" · "}
+            </>
+          ) : null}
+          <span className="text-xs text-ink-faint">
+            {item.done
+              ? `Checked by ${item.checkedBy ?? "Unknown"}`
+              : `Added by ${item.addedBy}`}
+          </span>
         </p>
       ) : null}
-      <p className="hidden text-xs text-ink-faint sm:block">
-        Added by {item.addedBy}
-        {item.assignedTo ? ` · Assigned to ${item.assignedTo}` : " · Anyone"}
-      </p>
     </button>
   );
 }

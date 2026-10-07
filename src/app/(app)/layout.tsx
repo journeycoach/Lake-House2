@@ -14,6 +14,7 @@ import {
 import { Sidebar, MobileHeader } from "@/components/nav";
 import type { HomeNotification } from "@/components/home-notification-bell";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 import { signOut } from "@/app/signin/actions";
 import { setViewAs, clearViewAs } from "./view-as-actions";
 
@@ -167,6 +168,7 @@ export default async function AppLayout({
   return (
     <div className="flex-1 flex flex-col">
       <ServiceWorkerRegistrar />
+      <PullToRefresh />
       {user.viewingAs ? (
         <div className="sticky top-0 z-50 flex items-center justify-center gap-3 bg-amber px-4 py-2 text-sm font-medium text-white">
           <span>

@@ -67,7 +67,7 @@ export function AddItemForm({
           : "hidden"
       }`}
     >
-      <label className="min-w-0">
+      <label className="col-span-2 min-w-0 sm:col-span-1">
         <span className="mb-0.5 block text-xs font-semibold text-ink-soft">
           Item
         </span>
@@ -79,7 +79,7 @@ export function AddItemForm({
           placeholder="Milk, Propane, Napkins, etc..."
         />
       </label>
-      <label className="col-span-2 col-start-1 row-start-2 min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+      <label className="col-start-1 row-start-2 min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1">
         <span className="mb-0.5 block text-xs font-semibold text-ink-soft">
           Details
         </span>
@@ -90,7 +90,7 @@ export function AddItemForm({
           placeholder="Quantity, brand, or preferred store"
         />
       </label>
-      <label className="col-start-2 row-start-1 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
+      <label className="col-start-2 row-start-2 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
         <span className="mb-0.5 block text-xs font-semibold text-ink-soft">
           Assigned to
         </span>
