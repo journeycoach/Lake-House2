@@ -147,7 +147,7 @@ export default async function UpkeepPage({
             return (
               <li
                 key={f.id}
-                className="flex items-center gap-4 border-t border-sand-line py-4 first:border-0"
+                className="flex items-start gap-3 border-t border-sand-line py-4 first:border-0 sm:gap-4"
               >
                 {editor ? (
                   <form action={setFixitStatus} className="shrink-0">
@@ -165,112 +165,114 @@ export default async function UpkeepPage({
                     className="check-control shrink-0 rounded-[4px] border border-sand-line"
                   />
                 )}
-                {f.photoUrl ? (
-                  <a
-                    href={f.photoUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={f.photoUrl}
-                      alt={`Reported issue: ${f.title}`}
-                      loading="lazy"
-                      className="h-16 w-20 rounded-lh object-cover"
-                    />
-                  </a>
-                ) : null}
-                {editor ? (
-                  <details className="group min-w-0 flex-1">
-                    <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  {f.photoUrl ? (
+                    <a
+                      href={f.photoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block shrink-0"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={f.photoUrl}
+                        alt={`Reported issue: ${f.title}`}
+                        loading="lazy"
+                        className="h-36 w-full rounded-lh object-cover sm:h-16 sm:w-20"
+                      />
+                    </a>
+                  ) : null}
+                  {editor ? (
+                    <details className="group min-w-0 flex-1">
+                      <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                        {summary}
+                        <span className={`chip chip-${f.priority} shrink-0`}>
+                          {f.priority}
+                        </span>
+                        <Chevron />
+                      </summary>
+                      <CollapsibleEditForm
+                        action={updateFixit}
+                        className="mt-3 grid gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-2"
+                      >
+                        <input type="hidden" name="id" value={f.id} />
+                        <label className="min-w-0">
+                          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                            What is broken
+                          </span>
+                          <input
+                            name="title"
+                            required
+                            maxLength={200}
+                            defaultValue={f.title}
+                            className="field"
+                          />
+                        </label>
+                        <label className="min-w-0">
+                          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                            Where
+                          </span>
+                          <input
+                            name="location"
+                            maxLength={200}
+                            defaultValue={f.location ?? ""}
+                            className="field"
+                          />
+                        </label>
+                        <label className="min-w-0">
+                          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                            How urgent
+                          </span>
+                          <select
+                            name="priority"
+                            defaultValue={f.priority}
+                            className="field"
+                          >
+                            <option value="urgent">Urgent</option>
+                            <option value="soon">Soon</option>
+                            <option value="whenever">Whenever</option>
+                          </select>
+                        </label>
+                        <label className="min-w-0">
+                          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                            Who is on it
+                          </span>
+                          <input
+                            name="assignedTo"
+                            maxLength={200}
+                            defaultValue={f.assignedTo ?? ""}
+                            className="field"
+                            placeholder="Unassigned"
+                          />
+                        </label>
+                        <label className="min-w-0 sm:col-span-2">
+                          <span className="mb-1 block text-xs font-semibold text-ink-soft">
+                            Details
+                          </span>
+                          <textarea
+                            name="details"
+                            rows={2}
+                            maxLength={4000}
+                            defaultValue={f.details ?? ""}
+                            className="field"
+                          />
+                        </label>
+                        <div className="sm:col-span-2">
+                          <SubmitButton className="btn btn-primary">
+                            Save changes
+                          </SubmitButton>
+                        </div>
+                      </CollapsibleEditForm>
+                    </details>
+                  ) : (
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                       {summary}
                       <span className={`chip chip-${f.priority} shrink-0`}>
                         {f.priority}
                       </span>
-                      <Chevron />
-                    </summary>
-                    <CollapsibleEditForm
-                      action={updateFixit}
-                      className="mt-3 grid gap-3 rounded-lh border border-sand-line bg-mist/40 p-3 sm:grid-cols-2"
-                    >
-                      <input type="hidden" name="id" value={f.id} />
-                      <label className="min-w-0">
-                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                          What is broken
-                        </span>
-                        <input
-                          name="title"
-                          required
-                          maxLength={200}
-                          defaultValue={f.title}
-                          className="field"
-                        />
-                      </label>
-                      <label className="min-w-0">
-                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                          Where
-                        </span>
-                        <input
-                          name="location"
-                          maxLength={200}
-                          defaultValue={f.location ?? ""}
-                          className="field"
-                        />
-                      </label>
-                      <label className="min-w-0">
-                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                          How urgent
-                        </span>
-                        <select
-                          name="priority"
-                          defaultValue={f.priority}
-                          className="field"
-                        >
-                          <option value="urgent">Urgent</option>
-                          <option value="soon">Soon</option>
-                          <option value="whenever">Whenever</option>
-                        </select>
-                      </label>
-                      <label className="min-w-0">
-                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                          Who is on it
-                        </span>
-                        <input
-                          name="assignedTo"
-                          maxLength={200}
-                          defaultValue={f.assignedTo ?? ""}
-                          className="field"
-                          placeholder="Unassigned"
-                        />
-                      </label>
-                      <label className="min-w-0 sm:col-span-2">
-                        <span className="mb-1 block text-xs font-semibold text-ink-soft">
-                          Details
-                        </span>
-                        <textarea
-                          name="details"
-                          rows={2}
-                          maxLength={4000}
-                          defaultValue={f.details ?? ""}
-                          className="field"
-                        />
-                      </label>
-                      <div className="sm:col-span-2">
-                        <SubmitButton className="btn btn-primary">
-                          Save changes
-                        </SubmitButton>
-                      </div>
-                    </CollapsibleEditForm>
-                  </details>
-                ) : (
-                  <>
-                    {summary}
-                    <span className={`chip chip-${f.priority} shrink-0`}>
-                      {f.priority}
-                    </span>
-                  </>
-                )}
+                    </div>
+                  )}
+                </div>
               </li>
             );
           })}
