@@ -313,16 +313,23 @@ export default async function HomePage() {
                     {check.details ? (
                       <p className="text-sm text-ink-soft">{check.details}</p>
                     ) : null}
-                    <p
-                      className={`text-xs font-medium ${
-                        check.assignedTo && isMine(check.assignedTo)
-                          ? "text-care"
-                          : "text-water"
-                      }`}
-                    >
-                      {check.assignedTo
-                        ? `Assigned to ${check.assignedTo}`
-                        : `Added by ${check.addedBy}`}
+                    <p className="text-xs font-medium text-water">
+                      {check.assignedTo ? (
+                        <>
+                          Assigned to{" "}
+                          <span
+                            className={
+                              isMine(check.assignedTo)
+                                ? "font-semibold text-care"
+                                : undefined
+                            }
+                          >
+                            {check.assignedTo}
+                          </span>
+                        </>
+                      ) : (
+                        `Added by ${check.addedBy}`
+                      )}
                     </p>
                   </div>
                 </li>
