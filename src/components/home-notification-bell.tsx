@@ -31,6 +31,19 @@ export function HomeNotificationBell({
     }
   }, [notifications.length]);
 
+  // Close the dropdown on any click outside it (e.g. tapping a nav link),
+  // since <details> only closes natively when its own summary is clicked.
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const details = detailsRef.current;
+      if (details?.open && !details.contains(event.target as Node)) {
+        details.open = false;
+      }
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
   const inactiveClass =
     variant === "dark"
       ? "border-white/25 text-white hover:bg-white/10"
