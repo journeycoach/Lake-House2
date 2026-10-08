@@ -25,6 +25,8 @@ import { toggleItem } from "./shopping-list/actions";
 
 export default async function HomePage() {
   const user = await requireUser();
+  const isMine = (name?: string | null) =>
+    !!name && name.trim().toLowerCase() === user.name.trim().toLowerCase();
   const today = todayISO();
   const [stays, notes, fixes, checks, maintenance] = await Promise.all([
     allStays(),
@@ -67,9 +69,7 @@ export default async function HomePage() {
     item.nextDue?.startsWith(monthKey)
   );
   const openChecks = checks.filter((check) => !check.done);
-  const myShoppingItems = openChecks.filter(
-    (item) => item.assignedTo?.trim().toLowerCase() === user.name.trim().toLowerCase()
-  );
+  const myShoppingItems = openChecks.filter((item) => isMine(item.assignedTo));
   const currentChecks = openChecks.slice(0, 4);
   const visitIssues = myVisit
     ? [
@@ -108,9 +108,7 @@ export default async function HomePage() {
         href: `/upkeep?tab=maintenance#maintenance-${item.id}`,
       })),
   ];
-  const myAssignedItems = assignedItems.filter(
-    (item) => item.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase()
-  );
+  const myAssignedItems = assignedItems.filter((item) => isMine(item.assignedTo));
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-6 space-y-3">
@@ -315,8 +313,16 @@ export default async function HomePage() {
                     {check.details ? (
                       <p className="text-sm text-ink-soft">{check.details}</p>
                     ) : null}
-                    <p className="text-xs font-medium text-water">
-                      Added by {check.addedBy}
+                    <p
+                      className={`text-xs font-medium ${
+                        check.assignedTo && isMine(check.assignedTo)
+                          ? "text-care"
+                          : "text-water"
+                      }`}
+                    >
+                      {check.assignedTo
+                        ? `Assigned to ${check.assignedTo}`
+                        : `Added by ${check.addedBy}`}
                     </p>
                   </div>
                 </li>
@@ -371,7 +377,18 @@ export default async function HomePage() {
                   <p className="truncate text-sm font-semibold">{f.title}</p>
                   <p className="text-xs text-ink-soft">
                     {f.location}
-                    {f.assignedTo ? ` · ${f.assignedTo}` : ""}
+                    {f.assignedTo ? (
+                      <>
+                        {" · "}
+                        <span
+                          className={
+                            isMine(f.assignedTo) ? "font-semibold text-care" : undefined
+                          }
+                        >
+                          {f.assignedTo}
+                        </span>
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <span className={`chip chip-${f.priority}`}>{f.priority}</span>
