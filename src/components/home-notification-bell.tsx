@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export type HomeNotification = {
   title: string;
@@ -19,6 +19,18 @@ export function HomeNotificationBell({
 }) {
   const hasNotifications = notifications.length > 0;
   const detailsRef = useRef<HTMLDetailsElement>(null);
+
+  // Mirror the unread count onto the installed app's home-screen icon
+  // (iOS/Android PWA badging) so it's visible without opening the app.
+  useEffect(() => {
+    if (!("setAppBadge" in navigator)) return;
+    if (notifications.length > 0) {
+      navigator.setAppBadge(notifications.length).catch(() => {});
+    } else {
+      navigator.clearAppBadge?.().catch(() => {});
+    }
+  }, [notifications.length]);
+
   const inactiveClass =
     variant === "dark"
       ? "border-white/25 text-white hover:bg-white/10"

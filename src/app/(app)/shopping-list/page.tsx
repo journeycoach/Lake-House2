@@ -5,6 +5,7 @@ import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { AddItemForm } from "./add-item-form";
 import { EditableChecklistItem } from "./edit-item";
+import { HapticButton } from "@/components/haptic-button";
 import { toggleItem } from "./actions";
 import { getDb, schema } from "@/lib/db";
 import { asc } from "drizzle-orm";
@@ -39,7 +40,7 @@ export default async function ChecklistPage() {
         </span>
         <form action={toggleItem} className="shrink-0">
           <input type="hidden" name="id" value={item.id} />
-          <button
+          <HapticButton
             type="submit"
             aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
             aria-pressed={Boolean(item.done)}
@@ -63,7 +64,7 @@ export default async function ChecklistPage() {
                 <path d="M1.5 5.5L4 8l4.5-6" />
               </svg>
             ) : null}
-          </button>
+          </HapticButton>
         </form>
         {editor ? (
               <EditableChecklistItem

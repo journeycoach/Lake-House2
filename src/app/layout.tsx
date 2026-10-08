@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Newsreader, Geist } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,15 @@ export const metadata: Metadata = {
   title: "Paine Pointe",
   description:
     "Paine Pointe: who is up, what needs doing, and how the house works.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Paine Pointe",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#123236",
 };
 
 export default function RootLayout({
