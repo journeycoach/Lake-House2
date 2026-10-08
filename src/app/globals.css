@@ -78,6 +78,9 @@ body {
   color: var(--ink);
   font-family: var(--font-geist), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Stop the browser's native rubber-band/refresh gesture from fighting
+     with the custom pull-to-refresh control. */
+  overscroll-behavior-y: contain;
 }
 
 /* Component classes live in the components layer so Tailwind utilities

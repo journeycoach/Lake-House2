@@ -24,6 +24,35 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "180x180",
         type: "image/png",
       },
+      {
+        src: "/icon-maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+    shortcuts: [
+      {
+        name: "Shopping list",
+        short_name: "Shopping",
+        description: "Add or check off items",
+        url: "/shopping-list",
+        icons: [{ src: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      },
+      {
+        name: "Report an issue",
+        short_name: "Report issue",
+        description: "Flag something that needs fixing",
+        url: "/upkeep/report-issue",
+        icons: [{ src: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      },
+      {
+        name: "Calendar",
+        short_name: "Calendar",
+        description: "See who's staying and when",
+        url: "/calendar",
+        icons: [{ src: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      },
     ],
   };
 }
