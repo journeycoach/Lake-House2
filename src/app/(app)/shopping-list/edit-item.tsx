@@ -115,15 +115,18 @@ export function EditableChecklistItem({
           </span>
         ) : null}
         {item.assignedTo ? (
-          <span
-            className={`text-xs font-medium ${
-              item.assignedTo.trim().toLowerCase() ===
-              currentUser.trim().toLowerCase()
-                ? "text-care"
-                : "text-ink-soft"
-            }`}
-          >
-            Assigned to {item.assignedTo}
+          <span className="text-xs font-medium text-ink-soft">
+            Assigned to{" "}
+            <span
+              className={
+                item.assignedTo.trim().toLowerCase() ===
+                currentUser.trim().toLowerCase()
+                  ? "font-semibold text-care"
+                  : undefined
+              }
+            >
+              {item.assignedTo}
+            </span>
           </span>
         ) : null}
       </div>
