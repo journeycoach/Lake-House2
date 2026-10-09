@@ -57,6 +57,15 @@ export default async function PlanStayPage({
     item.nextDue?.startsWith(monthKey)
   );
 
+  // The household's own most recent stay sets the Adults default, so a
+  // returning household doesn't have to re-enter their usual party size.
+  const householdStays = user.householdId
+    ? stays
+        .filter((stay) => stay.householdId === user.householdId)
+        .sort((a, b) => (a.start < b.start ? 1 : -1))
+    : [];
+  const defaultAdults = householdStays[0]?.adults;
+
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
@@ -87,6 +96,7 @@ export default async function PlanStayPage({
             defaultDate={selectedStart}
             defaultHouseholdId={user.householdId}
             defaultLabel={`Family ${user.name}`}
+            defaultAdults={defaultAdults}
             existingStays={stays}
           />
         ) : (

@@ -10,7 +10,7 @@ import {
   type StayFormState,
 } from "./actions";
 import { StayChecklist, type StayChecklistEntry } from "./stay-checklist";
-import { fmtRange } from "@/lib/dates";
+import { addDays, fmtRange, todayISO } from "@/lib/dates";
 
 type Household = { id: number; name: string };
 export type EditableStay = {
@@ -53,6 +53,7 @@ export function StayForm({
   defaultDate,
   defaultHouseholdId,
   defaultLabel,
+  defaultAdults,
   existingStays = [],
   closeDetailsId,
 }: {
@@ -62,6 +63,7 @@ export function StayForm({
   defaultDate?: string;
   defaultHouseholdId?: number | null;
   defaultLabel?: string;
+  defaultAdults?: number;
   existingStays?: ConflictStay[];
   closeDetailsId?: string;
 }) {
@@ -89,6 +91,52 @@ export function StayForm({
     values?.start ?? stay?.start ?? defaultDate ?? ""
   );
   const [end, setEnd] = useState(values?.end ?? stay?.end ?? defaultDate ?? "");
+
+  function nightsBetween(startIso: string, endIso: string): number {
+    const ms =
+      new Date(`${endIso}T00:00:00`).getTime() -
+      new Date(`${startIso}T00:00:00`).getTime();
+    return Math.round(ms / 86400000);
+  }
+
+  // Last Night follows First Night: changing the arrival date shifts the
+  // departure date by the same amount, so a stay that was already 3 nights
+  // stays 3 nights instead of going invalid or silently resetting.
+  function handleStartChange(newStart: string) {
+    if (newStart) {
+      const nights = start && end ? Math.max(nightsBetween(start, end), 0) : 0;
+      setEnd(addDays(newStart, nights));
+    }
+    setStart(newStart);
+  }
+
+  function applyQuickDates(newStart: string, newEnd: string) {
+    setStart(newStart);
+    setEnd(newEnd);
+  }
+
+  const today = todayISO();
+  const todayDow = new Date(`${today}T00:00:00`).getDay();
+  const daysUntilFriday = (5 - todayDow + 7) % 7;
+  const thisFriday = addDays(today, daysUntilFriday);
+  const nextFriday = addDays(thisFriday, 7);
+  const quickDatePicks = [
+    {
+      label: "This weekend",
+      start: thisFriday,
+      end: addDays(thisFriday, 2),
+    },
+    {
+      label: "Next weekend",
+      start: nextFriday,
+      end: addDays(nextFriday, 2),
+    },
+    {
+      label: "1 week",
+      start: start || today,
+      end: addDays(start || today, 7),
+    },
+  ];
 
   // Checked live as the dates change, against the stays already on the
   // calendar, so the warning shows up before a round trip to the server.
@@ -192,6 +240,21 @@ export function StayForm({
             placeholder="Family weekend at the lake"
           />
         </div>
+        <div className="sm:col-span-2">
+          <span className="flabel">Quick date picks</span>
+          <div className="flex flex-wrap gap-2">
+            {quickDatePicks.map((pick) => (
+              <button
+                key={pick.label}
+                type="button"
+                onClick={() => applyQuickDates(pick.start, pick.end)}
+                className="rounded-full border border-sand-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:border-water hover:text-ink"
+              >
+                {pick.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div>
           <label htmlFor="start" className="flabel">
             First night
@@ -202,7 +265,7 @@ export function StayForm({
             type="date"
             required
             value={start}
-            onChange={(e) => setStart(e.target.value)}
+            onChange={(e) => handleStartChange(e.target.value)}
             className="field"
           />
         </div>
@@ -229,7 +292,7 @@ export function StayForm({
             name="adults"
             type="number"
             min={0}
-            defaultValue={values?.adults ?? stay?.adults ?? 2}
+            defaultValue={values?.adults ?? stay?.adults ?? defaultAdults ?? 2}
             className="field"
           />
         </div>
