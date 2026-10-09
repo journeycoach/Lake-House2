@@ -13,9 +13,15 @@ export type HomeNotification = {
 export function HomeNotificationBell({
   notifications,
   variant = "light",
+  align = "right",
 }: {
   notifications: HomeNotification[];
   variant?: "light" | "dark";
+  /** Which side of the bell the dropdown panel is anchored to. Use "left"
+   *  when the bell sits near the left edge of a narrow container (like the
+   *  desktop sidebar), so the panel opens rightward instead of spilling off
+   *  the left edge of the viewport. */
+  align?: "left" | "right";
 }) {
   const hasNotifications = notifications.length > 0;
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -72,7 +78,11 @@ export function HomeNotificationBell({
           </span>
         ) : null}
       </summary>
-      <div className="absolute right-0 top-12 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lh border border-sand-line bg-card p-3 text-ink shadow-xl">
+      <div
+        className={`absolute top-12 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lh border border-sand-line bg-card p-3 text-ink shadow-xl ${
+          align === "left" ? "left-0" : "right-0"
+        }`}
+      >
         <p className="section-label mb-2">Notifications</p>
         {hasNotifications ? (
           <ul className="space-y-2">

@@ -260,7 +260,7 @@ export function Sidebar({
           <StayChecklistLink href={stayChecklistHref} />
           <MapLink />
           <SearchLink showLabel />
-          <HomeNotificationBell notifications={notifications} variant="dark" />
+          <HomeNotificationBell notifications={notifications} variant="dark" align="left" />
         </div>
       </div>
       <div className="mt-10 flex-1">
