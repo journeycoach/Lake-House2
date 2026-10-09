@@ -5,7 +5,7 @@ import { checklistItems } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { AddItemForm } from "./add-item-form";
 import { EditableChecklistItem } from "./edit-item";
-import { HapticButton } from "@/components/haptic-button";
+import { CheckoffButton } from "@/components/checkoff-button";
 import { toggleItem } from "./actions";
 import { getDb, schema } from "@/lib/db";
 import { asc } from "drizzle-orm";
@@ -38,34 +38,12 @@ export default async function ChecklistPage() {
         >
           {i + 1}
         </span>
-        <form action={toggleItem} className="shrink-0">
-          <input type="hidden" name="id" value={item.id} />
-          <HapticButton
-            type="submit"
-            aria-label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
-            aria-pressed={Boolean(item.done)}
-            className={`check-control flex items-center justify-center rounded-md border transition-colors ${
-              item.done
-                ? "border-sage bg-sage text-white hover:bg-deep"
-                : "border-sand-line bg-white hover:border-water hover:bg-mist"
-            }`}
-          >
-            {item.done ? (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 10 10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M1.5 5.5L4 8l4.5-6" />
-              </svg>
-            ) : null}
-          </HapticButton>
-        </form>
+        <CheckoffButton
+          id={item.id}
+          done={Boolean(item.done)}
+          label={`Mark "${item.title}" ${item.done ? "not done" : "done"}`}
+          action={toggleItem}
+        />
         {editor ? (
               <EditableChecklistItem
                 item={item}

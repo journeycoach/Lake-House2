@@ -21,6 +21,7 @@ import {
   VisitWeatherBadgeFallback,
 } from "@/components/live-weather-card";
 import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
+import { CheckoffButton } from "@/components/checkoff-button";
 import { toggleItem } from "./shopping-list/actions";
 
 export default async function HomePage() {
@@ -309,15 +310,12 @@ export default async function HomePage() {
                   key={check.id}
                   className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
                 >
-                  <form action={toggleItem} className="shrink-0">
-                    <input type="hidden" name="id" value={check.id} />
-                    <button
-                      type="submit"
-                      aria-label={`Mark "${check.title}" done`}
-                      aria-pressed="false"
-                      className="check-control flex items-center justify-center rounded-md border border-sand-line bg-white transition-colors hover:border-water hover:bg-mist"
-                    />
-                  </form>
+                  <CheckoffButton
+                    id={check.id}
+                    done={false}
+                    label={`Mark "${check.title}" done`}
+                    action={toggleItem}
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{check.title}</p>
                     {check.details ? (
@@ -351,6 +349,24 @@ export default async function HomePage() {
               ) : null}
             </ul>
           </div>
+          {checks.length - openChecks.length > 0 ? (
+            <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-sage">
+              <svg
+                aria-hidden
+                width="11"
+                height="11"
+                viewBox="0 0 10 10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1.5 5.5L4 8l4.5-6" />
+              </svg>
+              {checks.length - openChecks.length} checked off
+            </p>
+          ) : null}
           {openChecks.length > currentChecks.length ? (
             <Link
               href="/shopping-list"
