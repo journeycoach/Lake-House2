@@ -82,7 +82,11 @@ export default async function PlanStayPage({
           </div>
         </div>
         {editor ? (
-          <StayForm households={households} defaultDate={selectedStart} />
+          <StayForm
+            households={households}
+            defaultDate={selectedStart}
+            defaultHouseholdId={user.householdId}
+          />
         ) : (
           <p className="text-sm text-ink-soft">Only family members can add a stay. You can still use the calendar below to check dates.</p>
         )}

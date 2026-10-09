@@ -31,12 +31,14 @@ export function StayForm({
   stay,
   onDone,
   defaultDate,
+  defaultHouseholdId,
   closeDetailsId,
 }: {
   households: Household[];
   stay?: EditableStay;
   onDone?: () => void;
   defaultDate?: string;
+  defaultHouseholdId?: number | null;
   closeDetailsId?: string;
 }) {
   const action = stay ? updateStay : createStay;
@@ -133,12 +135,14 @@ export function StayForm({
         </div>
         <div>
           <label htmlFor="householdId" className="flabel">
-            Household color
+            Household
           </label>
           <select
             id="householdId"
             name="householdId"
-            defaultValue={values?.householdId ?? stay?.householdId ?? ""}
+            defaultValue={
+              values?.householdId ?? stay?.householdId ?? defaultHouseholdId ?? ""
+            }
             className="field"
           >
             <option value="">Pick one</option>
@@ -188,19 +192,12 @@ export function StayForm({
             className="field"
           />
         </div>
-        <div>
-          <label htmlFor="kids" className="flabel">
-            Kids
-          </label>
-          <input
-            id="kids"
-            name="kids"
-            type="number"
-            min={0}
-            defaultValue={values?.kids ?? stay?.kids ?? 0}
-            className="field"
-          />
-        </div>
+        {/* Kids is hidden for now; still submitted so existing stays keep their count. */}
+        <input
+          type="hidden"
+          name="kids"
+          defaultValue={values?.kids ?? stay?.kids ?? 0}
+        />
       </div>
       {stay ? (
         <div>
