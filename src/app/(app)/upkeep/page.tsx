@@ -291,8 +291,25 @@ export default async function UpkeepPage({
             {done.map((f) => (
               <li
                 key={f.id}
-                className="flex items-center gap-4 border-t border-sand-line py-3 first:border-0"
+                className="flex items-center gap-3 border-t border-sand-line py-3 first:border-0 sm:gap-4"
               >
+                <span
+                  aria-hidden
+                  className="check-control flex shrink-0 items-center justify-center rounded-md border border-sage bg-sage text-white"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1.5 5.5L4 8l4.5-6" />
+                  </svg>
+                </span>
                 <p className="flex-1 text-sm text-ink-faint line-through">
                   {f.title}
                 </p>
