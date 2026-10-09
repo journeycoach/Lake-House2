@@ -255,33 +255,35 @@ export function StayForm({
             ))}
           </div>
         </div>
-        <div>
-          <label htmlFor="start" className="flabel">
-            First night
-          </label>
-          <input
-            id="start"
-            name="start"
-            type="date"
-            required
-            value={start}
-            onChange={(e) => handleStartChange(e.target.value)}
-            className="field"
-          />
-        </div>
-        <div>
-          <label htmlFor="end" className="flabel">
-            Last night
-          </label>
-          <input
-            id="end"
-            name="end"
-            type="date"
-            required
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            className="field"
-          />
+        <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+          <div>
+            <label htmlFor="start" className="flabel">
+              First night
+            </label>
+            <input
+              id="start"
+              name="start"
+              type="date"
+              required
+              value={start}
+              onChange={(e) => handleStartChange(e.target.value)}
+              className="field"
+            />
+          </div>
+          <div>
+            <label htmlFor="end" className="flabel">
+              Last night
+            </label>
+            <input
+              id="end"
+              name="end"
+              type="date"
+              required
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="field"
+            />
+          </div>
         </div>
         <div>
           <label htmlFor="adults" className="flabel">
