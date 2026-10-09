@@ -70,6 +70,14 @@ export default async function UpkeepPage({
   const currentUserName = user.name.trim().toLowerCase();
   const isCurrentUser = (name: string | null | undefined) =>
     name?.trim().toLowerCase() === currentUserName;
+  // Property Care: the current user's own items first, then by urgency.
+  const urgencyOrder = { urgent: 0, soon: 1, whenever: 2 } as Record<string, number>;
+  const sortedOpen = [...open].sort((a, b) => {
+    const mineA = isCurrentUser(a.assignedTo) ? 0 : 1;
+    const mineB = isCurrentUser(b.assignedTo) ? 0 : 1;
+    if (mineA !== mineB) return mineA - mineB;
+    return (urgencyOrder[a.priority] ?? 3) - (urgencyOrder[b.priority] ?? 3);
+  });
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -123,7 +131,7 @@ export default async function UpkeepPage({
         <p className="section-label">Property Care</p>
         <h2 className="font-display mt-1 text-2xl">Keep the place cared for</h2>
         <ul className="mt-4">
-          {open.map((f) => {
+          {sortedOpen.map((f) => {
             const summary = (
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{f.title}</p>
