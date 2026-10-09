@@ -70,7 +70,17 @@ export default async function HomePage() {
   );
   const openChecks = checks.filter((check) => !check.done);
   const myShoppingItems = openChecks.filter((item) => isMine(item.assignedTo));
-  const currentChecks = openChecks.slice(0, 4);
+  // On the home page, lead with what the current user needs to grab, then
+  // fill remaining room with unassigned items before anyone else's.
+  const unassignedShoppingItems = openChecks.filter((item) => !item.assignedTo);
+  const othersShoppingItems = openChecks.filter(
+    (item) => item.assignedTo && !isMine(item.assignedTo)
+  );
+  const currentChecks = [
+    ...myShoppingItems,
+    ...unassignedShoppingItems,
+    ...othersShoppingItems,
+  ].slice(0, 4);
   const visitIssues = myVisit
     ? [
         ...fixes.map((item) => ({
