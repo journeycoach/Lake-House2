@@ -251,7 +251,6 @@ export function StayForm({
             defaultValue={values?.guestNames ?? stay.guestNames ?? ""}
             maxLength={500}
             className="field"
-            placeholder="Jenn, John, Emma + kids Lily & Theo"
           />
         </div>
       ) : null}
