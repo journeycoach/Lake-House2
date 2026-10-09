@@ -20,6 +20,7 @@ const LINKS: {
   icon?: string;
   adminOnly?: boolean;
   separatorBefore?: boolean;
+  external?: boolean;
 }[] = [
   { href: "/", label: "Home", icon: "🏠" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
@@ -28,11 +29,17 @@ const LINKS: {
   { href: "/guide", label: "House guide", icon: "📖" },
   { href: "/notes", label: "FYI Everyone", icon: "📝" },
   {
+    href: MAP_URL,
+    label: "Map & Directions",
+    icon: "📍",
+    external: true,
+    separatorBefore: true,
+  },
+  {
     href: "/admin",
     label: "Admin",
     icon: "⚙️",
     adminOnly: true,
-    separatorBefore: true,
   },
 ];
 
@@ -129,22 +136,39 @@ function NavLinks({
             {l.separatorBefore ? (
               <div aria-hidden className="my-2 border-t border-white/15" />
             ) : null}
-            <Link
-              href={l.href}
-              onClick={onNavigate}
-              className={`rounded-lh px-4 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-white/10 text-white"
-                  : "text-white/65 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {l.icon ? (
-                <span aria-hidden className="mr-2 inline-block w-5 text-center">
-                  {l.icon}
-                </span>
-              ) : null}
-              {l.label}
-            </Link>
+            {l.external ? (
+              <a
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onNavigate}
+                className="rounded-lh px-4 py-2.5 text-sm font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                {l.icon ? (
+                  <span aria-hidden className="mr-2 inline-block w-5 text-center">
+                    {l.icon}
+                  </span>
+                ) : null}
+                {l.label}
+              </a>
+            ) : (
+              <Link
+                href={l.href}
+                onClick={onNavigate}
+                className={`rounded-lh px-4 py-2.5 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-white/10 text-white"
+                    : "text-white/65 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {l.icon ? (
+                  <span aria-hidden className="mr-2 inline-block w-5 text-center">
+                    {l.icon}
+                  </span>
+                ) : null}
+                {l.label}
+              </Link>
+            )}
           </Fragment>
         );
       })}
@@ -219,22 +243,6 @@ function StayChecklistLink({
   );
 }
 
-function MapLink() {
-  return (
-    <a
-      href={MAP_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Open Google Maps directions to Paine Pointe in a new tab"
-      title="Map & directions"
-      className="flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10"
-    >
-      <span aria-hidden className="text-sm leading-none">📍</span>
-      <span className="text-[9px] font-semibold leading-none">Map</span>
-    </a>
-  );
-}
-
 export function Sidebar({
   user,
   stayChecklistHref,
@@ -258,7 +266,6 @@ export function Sidebar({
         <Mark />
         <div className="flex items-center gap-2">
           <StayChecklistLink href={stayChecklistHref} />
-          <MapLink />
           <SearchLink showLabel />
           <HomeNotificationBell notifications={notifications} variant="dark" align="left" />
         </div>
@@ -313,7 +320,6 @@ export function MobileHeader({
         <Mark />
         <div className="ml-auto flex items-center gap-0.5">
           <StayChecklistLink href={stayChecklistHref} onNavigate={() => setOpen(false)} />
-          <MapLink />
           <SearchLink onNavigate={() => setOpen(false)} showLabel />
           <HomeNotificationBell notifications={notifications} variant="dark" />
           <button
