@@ -148,12 +148,12 @@ export default async function HomePage() {
             href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
             className="btn btn-quiet min-w-0 bg-card px-3 text-xs sm:text-xs"
           >
-            Who&apos;s at the lake?{" "}
             <span className="font-semibold text-ink">
               {here.length > 0
                 ? here.map((s) => s.householdName ?? s.label).join(", ")
                 : "Nobody"}
-            </span>
+            </span>{" "}
+            {here.length > 1 ? "are" : "is"} at the lake
           </Link>
         </div>
       </div>
