@@ -32,6 +32,7 @@ export function StayForm({
   onDone,
   defaultDate,
   defaultHouseholdId,
+  defaultLabel,
   closeDetailsId,
 }: {
   households: Household[];
@@ -39,6 +40,7 @@ export function StayForm({
   onDone?: () => void;
   defaultDate?: string;
   defaultHouseholdId?: number | null;
+  defaultLabel?: string;
   closeDetailsId?: string;
 }) {
   const action = stay ? updateStay : createStay;
@@ -120,20 +122,6 @@ export function StayForm({
       {stay ? <input type="hidden" name="id" value={stay.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="label" className="flabel">
-            Who is coming
-          </label>
-          <input
-            id="label"
-            name="label"
-            required
-            defaultValue={values?.label ?? stay?.label}
-            maxLength={200}
-            className="field"
-            placeholder="Family weekend at the lake"
-          />
-        </div>
-        <div>
           <label htmlFor="householdId" className="flabel">
             Household
           </label>
@@ -152,6 +140,20 @@ export function StayForm({
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label htmlFor="label" className="flabel">
+            Who is coming
+          </label>
+          <input
+            id="label"
+            name="label"
+            required
+            defaultValue={values?.label ?? stay?.label ?? defaultLabel}
+            maxLength={200}
+            className="field"
+            placeholder="Family weekend at the lake"
+          />
         </div>
         <div>
           <label htmlFor="start" className="flabel">
@@ -214,19 +216,12 @@ export function StayForm({
           />
         </div>
       ) : null}
-      <div>
-        <label htmlFor="note" className="flabel">
-          Arrival note
-        </label>
-        <input
-          id="note"
-          name="note"
-          defaultValue={values?.note ?? stay?.note ?? ""}
-          maxLength={4000}
-          className="field"
-          placeholder="Arriving Friday afternoon"
-        />
-      </div>
+      {/* Arrival note is hidden for now; still submitted so existing stays keep their note. */}
+      <input
+        type="hidden"
+        name="note"
+        defaultValue={values?.note ?? stay?.note ?? ""}
+      />
       {state.error ? (
         <p className="text-sm font-medium text-rust">{state.error}</p>
       ) : null}
