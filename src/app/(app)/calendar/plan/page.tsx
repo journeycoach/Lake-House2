@@ -77,8 +77,7 @@ export default async function PlanStayPage({
             </svg>
           </span>
           <div>
-            <p className="section-label text-water">Plan a stay</p>
-            <h2 className="font-display mt-0.5 text-xl">Put it on the calendar</h2>
+            <h2 className="font-display text-xl">Put it on the calendar</h2>
           </div>
         </div>
         {editor ? (
