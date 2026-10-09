@@ -206,7 +206,7 @@ export function StayForm({
     >
       {stay ? <input type="hidden" name="id" value={stay.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+        <div className="sm:col-span-2">
           <label htmlFor="householdId" className="flabel">
             Household
           </label>
@@ -238,6 +238,19 @@ export function StayForm({
             maxLength={200}
             className="field"
             placeholder="Family weekend at the lake"
+          />
+        </div>
+        <div>
+          <label htmlFor="adults" className="flabel">
+            How many people?
+          </label>
+          <input
+            id="adults"
+            name="adults"
+            type="number"
+            min={0}
+            defaultValue={values?.adults ?? stay?.adults ?? defaultAdults ?? 2}
+            className="field"
           />
         </div>
         <div className="sm:col-span-2">
@@ -284,19 +297,6 @@ export function StayForm({
               className="field"
             />
           </div>
-        </div>
-        <div>
-          <label htmlFor="adults" className="flabel">
-            How many people?
-          </label>
-          <input
-            id="adults"
-            name="adults"
-            type="number"
-            min={0}
-            defaultValue={values?.adults ?? stay?.adults ?? defaultAdults ?? 2}
-            className="field"
-          />
         </div>
         {/* Kids is hidden for now; still submitted so existing stays keep their count. */}
         <input
