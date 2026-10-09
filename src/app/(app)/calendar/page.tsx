@@ -142,12 +142,6 @@ export default async function CalendarPage({
         title="Calendar"
         action={
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={upcoming[0] ? `/calendar/${upcoming[0].id}/checklist` : "#upcoming-stays"}
-              className="btn border border-care/90 bg-care/90 text-white hover:bg-care"
-            >
-              View Checklists
-            </Link>
             {editor ? (
               <Link
                 href="/calendar/plan"
@@ -156,6 +150,12 @@ export default async function CalendarPage({
                 Plan a stay
               </Link>
             ) : null}
+            <Link
+              href={upcoming[0] ? `/calendar/${upcoming[0].id}/checklist` : "#upcoming-stays"}
+              className="btn border border-care/90 bg-care/90 text-white hover:bg-care"
+            >
+              View Checklists
+            </Link>
           </div>
         }
       />

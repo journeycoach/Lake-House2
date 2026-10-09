@@ -82,6 +82,7 @@ export default async function PlanStayPage({
         </div>
         {editor ? (
           <StayForm
+            key={selectedStart ?? "default"}
             households={households}
             defaultDate={selectedStart}
             defaultHouseholdId={user.householdId}
