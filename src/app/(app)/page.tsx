@@ -82,23 +82,6 @@ export default async function HomePage() {
     ...unassignedShoppingItems,
     ...othersShoppingItems,
   ].slice(0, 4);
-  const visitIssues = myVisit
-    ? [
-        ...fixes.map((item) => ({
-          id: item.id,
-          title: item.title,
-          urgency: item.priority as "urgent" | "soon" | "whenever",
-        })),
-        ...maintenance
-          .filter(
-            (item) =>
-              item.nextDue &&
-              item.nextDue >= today &&
-              item.nextDue <= myVisit.end
-          )
-          .map((item) => ({ id: item.id, title: item.task, urgency: "soon" as const })),
-      ]
-    : [];
   const assignedItems = [
     ...fixes
       .filter((item) => item.assignedTo?.trim())
@@ -182,7 +165,6 @@ export default async function HomePage() {
           progress={progressByStay.get(myVisit.id)}
           shoppingItems={openChecks}
           myShoppingItems={myShoppingItems}
-          issues={visitIssues}
           assignedItems={myAssignedItems}
         />
       ) : (

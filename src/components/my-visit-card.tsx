@@ -8,12 +8,6 @@ import {
 } from "@/components/live-weather-card";
 import { HomeIcon, SailboatIcon } from "@/components/icons";
 
-type VisitIssue = {
-  id: number;
-  title: string;
-  urgency: "urgent" | "soon" | "whenever";
-};
-
 export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
   return (
     <section className="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-lh bg-deep px-4 py-4 text-white shadow-sm sm:mb-6 sm:px-6">
@@ -46,7 +40,6 @@ export function MyVisitCard({
   progress,
   shoppingItems,
   myShoppingItems,
-  issues,
   assignedItems,
 }: {
   stay: StayRow;
@@ -54,7 +47,6 @@ export function MyVisitCard({
   progress?: StayChecklistProgress;
   shoppingItems: { id: number; title: string }[];
   myShoppingItems: { id: number; title: string }[];
-  issues: VisitIssue[];
   assignedItems: {
     id: string;
     title: string;
@@ -202,21 +194,6 @@ export function MyVisitCard({
                   </span>
                 </>
               )}
-            </span>
-          </Link>
-
-          <Link href="/upkeep?tab=fixit" className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist">
-            <span className="section-label text-[9px]">Property care</span>
-            <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-sm font-semibold">
-              <span className="shrink-0">{issues.length} open</span>
-              {issues[0] ? (
-                <>
-                  <span className="min-w-0 truncate font-normal text-ink-soft">· {issues[0].title}</span>
-                  <span className={`chip chip-${issues[0].urgency} shrink-0 text-[9px]`}>
-                    {issues[0].urgency === "urgent" ? "Urgent" : issues[0].urgency === "soon" ? "Soon" : "Whenever"}
-                  </span>
-                </>
-              ) : <span className="font-normal text-ink-soft">· All clear</span>}
             </span>
           </Link>
 
