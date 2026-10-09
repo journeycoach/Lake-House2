@@ -285,7 +285,7 @@ export function StayForm({
         </div>
         <div>
           <label htmlFor="adults" className="flabel">
-            Adults
+            How many people?
           </label>
           <input
             id="adults"
