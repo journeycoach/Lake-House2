@@ -1,4 +1,17 @@
 import Link from "next/link";
+import type { ComponentType } from "react";
+import {
+  CloudDrizzleIcon,
+  CloudFogIcon,
+  CloudIcon,
+  CloudLightningIcon,
+  CloudRainIcon,
+  CloudSnowIcon,
+  CloudSunIcon,
+  MoonIcon,
+  SunIcon,
+  WarningIcon,
+} from "@/components/icons";
 
 const WEATHER_URL =
   "https://api.open-meteo.com/v1/forecast?latitude=32.18&longitude=-95.478333&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=16";
@@ -86,7 +99,7 @@ type WeatherResponse = {
 
 type WeatherTheme = {
   label: string;
-  icon: string;
+  icon: ComponentType<{ className?: string }>;
   background: string;
 };
 
@@ -95,13 +108,13 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
     return isDay
       ? {
           label: "Clear skies",
-          icon: "☀️",
+          icon: SunIcon,
           background:
             "linear-gradient(135deg, #176b87 0%, #3d91a6 58%, #d7a64b 100%)",
         }
       : {
           label: "Clear night",
-          icon: "🌙",
+          icon: MoonIcon,
           background:
             "linear-gradient(135deg, #102f45 0%, #1f5068 62%, #526a7a 100%)",
         };
@@ -109,7 +122,7 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if (code <= 2) {
     return {
       label: code === 1 ? "Mostly clear" : "Partly cloudy",
-      icon: isDay ? "🌤️" : "☁️",
+      icon: isDay ? CloudSunIcon : CloudIcon,
       background:
         "linear-gradient(135deg, #2b6579 0%, #6e9ca8 58%, #c9b98b 100%)",
     };
@@ -117,7 +130,7 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if (code === 3) {
     return {
       label: "Overcast",
-      icon: "☁️",
+      icon: CloudIcon,
       background:
         "linear-gradient(135deg, #405b65 0%, #748b91 58%, #aeb9b8 100%)",
     };
@@ -125,7 +138,7 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if (code === 45 || code === 48) {
     return {
       label: "Foggy",
-      icon: "🌫️",
+      icon: CloudFogIcon,
       background:
         "linear-gradient(135deg, #536d73 0%, #8ca0a2 58%, #c3ccca 100%)",
     };
@@ -133,7 +146,7 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if (code >= 95) {
     return {
       label: "Thunderstorms",
-      icon: "⛈️",
+      icon: CloudLightningIcon,
       background:
         "linear-gradient(135deg, #1c3344 0%, #3f5667 58%, #6d6473 100%)",
     };
@@ -141,7 +154,7 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
     return {
       label: "Snow",
-      icon: "🌨️",
+      icon: CloudSnowIcon,
       background:
         "linear-gradient(135deg, #4f7485 0%, #8eabb5 58%, #d8e4e5 100%)",
     };
@@ -149,14 +162,14 @@ function weatherTheme(code: number, isDay: boolean): WeatherTheme {
   if (code >= 51 && code <= 57) {
     return {
       label: "Drizzle",
-      icon: "🌦️",
+      icon: CloudDrizzleIcon,
       background:
         "linear-gradient(135deg, #28576c 0%, #5c8796 58%, #9fb3b7 100%)",
     };
   }
   return {
     label: code >= 80 ? "Rain showers" : "Rain",
-    icon: "🌧️",
+    icon: CloudRainIcon,
     background:
       "linear-gradient(135deg, #1d4d63 0%, #527a89 58%, #8ca4a8 100%)",
   };
@@ -215,7 +228,7 @@ export async function VisitWeatherBadge() {
         aria-label={`Open the Lake Palestine weather forecast${hasSevereAlert ? "; severe weather alert active" : ""}`}
         className="inline-flex items-center gap-1.5 rounded-full border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water"
       >
-        <span aria-hidden>🌤️</span>
+        <CloudSunIcon className="h-3.5 w-3.5" />
         <span>Current</span>
         {hasSevereAlert ? (
           <span aria-hidden="true" className="ml-0.5 h-2 w-2 rounded-full bg-red-400 ring-2 ring-white/40" />
@@ -241,8 +254,8 @@ export async function VisitWeatherBadge() {
       aria-label={`Lake Palestine weather: ${theme.label}, ${Math.round(current.temperature_2m)} degrees, feels like ${Math.round(current.apparent_temperature)} degrees${showRainChance ? `, ${Math.round(rainChance)} percent chance of rain` : ""}${hasSevereAlert ? ". Severe weather alert active" : ""}. Open the full forecast.`}
       className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-deep bg-deep px-2.5 py-1.5 text-white transition-colors hover:bg-water"
     >
-      <span role="img" aria-label={theme.label} className="text-lg leading-none">
-        {theme.icon}
+      <span role="img" aria-label={theme.label} className="leading-none">
+        <theme.icon className="h-[18px] w-[18px]" />
       </span>
       <span className="flex flex-col items-start leading-tight">
         <span className="text-[9px] font-semibold uppercase tracking-wide text-white/70">
@@ -302,7 +315,7 @@ export async function VisitWeatherForecast({
         rel="noreferrer"
         className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white/85 hover:bg-white/15"
       >
-        <span aria-hidden="true" className="text-base">🌤️</span>
+        <CloudSunIcon className="h-4 w-4" />
         <span className="text-xs">Forecast available closer to your stay</span>
       </Link>
     );
@@ -335,8 +348,8 @@ export async function VisitWeatherForecast({
       aria-label={`Visit weather forecast: ${theme.label}, high ${high}, low ${low} degrees${rainChance >= 30 ? `, rain chance up to ${Math.round(rainChance)} percent` : ""}. Open full forecast.`}
       className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white transition-colors hover:bg-white/15"
     >
-      <span role="img" aria-label={theme.label} className="text-base leading-none">
-        {theme.icon}
+      <span role="img" aria-label={theme.label} className="leading-none">
+        <theme.icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 truncate text-xs">
         <span className="font-semibold">Visit forecast</span>
@@ -368,7 +381,7 @@ function AlertBanner({ alerts }: { alerts: WeatherAlert[] }) {
         severe ? "bg-rust" : "bg-amber"
       }`}
     >
-      <span aria-hidden>⚠</span>
+      <WarningIcon className="h-4 w-4 shrink-0" />
       <span className="min-w-0 flex-1 truncate">
         {primary.event}
         {alerts.length > 1 ? ` · +${alerts.length - 1} more` : ""}
@@ -445,9 +458,9 @@ export async function LiveWeatherCard() {
           <span
             role="img"
             aria-label={theme.label}
-            className="text-3xl drop-shadow-sm sm:text-4xl"
+            className="drop-shadow-sm"
           >
-            {theme.icon}
+            <theme.icon className="h-9 w-9 sm:h-11 sm:w-11" />
           </span>
           <div className="flex min-w-0 flex-1 items-end gap-2">
             <p className="font-display text-3xl leading-none sm:text-4xl">

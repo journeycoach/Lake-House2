@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { BellIcon } from "./icons";
 
 export type HomeNotification = {
   title: string;
@@ -65,8 +66,8 @@ export function HomeNotificationBell({
         }
         className={`relative flex h-11 w-11 cursor-pointer list-none flex-col items-center justify-center gap-0.5 rounded-lh border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water [&::-webkit-details-marker]:hidden ${inactiveClass}`}
       >
-        <span aria-hidden="true" className="text-sm leading-none">
-          🔔
+        <span aria-hidden="true" className="leading-none">
+          <BellIcon className="h-4 w-4" />
         </span>
         <span className="text-[8px] font-semibold leading-none">Alerts</span>
         {hasNotifications ? (

@@ -8,6 +8,18 @@ import {
   HomeNotificationBell,
   type HomeNotification,
 } from "./home-notification-bell";
+import {
+  BookIcon,
+  CalendarIcon,
+  ChecklistIcon,
+  HomeIcon,
+  NoteIcon,
+  PinIcon,
+  SearchIcon,
+  SettingsIcon,
+  WrenchIcon,
+} from "./icons";
+import type { ComponentType } from "react";
 
 export type NavUser = { name: string; role: string };
 
@@ -17,28 +29,28 @@ const MAP_URL =
 const LINKS: {
   href: string;
   label: string;
-  icon?: string;
+  icon?: ComponentType<{ className?: string }>;
   adminOnly?: boolean;
   separatorBefore?: boolean;
   external?: boolean;
 }[] = [
-  { href: "/", label: "Home", icon: "🏠" },
-  { href: "/calendar", label: "Calendar", icon: "📅" },
-  { href: "/upkeep", label: "Property Care", icon: "🛠️" },
-  { href: "/shopping-list", label: "Shopping List", icon: "✅" },
-  { href: "/guide", label: "House guide", icon: "📖" },
-  { href: "/notes", label: "FYI Everyone", icon: "📝" },
+  { href: "/", label: "Home", icon: HomeIcon },
+  { href: "/calendar", label: "Calendar", icon: CalendarIcon },
+  { href: "/upkeep", label: "Property Care", icon: WrenchIcon },
+  { href: "/shopping-list", label: "Shopping List", icon: ChecklistIcon },
+  { href: "/guide", label: "House guide", icon: BookIcon },
+  { href: "/notes", label: "FYI Everyone", icon: NoteIcon },
   {
     href: MAP_URL,
     label: "Map & Directions",
-    icon: "📍",
+    icon: PinIcon,
     external: true,
     separatorBefore: true,
   },
   {
     href: "/admin",
     label: "Admin",
-    icon: "⚙️",
+    icon: SettingsIcon,
     adminOnly: true,
   },
 ];
@@ -86,8 +98,8 @@ function MobileBottomNav({
                 : "text-white/65 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <span aria-hidden className="text-base leading-none">
-              {link.icon}
+            <span aria-hidden className="leading-none">
+              {link.icon ? <link.icon className="h-[18px] w-[18px]" /> : null}
             </span>
             <span className="max-w-full break-words text-center leading-tight">
               {link.label}
@@ -145,8 +157,8 @@ function NavLinks({
                 className="rounded-lh px-4 py-2.5 text-sm font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white"
               >
                 {l.icon ? (
-                  <span aria-hidden className="mr-2 inline-block w-5 text-center">
-                    {l.icon}
+                  <span aria-hidden className="mr-2 inline-flex w-5 justify-center">
+                    <l.icon className="h-4 w-4" />
                   </span>
                 ) : null}
                 {l.label}
@@ -162,8 +174,8 @@ function NavLinks({
                 }`}
               >
                 {l.icon ? (
-                  <span aria-hidden className="mr-2 inline-block w-5 text-center">
-                    {l.icon}
+                  <span aria-hidden className="mr-2 inline-flex w-5 justify-center">
+                    <l.icon className="h-4 w-4" />
                   </span>
                 ) : null}
                 {l.label}
@@ -201,8 +213,8 @@ function SearchLink({
       title="Search"
       className={`flex h-11 w-11 ${showLabel ? "flex-col gap-0.5" : "items-center justify-center"} items-center justify-center rounded-lh border border-white/25 text-white transition-colors hover:bg-white/10 ${className}`}
     >
-      <span aria-hidden className={`${showLabel ? "text-sm" : "text-base"} leading-none`}>
-        🔍
+      <span aria-hidden className="leading-none">
+        <SearchIcon className={showLabel ? "h-3.5 w-3.5" : "h-4 w-4"} />
       </span>
       {showLabel ? <span className="text-[9px] font-semibold leading-none">Search</span> : null}
     </Link>

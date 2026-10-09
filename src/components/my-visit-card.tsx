@@ -6,6 +6,7 @@ import {
   VisitWeatherForecast,
   VisitWeatherForecastFallback,
 } from "@/components/live-weather-card";
+import { HomeIcon, SailboatIcon } from "@/components/icons";
 
 type VisitIssue = {
   id: number;
@@ -114,7 +115,7 @@ export function MyVisitCard({
               aria-label={`Open Stay Checklist for ${stay.label}: ${completed} of ${total} complete`}
               className="group inline-flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <span aria-hidden="true">🏠</span>
+              <HomeIcon className="h-4 w-4" />
               <span>Stay Checklist</span>
               <span className="text-xs font-medium text-white/70">{completed}/{total}</span>
               <span aria-hidden="true">→</span>
@@ -133,7 +134,7 @@ export function MyVisitCard({
               href={`/calendar/${stay.id}/checklist#boat-checklist`}
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <span aria-hidden="true">⛵</span> Boat Checklist <span aria-hidden="true">→</span>
+              <SailboatIcon className="h-4 w-4" /> Boat Checklist <span aria-hidden="true">→</span>
             </Link>
             {isCurrent && stay.end === today ? (
               <span className="inline-flex items-center gap-2">
