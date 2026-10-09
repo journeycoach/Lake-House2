@@ -22,8 +22,17 @@ export default async function ChecklistPage() {
     .orderBy(asc(schema.users.name)))
     .map((row) => row.name)
     .filter((name, index, names) => names.indexOf(name) === index);
-  const openItems = items.filter((item) => !item.done);
-  const completedItems = items.filter((item) => item.done);
+  // Logged-in user's own items first; date added (the existing position/id
+  // order from checklistItems) is preserved within each group via a stable sort.
+  const currentUserName = user.name.trim().toLowerCase();
+  const isMine = (name: string | null | undefined) =>
+    !!name && name.trim().toLowerCase() === currentUserName;
+  const byMineThenAdded = (rows: typeof items) =>
+    [...rows].sort(
+      (a, b) => (isMine(a.assignedTo) ? 0 : 1) - (isMine(b.assignedTo) ? 0 : 1)
+    );
+  const openItems = byMineThenAdded(items.filter((item) => !item.done));
+  const completedItems = byMineThenAdded(items.filter((item) => item.done));
 
   function itemRows(rows: typeof items) {
     return rows.map((item, i) => {
