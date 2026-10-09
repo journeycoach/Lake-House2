@@ -231,7 +231,7 @@ export function StayForm({
             ))}
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+        <div className="grid grid-cols-[1fr_88px] gap-4 sm:col-span-2">
           <div>
             <label htmlFor="label" className="flabel">
               Who is coming
