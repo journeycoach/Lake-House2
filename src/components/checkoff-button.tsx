@@ -11,11 +11,13 @@ export function CheckoffButton({
   done,
   label,
   action,
+  onToggle,
 }: {
   id: number;
   done: boolean;
   label: string;
   action: (formData: FormData) => void;
+  onToggle?: () => void;
 }) {
   const [checked, setChecked] = useState(done);
 
@@ -27,6 +29,7 @@ export function CheckoffButton({
           navigator.vibrate(10);
         }
         setChecked((value) => !value);
+        onToggle?.();
       }}
       className="shrink-0"
     >

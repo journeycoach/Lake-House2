@@ -21,7 +21,7 @@ import {
   VisitWeatherBadgeFallback,
 } from "@/components/live-weather-card";
 import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
-import { CheckoffButton } from "@/components/checkoff-button";
+import { ShoppingCurrentList } from "@/components/shopping-current-list";
 import { toggleItem } from "./shopping-list/actions";
 
 export default async function HomePage() {
@@ -304,69 +304,18 @@ export default async function HomePage() {
           </Link>
           <div className="mt-4">
             <p className="section-label">Current</p>
-            <ul className="mt-2">
-              {currentChecks.map((check) => (
-                <li
-                  key={check.id}
-                  className="flex items-start gap-3 border-t border-sand-line py-3 first:border-0 first:pt-0"
-                >
-                  <CheckoffButton
-                    id={check.id}
-                    done={false}
-                    label={`Mark "${check.title}" done`}
-                    action={toggleItem}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{check.title}</p>
-                    {check.details ? (
-                      <p className="text-sm text-ink-soft">{check.details}</p>
-                    ) : null}
-                    <p className="text-xs font-medium text-water">
-                      {check.assignedTo ? (
-                        <>
-                          Assigned to{" "}
-                          <span
-                            className={
-                              isMine(check.assignedTo)
-                                ? "font-semibold text-care"
-                                : undefined
-                            }
-                          >
-                            {check.assignedTo}
-                          </span>
-                        </>
-                      ) : (
-                        `Added by ${check.addedBy}`
-                      )}
-                    </p>
-                  </div>
-                </li>
-              ))}
-              {currentChecks.length === 0 ? (
-                <li className="text-sm text-ink-soft">
-                  Everything is checked off.
-                </li>
-              ) : null}
-            </ul>
+            <ShoppingCurrentList
+              items={currentChecks.map((check) => ({
+                id: check.id,
+                title: check.title,
+                details: check.details,
+                assignedTo: check.assignedTo,
+                addedBy: check.addedBy,
+              }))}
+              currentUserName={user.name}
+              action={toggleItem}
+            />
           </div>
-          {checks.length - openChecks.length > 0 ? (
-            <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-sage">
-              <svg
-                aria-hidden
-                width="11"
-                height="11"
-                viewBox="0 0 10 10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M1.5 5.5L4 8l4.5-6" />
-              </svg>
-              {checks.length - openChecks.length} checked off
-            </p>
-          ) : null}
           {openChecks.length > currentChecks.length ? (
             <Link
               href="/shopping-list"
