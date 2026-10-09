@@ -109,9 +109,22 @@ export default async function HomePage() {
         <div className="flex items-end justify-between gap-2">
           <div>
             <p className="section-label">{fmtLong(today)}</p>
-            <h1 className="font-display text-3xl lg:text-4xl mt-1">
-              Hello, {user.name}
-            </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <h1 className="font-display text-2xl lg:text-3xl">
+                Hello, {user.name}
+              </h1>
+              <Link
+                href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
+                className="btn btn-quiet min-w-0 bg-card px-3 text-xs"
+              >
+                <span className="font-semibold text-ink">
+                  {here.length > 0
+                    ? here.map((s) => s.householdName ?? s.label).join(", ")
+                    : "Nobody"}
+                </span>{" "}
+                {here.length > 1 ? "are" : "is"} at the lake
+              </Link>
+            </div>
           </div>
           <div className="shrink-0">
             <Suspense fallback={<VisitWeatherBadgeFallback />}>
@@ -143,19 +156,6 @@ export default async function HomePage() {
             </div>
           </div>
         ) : null}
-        <div className="flex justify-center">
-          <Link
-            href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
-            className="btn btn-quiet min-w-0 bg-card px-3 text-xs sm:text-xs"
-          >
-            <span className="font-semibold text-ink">
-              {here.length > 0
-                ? here.map((s) => s.householdName ?? s.label).join(", ")
-                : "Nobody"}
-            </span>{" "}
-            {here.length > 1 ? "are" : "is"} at the lake
-          </Link>
-        </div>
       </div>
 
       {myVisit ? (
