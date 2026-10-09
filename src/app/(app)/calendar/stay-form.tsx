@@ -10,6 +10,7 @@ import {
   type StayFormState,
 } from "./actions";
 import { StayChecklist, type StayChecklistEntry } from "./stay-checklist";
+import { fmtRange } from "@/lib/dates";
 
 type Household = { id: number; name: string };
 export type EditableStay = {
@@ -24,6 +25,25 @@ export type EditableStay = {
   note: string | null;
 };
 
+/* A trimmed view of another booked stay, just enough to spot an overlap
+   and name it in the warning. */
+export type ConflictStay = {
+  id: number;
+  label: string;
+  start: string;
+  end: string;
+};
+
+function describeConflicts(conflicts: ConflictStay[]): string | null {
+  if (conflicts.length === 0) return null;
+  const [first, ...rest] = conflicts;
+  const extra =
+    rest.length > 0
+      ? `, along with ${rest.length} other visit${rest.length === 1 ? "" : "s"}`
+      : "";
+  return `${first.label} is already booked ${fmtRange(first.start, first.end)}${extra}. Save anyway if sharing the house is the plan.`;
+}
+
 const initial: StayFormState = {};
 
 export function StayForm({
@@ -33,6 +53,7 @@ export function StayForm({
   defaultDate,
   defaultHouseholdId,
   defaultLabel,
+  existingStays = [],
   closeDetailsId,
 }: {
   households: Household[];
@@ -41,6 +62,7 @@ export function StayForm({
   defaultDate?: string;
   defaultHouseholdId?: number | null;
   defaultLabel?: string;
+  existingStays?: ConflictStay[];
   closeDetailsId?: string;
 }) {
   const action = stay ? updateStay : createStay;
@@ -63,6 +85,21 @@ export function StayForm({
   const formRef = useRef<HTMLFormElement>(null);
   const values = state.values;
   const formKey = values ? JSON.stringify(values) : "ready";
+  const [start, setStart] = useState(
+    values?.start ?? stay?.start ?? defaultDate ?? ""
+  );
+  const [end, setEnd] = useState(values?.end ?? stay?.end ?? defaultDate ?? "");
+
+  // Checked live as the dates change, against the stays already on the
+  // calendar, so the warning shows up before a round trip to the server.
+  const localConflicts =
+    start && end && start <= end
+      ? existingStays.filter(
+          (other) =>
+            other.id !== stay?.id && start <= other.end && other.start <= end
+        )
+      : [];
+  const conflictMessage = describeConflicts(localConflicts) ?? state.conflict ?? null;
 
   useEffect(() => {
     if (state.added) formRef.current?.reset();
@@ -164,7 +201,8 @@ export function StayForm({
             name="start"
             type="date"
             required
-            defaultValue={values?.start ?? stay?.start ?? defaultDate}
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
             className="field"
           />
         </div>
@@ -177,7 +215,8 @@ export function StayForm({
             name="end"
             type="date"
             required
-            defaultValue={values?.end ?? stay?.end ?? defaultDate}
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
             className="field"
           />
         </div>
@@ -230,9 +269,9 @@ export function StayForm({
           Added.
         </p>
       ) : null}
-      {state.conflict ? (
+      {conflictMessage ? (
         <div className="rounded-lh border border-amber/40 bg-amber/10 p-3 text-sm">
-          <p className="font-medium text-ink">{state.conflict}</p>
+          <p className="font-medium text-ink">{conflictMessage}</p>
           <label className="mt-2 flex items-center gap-2 text-ink-soft">
             <input
               type="checkbox"
@@ -292,16 +331,19 @@ export function EditStayForm({
   households,
   stay,
   closeHref,
+  existingStays = [],
 }: {
   households: Household[];
   stay: EditableStay;
   closeHref: string;
+  existingStays?: ConflictStay[];
 }) {
   const router = useRouter();
   return (
     <StayForm
       households={households}
       stay={stay}
+      existingStays={existingStays}
       onDone={() => router.push(closeHref)}
     />
   );
@@ -316,6 +358,7 @@ export function StayListItem({
   checklist,
   canToggleChecklist,
   canEdit = true,
+  existingStays = [],
 }: {
   stay: EditableStay;
   households: Household[];
@@ -325,6 +368,7 @@ export function StayListItem({
   checklist: StayChecklistEntry[];
   canToggleChecklist: boolean;
   canEdit?: boolean;
+  existingStays?: ConflictStay[];
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -334,6 +378,7 @@ export function StayListItem({
         <StayForm
           households={households}
           stay={stay}
+          existingStays={existingStays}
           onDone={() => setEditing(false)}
         />
       </li>

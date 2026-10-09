@@ -85,7 +85,8 @@ export default async function PlanStayPage({
             households={households}
             defaultDate={selectedStart}
             defaultHouseholdId={user.householdId}
-            defaultLabel={user.name}
+            defaultLabel={`Family ${user.name}`}
+            existingStays={stays}
           />
         ) : (
           <p className="text-sm text-ink-soft">Only family members can add a stay. You can still use the calendar below to check dates.</p>

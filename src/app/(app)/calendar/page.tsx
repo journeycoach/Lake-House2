@@ -171,6 +171,7 @@ export default async function CalendarPage({
               key={s.id}
               stay={s}
               households={households}
+              existingStays={stays}
               color={householdVar(s.color)}
               checklist={(checklistItemsByStay.get(s.id) ?? []).map((item) => ({
                 id: item.id,
@@ -237,6 +238,7 @@ export default async function CalendarPage({
             households={households}
             stay={stayToEdit}
             closeHref={editCloseHref}
+            existingStays={stays}
           />
         </section>
       ) : null}
