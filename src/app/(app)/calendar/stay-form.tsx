@@ -122,6 +122,11 @@ export function StayForm({
   const nextFriday = addDays(thisFriday, 7);
   const quickDatePicks = [
     {
+      label: "Today",
+      start: today,
+      end: today,
+    },
+    {
       label: "This weekend",
       start: thisFriday,
       end: addDays(thisFriday, 2),
@@ -226,32 +231,34 @@ export function StayForm({
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="label" className="flabel">
-            Who is coming
-          </label>
-          <input
-            id="label"
-            name="label"
-            required
-            defaultValue={values?.label ?? stay?.label ?? defaultLabel}
-            maxLength={200}
-            className="field"
-            placeholder="Family weekend at the lake"
-          />
-        </div>
-        <div>
-          <label htmlFor="adults" className="flabel">
-            How many people?
-          </label>
-          <input
-            id="adults"
-            name="adults"
-            type="number"
-            min={0}
-            defaultValue={values?.adults ?? stay?.adults ?? defaultAdults ?? 2}
-            className="field"
-          />
+        <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+          <div>
+            <label htmlFor="label" className="flabel">
+              Who is coming
+            </label>
+            <input
+              id="label"
+              name="label"
+              required
+              defaultValue={values?.label ?? stay?.label ?? defaultLabel}
+              maxLength={200}
+              className="field"
+              placeholder="Family weekend at the lake"
+            />
+          </div>
+          <div>
+            <label htmlFor="adults" className="flabel">
+              How many people?
+            </label>
+            <input
+              id="adults"
+              name="adults"
+              type="number"
+              min={0}
+              defaultValue={values?.adults ?? stay?.adults ?? defaultAdults ?? 2}
+              className="field"
+            />
+          </div>
         </div>
         <div className="sm:col-span-2">
           <span className="flabel">Quick date picks</span>
