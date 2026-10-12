@@ -109,13 +109,13 @@ export default async function HomePage() {
         <div className="flex items-end justify-between gap-2">
           <div>
             <p className="section-label">{fmtLong(today)}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-2xl lg:text-3xl">
+            <div className="mt-1 flex min-w-0 flex-nowrap items-center gap-2">
+              <h1 className="font-display shrink-0 whitespace-nowrap text-2xl lg:text-3xl">
                 Hello, {user.name}
               </h1>
               <Link
                 href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
-                className="btn btn-quiet min-w-0 bg-card px-3 text-xs"
+                className="btn btn-quiet min-w-0 truncate bg-card px-3 text-xs"
               >
                 <span className="font-semibold text-ink">
                   {here.length > 0
