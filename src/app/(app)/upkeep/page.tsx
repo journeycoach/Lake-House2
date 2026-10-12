@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { setFixitStatus, removeFixit, updateFixit } from "./fixit-actions";
 import { CollapsibleEditForm } from "@/components/collapsible-edit-form";
+import { CheckoffButton } from "@/components/checkoff-button";
 import {
   addSchedule,
   updateMaintenance,
@@ -158,15 +159,13 @@ export default async function UpkeepPage({
                 className="flex items-start gap-3 border-t border-sand-line py-4 first:border-0 sm:gap-4"
               >
                 {editor ? (
-                  <form action={setFixitStatus} className="shrink-0">
-                    <input type="hidden" name="id" value={f.id} />
-                    <input type="hidden" name="status" value="done" />
-                    <button
-                      type="submit"
-                      aria-label={`Mark "${f.title}" done`}
-                      className="check-control rounded-[4px] border border-sand-line hover:border-water"
-                    />
-                  </form>
+                  <CheckoffButton
+                    id={f.id}
+                    done={false}
+                    label={`Mark "${f.title}" done`}
+                    action={setFixitStatus}
+                    fields={{ status: "done" }}
+                  />
                 ) : (
                   <span
                     aria-hidden

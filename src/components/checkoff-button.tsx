@@ -12,12 +12,16 @@ export function CheckoffButton({
   label,
   action,
   onToggle,
+  fields,
 }: {
   id: number;
   done: boolean;
   label: string;
   action: (formData: FormData) => void;
   onToggle?: () => void;
+  /* Extra hidden fields the action needs besides "id" (e.g. a fixed
+     status="done" for a list that only ever marks items complete). */
+  fields?: Record<string, string>;
 }) {
   const [checked, setChecked] = useState(done);
 
@@ -34,6 +38,11 @@ export function CheckoffButton({
       className="shrink-0"
     >
       <input type="hidden" name="id" value={id} />
+      {fields
+        ? Object.entries(fields).map(([name, value]) => (
+            <input key={name} type="hidden" name={name} value={value} />
+          ))
+        : null}
       <button
         type="submit"
         aria-label={label}
