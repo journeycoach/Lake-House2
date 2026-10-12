@@ -211,40 +211,26 @@ export function StayForm({
     >
       {stay ? <input type="hidden" name="id" value={stay.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label htmlFor="householdId" className="flabel">
-            Household
-          </label>
-          <select
-            id="householdId"
-            name="householdId"
-            defaultValue={
-              values?.householdId ?? stay?.householdId ?? defaultHouseholdId ?? ""
-            }
-            className="field"
-          >
-            <option value="">Pick one</option>
-            {households.map((h) => (
-              <option key={h.id} value={h.id}>
-                {h.name}
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="grid grid-cols-[1fr_88px] gap-4 sm:col-span-2">
           <div>
-            <label htmlFor="label" className="flabel">
-              Who is coming
+            <label htmlFor="householdId" className="flabel">
+              Household
             </label>
-            <input
-              id="label"
-              name="label"
-              required
-              defaultValue={values?.label ?? stay?.label ?? defaultLabel}
-              maxLength={200}
+            <select
+              id="householdId"
+              name="householdId"
+              defaultValue={
+                values?.householdId ?? stay?.householdId ?? defaultHouseholdId ?? ""
+              }
               className="field"
-              placeholder="Family weekend at the lake"
-            />
+            >
+              <option value="">Pick one</option>
+              {households.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="adults" className="flabel">
@@ -259,6 +245,20 @@ export function StayForm({
               className="field"
             />
           </div>
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="label" className="flabel">
+            Who is coming
+          </label>
+          <input
+            id="label"
+            name="label"
+            required
+            defaultValue={values?.label ?? stay?.label ?? defaultLabel}
+            maxLength={200}
+            className="field"
+            placeholder="Family weekend at the lake"
+          />
         </div>
         <div className="sm:col-span-2">
           <span className="flabel">Quick date picks</span>
