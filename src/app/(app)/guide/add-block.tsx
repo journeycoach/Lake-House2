@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { VISIBILITY } from "@/lib/roles";
+import { compressImage } from "@/lib/compress-image";
 import { addBlock } from "./actions";
 
 const KINDS = [
@@ -51,12 +52,13 @@ export function AddBlock({ sectionId }: { sectionId: number }) {
       action={async (formData) => {
         setError(null);
         if (kind === "photo") {
-          const file = fileRef.current?.files?.[0];
-          if (!file) {
+          const rawFile = fileRef.current?.files?.[0];
+          if (!rawFile) {
             setError("Choose a photo first.");
             return;
           }
           setUploading(true);
+          const file = await compressImage(rawFile);
           try {
             const blob = await upload(file.name, file, {
               access: "public",

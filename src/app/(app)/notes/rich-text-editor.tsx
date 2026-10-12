@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { upload } from "@vercel/blob/client";
+import { compressImage } from "@/lib/compress-image";
 
 function ToolButton({
   title,
@@ -70,11 +71,12 @@ export function RichTextEditor({
     rememberSelection();
   }
 
-  async function addImage(file: File) {
+  async function addImage(rawFile: File) {
     setImageError(null);
     setUploadingImage(true);
     rememberSelection();
     try {
+      const file = await compressImage(rawFile);
       const blob = await upload(`notes/${file.name}`, file, {
         access: "public",
         handleUploadUrl: "/api/notes/upload",

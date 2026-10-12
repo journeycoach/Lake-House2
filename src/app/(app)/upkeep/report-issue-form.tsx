@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
+import { compressImage } from "@/lib/compress-image";
 import { reportIssue } from "./fixit-actions";
 
 export function ReportIssueForm() {
@@ -65,8 +66,9 @@ export function ReportIssueForm() {
         setError(null);
         setAdded(false);
         try {
-          const file = fileRef.current?.files?.[0];
-          if (file) {
+          const rawFile = fileRef.current?.files?.[0];
+          if (rawFile) {
+            const file = await compressImage(rawFile);
             const blob = await upload(`fixit/${file.name}`, file, {
               access: "public",
               handleUploadUrl: "/api/fixit/upload",
