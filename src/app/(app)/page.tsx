@@ -38,6 +38,10 @@ export default async function HomePage() {
   ]);
 
   const here = staysNow(stays, today);
+  const peopleAtLake =
+    here.length > 0
+      ? here.map((stay) => stay.householdName ?? stay.label).join(", ")
+      : "Nobody";
   const next = staysUpcoming(stays, today)[0];
   const checklistStay = here[0] ?? next;
   const householdStays = user.householdId
@@ -107,7 +111,7 @@ export default async function HomePage() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6 space-y-3">
         <div className="flex items-end justify-between gap-2">
-          <div>
+          <div className="min-w-0">
             <p className="section-label">{fmtLong(today)}</p>
             <div className="mt-1 flex min-w-0 flex-nowrap items-center gap-2">
               <h1 className="font-display shrink-0 whitespace-nowrap text-2xl lg:text-3xl">
@@ -115,14 +119,16 @@ export default async function HomePage() {
               </h1>
               <Link
                 href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
-                className="btn btn-quiet min-w-0 truncate bg-card px-3 text-xs"
+                aria-label={`Who's at the lake: ${peopleAtLake}`}
+                className="btn btn-quiet min-w-0 max-w-[10rem] shrink bg-card px-2 text-xs sm:max-w-[16rem] sm:px-3"
               >
-                <span className="font-semibold text-ink">
-                  {here.length > 0
-                    ? here.map((s) => s.householdName ?? s.label).join(", ")
-                    : "Nobody"}
-                </span>{" "}
-                {here.length > 1 ? "are" : "is"} at the lake
+                <span className="shrink-0 text-ink-faint">At lake</span>
+                <span aria-hidden="true" className="shrink-0 text-ink-faint">
+                  ·
+                </span>
+                <span className="min-w-0 truncate font-semibold text-ink">
+                  {peopleAtLake}
+                </span>
               </Link>
             </div>
           </div>
