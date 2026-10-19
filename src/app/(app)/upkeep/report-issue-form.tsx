@@ -11,6 +11,7 @@ export function ReportIssueForm() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const submissionStarted = useRef(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -62,6 +63,10 @@ export function ReportIssueForm() {
     <form
       ref={formRef}
       action={async (formData) => {
+        // Lock synchronously so rapid taps cannot start two uploads/saves
+        // before React has a chance to render the disabled button.
+        if (submissionStarted.current) return;
+        submissionStarted.current = true;
         setSaving(true);
         setError(null);
         setAdded(false);
@@ -79,6 +84,7 @@ export function ReportIssueForm() {
           formRef.current?.reset();
           setAdded(true);
         } catch (caught) {
+          submissionStarted.current = false;
           const message = (caught as Error).message;
           setError(
             message.includes("store")
