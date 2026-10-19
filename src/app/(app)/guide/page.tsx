@@ -176,6 +176,26 @@ export default async function GuidePage() {
               />
             );
           })}
+          <article className="card flex flex-col p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-display text-2xl text-amber">06</p>
+              <span className="rounded-full bg-water-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-water">
+                PDF
+              </span>
+            </div>
+            <h3 className="mt-2 font-semibold">Land Title Survey</h3>
+            <p className="mt-2 text-sm text-ink-soft">
+              Property survey document.
+            </p>
+            <a
+              href="/documents/land-title-survey.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex min-h-10 items-center font-semibold text-water hover:text-deep-2"
+            >
+              Open survey PDF ↗
+            </a>
+          </article>
         </div>
 
         {visibleSections.length === 0 ? (

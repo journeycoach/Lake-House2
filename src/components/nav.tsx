@@ -24,7 +24,7 @@ import type { ComponentType } from "react";
 export type NavUser = { name: string; role: string };
 
 const MAP_URL =
-  "https://www.google.com/maps/place/22082+Blue+Water+Rd,+Chandler,+TX+75758/@32.1995742,-95.4879946,18.06z/data=!4m6!3m5!1s0x86484c8512a9e5c5:0xb35bce62845f2a7c!8m2!3d32.2011789!4d-95.4869285!16s%2Fg%2F11j7mkmsj7?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D";
+  "https://www.google.com/maps/place/16241+County+Rd+1322,+Flint,+TX+75762/@32.1727728,-95.4450536,17z/data=!3m1!4b1!4m6!3m5!1s0x86484bb64072d1e9:0x52713f13025ddffd!8m2!3d32.1727683!4d-95.4424787!16s%2Fg%2F11frw52z63?entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D";
 
 const LINKS: {
   href: string;
