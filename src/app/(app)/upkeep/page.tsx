@@ -10,7 +10,6 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { setFixitStatus, removeFixit, updateFixit } from "./fixit-actions";
 import { CollapsibleEditForm } from "@/components/collapsible-edit-form";
-import { CheckoffButton } from "@/components/checkoff-button";
 import {
   addSchedule,
   updateMaintenance,
@@ -159,12 +158,10 @@ export default async function UpkeepPage({
                 className="flex items-start gap-3 border-t border-sand-line py-4 first:border-0 sm:gap-4"
               >
                 {editor ? (
-                  <CheckoffButton
-                    id={f.id}
-                    done={false}
-                    label={`Mark "${f.title}" done`}
-                    action={setFixitStatus}
-                    fields={{ status: "done" }}
+                  <Link
+                    href={`/upkeep/completed/${f.id}`}
+                    aria-label={`Review completing "${f.title}"`}
+                    className="check-control flex shrink-0 items-center justify-center rounded-md border border-sand-line bg-white transition-colors hover:border-water hover:bg-mist"
                   />
                 ) : (
                   <span
@@ -292,7 +289,7 @@ export default async function UpkeepPage({
       </section>
 
       {done.length > 0 ? (
-        <section className="card mt-4 p-4 sm:mt-6 sm:p-6">
+        <section id="completed" className="card mt-4 scroll-mt-4 p-4 sm:mt-6 sm:p-6">
           <p className="section-label">Done</p>
           <ul className="mt-2">
             {done.map((f) => (

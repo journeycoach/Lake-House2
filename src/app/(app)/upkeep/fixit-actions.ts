@@ -1,6 +1,7 @@
 "use server";
 
 import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { del } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
@@ -88,6 +89,9 @@ export async function setFixitStatus(formData: FormData) {
   }
   revalidatePath("/upkeep");
   revalidatePath("/");
+  if (status === "done" && item) {
+    redirect(`/upkeep/completed/${id}`);
+  }
 }
 
 export async function removeFixit(formData: FormData) {

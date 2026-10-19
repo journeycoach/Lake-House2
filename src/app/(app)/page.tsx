@@ -120,7 +120,7 @@ export default async function HomePage() {
               <Link
                 href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
                 aria-label={`Who's at the lake: ${peopleAtLake}`}
-                className="inline-flex h-10 min-h-10 min-w-0 max-w-[10rem] shrink flex-col items-start justify-center rounded-lh border border-sand-line bg-card px-3 py-1 text-xs leading-tight text-water transition-colors hover:border-water sm:max-w-[16rem]"
+                className="inline-flex h-14 min-h-14 min-w-0 max-w-[10rem] shrink flex-col items-start justify-center rounded-lh border border-sand-line bg-card px-3 py-1 text-xs leading-tight text-water transition-colors hover:border-water sm:max-w-[16rem]"
               >
                 <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-faint">
                   At lake

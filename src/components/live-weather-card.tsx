@@ -212,7 +212,7 @@ export function LiveWeatherFallback() {
 }
 
 export function VisitWeatherBadgeFallback() {
-  return <span className="h-9 w-16 animate-pulse rounded-full border border-deep bg-deep/70" />;
+  return <span className="h-14 w-20 animate-pulse rounded-xl border border-deep bg-deep/70" />;
 }
 
 export async function VisitWeatherBadge() {
@@ -226,7 +226,7 @@ export async function VisitWeatherBadge() {
         target="_blank"
         rel="noreferrer"
         aria-label={`Open the Lake Palestine weather forecast${hasSevereAlert ? "; severe weather alert active" : ""}`}
-        className="inline-flex items-center gap-1.5 rounded-full border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water"
+        className="inline-flex h-14 min-h-14 items-center gap-1.5 rounded-xl border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water"
       >
         <CloudSunIcon className="h-3.5 w-3.5" />
         <span>Current</span>
@@ -252,7 +252,7 @@ export async function VisitWeatherBadge() {
       target="_blank"
       rel="noreferrer"
       aria-label={`Lake Palestine weather: ${theme.label}, ${Math.round(current.temperature_2m)} degrees, feels like ${Math.round(current.apparent_temperature)} degrees${showRainChance ? `, ${Math.round(rainChance)} percent chance of rain` : ""}${hasSevereAlert ? ". Severe weather alert active" : ""}. Open the full forecast.`}
-      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-deep bg-deep px-2.5 py-1.5 text-white transition-colors hover:bg-water"
+      className="inline-flex h-14 min-h-14 items-center gap-2 rounded-xl border border-deep bg-deep px-2.5 py-1.5 text-white transition-colors hover:bg-water"
     >
       <span role="img" aria-label={theme.label} className="leading-none">
         <theme.icon className="h-[18px] w-[18px]" />
