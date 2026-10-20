@@ -114,21 +114,19 @@ export default async function HomePage() {
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
             <p className="section-label">{fmtLong(today)}</p>
-            <div className="mt-1 flex min-w-0 flex-nowrap items-center gap-2">
-              <h1 className="font-display shrink-0 whitespace-nowrap text-2xl lg:text-3xl">
-                Hello, {user.name}
-              </h1>
-              <Link
-                href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
-                aria-label={`Who's at the lake: ${peopleAtLake}`}
-                className="inline-flex h-14 min-h-14 min-w-0 max-w-[10rem] shrink items-center gap-1.5 rounded-xl border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water sm:max-w-[16rem]"
-              >
-                <HomeIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{peopleAtLake}</span>
-              </Link>
-            </div>
+            <h1 className="font-display mt-1 truncate text-2xl lg:text-3xl">
+              Hello, {user.name}
+            </h1>
           </div>
-          <div className="shrink-0">
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
+              aria-label={`Who's at the lake: ${peopleAtLake}`}
+              className="inline-flex h-14 min-h-14 max-w-[6rem] shrink items-center gap-1.5 rounded-xl border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water sm:max-w-[9rem]"
+            >
+              <HomeIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{peopleAtLake}</span>
+            </Link>
             <Suspense fallback={<VisitWeatherBadgeFallback />}>
               <VisitWeatherBadge />
             </Suspense>
