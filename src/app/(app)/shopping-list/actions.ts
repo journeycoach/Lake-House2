@@ -106,7 +106,9 @@ export async function toggleItem(formData: FormData) {
     item.done ? "unchecked a checklist item" : "checked off a checklist item",
     item.title
   );
-  refresh();
+  // Keep the Shopping List page's current rows in place; its client-side
+  // checkoff state provides feedback until the user refreshes the page.
+  revalidatePath("/");
 }
 
 export async function removeItem(formData: FormData) {
