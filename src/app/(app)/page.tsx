@@ -20,6 +20,7 @@ import {
   VisitWeatherBadge,
   VisitWeatherBadgeFallback,
 } from "@/components/live-weather-card";
+import { HomeIcon } from "@/components/icons";
 import { MyVisitCard, MyVisitEmptyState } from "@/components/my-visit-card";
 import { ShoppingCurrentList } from "@/components/shopping-current-list";
 import { toggleItem } from "./shopping-list/actions";
@@ -120,14 +121,10 @@ export default async function HomePage() {
               <Link
                 href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
                 aria-label={`Who's at the lake: ${peopleAtLake}`}
-                className="inline-flex h-14 min-h-14 min-w-0 max-w-[10rem] shrink flex-col items-start justify-center rounded-lh border border-sand-line bg-card px-3 py-1 text-xs leading-tight text-water transition-colors hover:border-water sm:max-w-[16rem]"
+                className="inline-flex h-14 min-h-14 min-w-0 max-w-[10rem] shrink items-center gap-1.5 rounded-xl border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water sm:max-w-[16rem]"
               >
-                <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-faint">
-                  At lake
-                </span>
-                <span className="w-full truncate font-semibold text-ink">
-                  {peopleAtLake}
-                </span>
+                <HomeIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{peopleAtLake}</span>
               </Link>
             </div>
           </div>
