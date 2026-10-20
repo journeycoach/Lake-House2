@@ -187,12 +187,14 @@ export default async function GuidePage() {
             <p className="mt-2 text-sm text-ink-soft">
               Property survey document.
             </p>
-            <Link
-              href="/guide/survey"
+            <a
+              href="/documents/land-title-survey.pdf"
+              target="_blank"
+              rel="noreferrer"
               className="mt-4 inline-flex min-h-10 items-center font-semibold text-water hover:text-deep-2"
             >
-              View survey
-            </Link>
+              Open survey PDF ↗
+            </a>
           </article>
         </div>
 
