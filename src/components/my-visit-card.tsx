@@ -202,21 +202,24 @@ export function MyVisitCard({
           </Link>
 
           {assignedItems.length > 0 ? (
-            <div className="min-w-0 rounded-md bg-white px-3 py-2 text-ink">
+            <Link
+              href="/upkeep"
+              className="min-w-0 rounded-md bg-white px-3 py-2 text-ink transition-colors hover:bg-mist"
+            >
               <span className="section-label text-[9px]">Property Care Assigned · {assignedItems.length}</span>
               <div className="mt-0.5 space-y-0.5">
                 {assignedItems.slice(0, 2).map((item) => (
-                  <Link key={item.id} href={item.href} className="block truncate text-xs hover:text-water">
+                  <p key={item.id} className="truncate text-xs">
                     <span className="font-semibold">{item.assignedTo}:</span> {item.title}
-                  </Link>
+                  </p>
                 ))}
                 {assignedItems.length > 2 ? (
-                  <Link href="/upkeep" className="block text-[10px] font-semibold text-water hover:underline">
+                  <p className="text-[10px] font-semibold text-water">
                     +{assignedItems.length - 2} more →
-                  </Link>
+                  </p>
                 ) : null}
               </div>
-            </div>
+            </Link>
           ) : null}
 
         </div>
