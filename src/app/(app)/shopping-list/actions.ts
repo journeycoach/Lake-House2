@@ -94,7 +94,12 @@ export async function toggleItem(formData: FormData) {
   if (!item) return;
   const nextDone = item.done ? 0 : 1;
   const targetRows = await groupItems(nextDone);
-  const position = Math.max(0, ...targetRows.map((row) => row.position)) + 1;
+  // Checking an item off puts it at the top of the Completed list (most
+  // recently checked off first). Unchecking appends it to the end of the
+  // open list, same as a freshly added item.
+  const position = nextDone
+    ? Math.min(0, ...targetRows.map((row) => row.position)) - 1
+    : Math.max(0, ...targetRows.map((row) => row.position)) + 1;
   await getDb()
     .update(schema.checklist)
     .set({
