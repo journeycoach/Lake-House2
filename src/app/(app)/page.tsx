@@ -31,7 +31,7 @@ export default async function HomePage() {
   const today = todayISO();
   const [stays, notes, fixes, checks, maintenance] = await Promise.all([
     allStays(),
-    latestNotes(3),
+    latestNotes(4),
     openFixit(),
     checklistItems(),
     maintenanceItems(),
@@ -244,16 +244,22 @@ export default async function HomePage() {
               All notes
             </Link>
           </div>
-          <ul className="mt-4 space-y-4">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             {notes.map((n) => (
-              <li key={n.id} className="border-t border-sand-line pt-3 first:border-0 first:pt-0">
-                <RichNote body={n.body} />
-                <p className="mt-1 text-xs text-ink-faint">
-                  {n.authorName} · {n.tag}
-                </p>
-              </li>
+              <Link
+                key={n.id}
+                href="/notes"
+                className="block rounded-lh border border-sand-line bg-card p-3 transition-colors hover:border-water"
+              >
+                <p className="section-label text-[9px]">{n.tag}</p>
+                <RichNote body={n.body} className="mt-1 line-clamp-3" />
+                <p className="mt-2 text-[10px] text-ink-faint">{n.authorName}</p>
+              </Link>
             ))}
-          </ul>
+            {notes.length === 0 ? (
+              <p className="col-span-2 text-sm text-ink-soft">Nothing posted yet.</p>
+            ) : null}
+          </div>
         </section>
         </div>
 
@@ -359,16 +365,6 @@ export default async function HomePage() {
         </section>
         </div>
       </div>
-
-      {/* Quick reference */}
-      <section className="card mt-4 flex flex-wrap items-center justify-between gap-4 p-4 transition-colors hover:border-water sm:mt-6 sm:p-6">
-        <Link href="/guide" className="min-w-0 flex-1">
-          <p className="section-label">Quick reference</p>
-          <p className="mt-1 font-semibold">
-            Wi-Fi, lock code, marina, emergency contacts, check-in & check-out procedure, and house rules
-          </p>
-        </Link>
-      </section>
 
       <div className="mt-5 flex justify-center pb-2">
         <Link
