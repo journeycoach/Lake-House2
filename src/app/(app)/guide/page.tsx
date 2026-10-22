@@ -100,6 +100,7 @@ export default async function GuidePage() {
               normalizedTitle === "departurechecklist";
             const isBoatChecklist =
               normalizedTitle === "boat" || normalizedTitle === "boatchecklist";
+            const isQuickReference = normalizedTitle === "quickreference";
             const hasStayChecklist =
               isArrivalChecklist || isDepartureChecklist || isBoatChecklist;
             const showStayChecklist =
@@ -135,7 +136,13 @@ export default async function GuidePage() {
                 section={{ ...s, title: checklistSectionTitle }}
                 blocks={sectionBlocks}
                 canEdit={editor}
-                anchorId={isArrivalChecklist ? "arrival-check-list" : undefined}
+                anchorId={
+                  isArrivalChecklist
+                    ? "arrival-check-list"
+                    : isQuickReference
+                      ? "quick-reference"
+                      : undefined
+                }
                 checklistEditHref={
                   hasStayChecklist && admin ? "/admin#stay-checklist-templates" : undefined
                 }
@@ -178,7 +185,7 @@ export default async function GuidePage() {
           })}
           <article className="card flex flex-col p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
-              <p className="font-display text-2xl text-amber">06</p>
+              <p className="font-display text-2xl text-amber">07</p>
               <span className="rounded-full bg-water-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-water">
                 PDF
               </span>

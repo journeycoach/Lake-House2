@@ -8,7 +8,7 @@ import {
 } from "@/components/live-weather-card";
 import { HomeIcon, SailboatIcon } from "@/components/icons";
 
-export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
+export function MyVisitEmptyState() {
   return (
     <section className="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-lh bg-deep px-4 py-4 text-white shadow-sm sm:mb-6 sm:px-6">
       <div className="min-w-0 flex-1">
@@ -21,15 +21,9 @@ export function MyVisitEmptyState({ canPlan }: { canPlan: boolean }) {
           appear here once your household has a stay.
         </p>
       </div>
-      {canPlan ? (
-        <Link href="/calendar/plan" className="btn bg-white text-deep hover:bg-mist">
-          Plan my next visit
-        </Link>
-      ) : (
-        <Link href="/calendar" className="text-sm font-semibold text-white/85 hover:text-white">
-          View the calendar →
-        </Link>
-      )}
+      <Link href="/calendar/plan" className="btn bg-white text-deep hover:bg-mist">
+        Plan my next visit
+      </Link>
     </section>
   );
 }
@@ -72,13 +66,23 @@ export function MyVisitCard({
       <div className="p-4 sm:px-5 sm:py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
-                My Visit
-              </p>
-              <span className="rounded-full bg-white/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/85">
-                {isCurrent ? "At the lake now" : "Upcoming"}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
+                  My Visit
+                </p>
+                <span className="rounded-full bg-white/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/85">
+                  {isCurrent ? "At the lake now" : "Upcoming"}
+                </span>
+              </div>
+              {isCurrent ? (
+                <Link
+                  href="/guide#quick-reference"
+                  className="shrink-0 rounded-md border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-white/20"
+                >
+                  Quick Reference
+                </Link>
+              ) : null}
             </div>
             <h2 className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-display text-xl sm:text-2xl">
               <span>{stay.label}</span>
