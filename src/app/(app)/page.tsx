@@ -122,10 +122,24 @@ export default async function HomePage() {
             <Link
               href={checklistStay ? `/calendar/${checklistStay.id}/checklist` : "/calendar/plan"}
               aria-label={`Who's at the lake: ${peopleAtLake}`}
-              className="inline-flex h-14 min-h-14 max-w-[6rem] shrink items-center gap-1.5 rounded-xl border border-deep bg-deep px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-water sm:max-w-[9rem]"
+              className="inline-flex h-14 min-h-14 max-w-[7rem] shrink items-center gap-2 rounded-lh border border-sand-line bg-card px-2.5 py-1.5 text-ink transition-colors hover:border-water sm:max-w-[10rem]"
             >
-              <HomeIcon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{peopleAtLake}</span>
+              <span
+                aria-hidden
+                className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full"
+                style={{
+                  background:
+                    here.length > 0 ? householdVar(here[0].color) : "var(--sand-line)",
+                }}
+              >
+                <HomeIcon className="h-[11px] w-[11px] text-white" />
+              </span>
+              <span className="flex min-w-0 flex-col items-start leading-tight">
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-faint">
+                  At the lake
+                </span>
+                <span className="truncate text-xs font-bold">{peopleAtLake}</span>
+              </span>
             </Link>
             <Suspense fallback={<VisitWeatherBadgeFallback />}>
               <VisitWeatherBadge />
