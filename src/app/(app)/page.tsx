@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
 import { fmtLong, fmtRange, parseISO, todayISO } from "@/lib/dates";
 import { householdVar } from "@/lib/colors";
-import { canEdit } from "@/lib/roles";
 import {
   allStays,
   checklistItems,
@@ -14,7 +13,7 @@ import {
   staysUpcoming,
   stayChecklistProgress,
 } from "@/lib/queries";
-import { MonthGrid, HouseholdLegend } from "@/components/month-grid";
+import { MonthGrid } from "@/components/month-grid";
 import { RichNote } from "@/components/rich-note";
 import {
   VisitWeatherBadge,
@@ -146,30 +145,28 @@ export default async function HomePage() {
             </Suspense>
           </div>
         </div>
-        {canEdit(user.effectiveRole) ? (
-          <div className="flex justify-end">
-            <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
-              <Link
-                href="/calendar/plan"
-                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-water hover:bg-deep-2 sm:px-3 sm:text-xs"
-              >
-                Plan a stay
-              </Link>
-              <Link
-                href="/upkeep/report-issue"
-                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-care hover:bg-care/90 sm:px-3 sm:text-xs"
-              >
-                Report an Issue
-              </Link>
-              <Link
-                href="/shopping-list#add-item"
-                className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-sage hover:bg-deep sm:px-3 sm:text-xs"
-              >
-                Add to Shopping List
-              </Link>
-            </div>
+        <div className="flex justify-end">
+          <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
+            <Link
+              href="/calendar/plan"
+              className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-water hover:bg-deep-2 sm:px-3 sm:text-xs"
+            >
+              Plan a stay
+            </Link>
+            <Link
+              href="/upkeep/report-issue"
+              className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-care hover:bg-care/90 sm:px-3 sm:text-xs"
+            >
+              Report an Issue
+            </Link>
+            <Link
+              href="/shopping-list#add-item"
+              className="btn min-w-0 px-1 text-[10px] leading-tight text-white bg-sage hover:bg-deep sm:px-3 sm:text-xs"
+            >
+              Add to Shopping List
+            </Link>
           </div>
-        ) : null}
+        </div>
       </div>
 
       {myVisit ? (
@@ -182,7 +179,7 @@ export default async function HomePage() {
           assignedItems={myAssignedItems}
         />
       ) : (
-        <MyVisitEmptyState canPlan={canEdit(user.effectiveRole)} />
+        <MyVisitEmptyState />
       )}
 
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-5 lg:items-start">
@@ -207,13 +204,11 @@ export default async function HomePage() {
               stays={monthStays}
               maintenance={monthMaintenance}
               today={today}
-              planningEnabled={canEdit(user.effectiveRole)}
+              planningEnabled
             />
-            {canEdit(user.effectiveRole) ? (
-              <p className="mt-2 text-xs text-ink-faint">
-                Tap a stay to edit it, or an empty day to plan one.
-              </p>
-            ) : null}
+            <p className="mt-2 text-xs text-ink-faint">
+              Tap a stay to edit it, or an empty day to plan one.
+            </p>
           </div>
           <ul className="mt-4 space-y-1 md:hidden">
             {[...here, ...staysUpcoming(stays, today)].slice(0, 4).map((s) => (
@@ -237,12 +232,6 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 border-t border-sand-line pt-3">
-            <HouseholdLegend
-              stays={monthStays}
-              showMaintenance={monthMaintenance.length > 0}
-            />
-          </div>
         </div>
 
         {/* Notes */}
@@ -281,14 +270,12 @@ export default async function HomePage() {
         <section className="card order-2 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <p className="section-label">Shopping List</p>
-            {canEdit(user.effectiveRole) ? (
-              <Link
-                href="/shopping-list"
-                className="shrink-0 text-xs font-semibold text-water hover:text-deep-2 hover:underline"
-              >
-                Add items +
-              </Link>
-            ) : null}
+            <Link
+              href="/shopping-list"
+              className="shrink-0 text-xs font-semibold text-water hover:text-deep-2 hover:underline"
+            >
+              Add items +
+            </Link>
           </div>
           <Link
             href="/shopping-list"
@@ -327,14 +314,10 @@ export default async function HomePage() {
           <div className="flex items-center justify-between gap-2">
             <p className="section-label">Property Care</p>
             <Link
-              href={
-                canEdit(user.effectiveRole)
-                  ? "/upkeep/report-issue"
-                  : "/upkeep"
-              }
+              href="/upkeep/report-issue"
               className="shrink-0 whitespace-nowrap text-xs font-medium text-water hover:text-deep-2 sm:text-sm"
             >
-              {canEdit(user.effectiveRole) ? "Report an issue" : "See the list"}
+              Report an issue
             </Link>
           </div>
           <Link
