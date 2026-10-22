@@ -77,7 +77,7 @@ export function MyVisitCard({
               </div>
               {isCurrent ? (
                 <Link
-                  href="/guide#quick-reference"
+                  href="/guide/quick-reference"
                   className="shrink-0 rounded-md border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-white/20"
                 >
                   Quick Reference
