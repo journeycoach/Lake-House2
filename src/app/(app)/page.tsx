@@ -75,17 +75,9 @@ export default async function HomePage() {
   );
   const openChecks = checks.filter((check) => !check.done);
   const myShoppingItems = openChecks.filter((item) => isMine(item.assignedTo));
-  // On the home page, lead with what the current user needs to grab, then
-  // fill remaining room with unassigned items before anyone else's.
-  const unassignedShoppingItems = openChecks.filter((item) => !item.assignedTo);
-  const othersShoppingItems = openChecks.filter(
-    (item) => item.assignedTo && !isMine(item.assignedTo)
-  );
-  const currentChecks = [
-    ...myShoppingItems,
-    ...unassignedShoppingItems,
-    ...othersShoppingItems,
-  ].slice(0, 4);
+  // The home page's "Current" list is just what the current user needs to
+  // grab, capped at 4; everything else is a tap away on the full page.
+  const currentChecks = myShoppingItems.slice(0, 4);
   const assignedItems = [
     ...fixes
       .filter((item) => item.assignedTo?.trim())

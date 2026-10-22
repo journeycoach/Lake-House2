@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CheckoffButton } from "./checkoff-button";
 
 export type CurrentShoppingItem = {
@@ -60,7 +61,7 @@ export function ShoppingCurrentList({
               action={action}
               onToggle={() => toggle(check.id)}
             />
-            <div className="min-w-0 flex-1">
+            <Link href="/shopping-list" className="min-w-0 flex-1">
               <p
                 className={`font-semibold ${checked ? "text-ink-faint line-through" : ""}`}
               >
@@ -89,7 +90,7 @@ export function ShoppingCurrentList({
                   `Added by ${check.addedBy}`
                 )}
               </p>
-            </div>
+            </Link>
           </li>
         );
       })}
