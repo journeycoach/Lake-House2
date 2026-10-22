@@ -203,7 +203,7 @@ export function MyVisitCard({
 
           {assignedItems.length > 0 ? (
             <div className="min-w-0 rounded-md bg-white px-3 py-2 text-ink">
-              <span className="section-label text-[9px]">Assigned · {assignedItems.length}</span>
+              <span className="section-label text-[9px]">Property Care Assigned · {assignedItems.length}</span>
               <div className="mt-0.5 space-y-0.5">
                 {assignedItems.slice(0, 2).map((item) => (
                   <Link key={item.id} href={item.href} className="block truncate text-xs hover:text-water">
