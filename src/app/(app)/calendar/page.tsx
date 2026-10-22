@@ -47,6 +47,9 @@ export default async function CalendarPage({
 }) {
   const user = await requireUser();
   const editor = canEdit(user.effectiveRole);
+  // Planning a new stay is open to every registered user; editing or
+  // moving an existing stay still requires household/admin (`editor`).
+  const canPlan = true;
   const params = await searchParams;
   const view = params.view === "year" ? "year" : "month";
   const today = todayISO();
@@ -142,14 +145,12 @@ export default async function CalendarPage({
         title="Calendar"
         action={
           <div className="flex flex-wrap gap-2">
-            {editor ? (
-              <Link
-                href="/calendar/plan"
-                className="btn bg-water text-white hover:bg-deep-2"
-              >
-                Plan a stay
-              </Link>
-            ) : null}
+            <Link
+              href="/calendar/plan"
+              className="btn bg-water text-white hover:bg-deep-2"
+            >
+              Plan a stay
+            </Link>
             <Link
               href={upcoming[0] ? `/calendar/${upcoming[0].id}/checklist` : "#upcoming-stays"}
               className="btn border border-care/90 bg-care/90 text-white hover:bg-care"
@@ -274,7 +275,7 @@ export default async function CalendarPage({
             stays={monthStays}
             maintenance={monthMaintenance}
             today={today}
-            planningEnabled={editor}
+            planningEnabled={canPlan}
           />
         </div>
 
@@ -332,7 +333,7 @@ export default async function CalendarPage({
               stays={monthStays}
               maintenance={monthMaintenance}
               today={today}
-              planningEnabled={editor}
+              planningEnabled={canPlan}
             />
           ) : (
             <YearGrid
@@ -340,7 +341,7 @@ export default async function CalendarPage({
               stays={yearStays}
               maintenance={yearMaintenance}
               today={today}
-              planningEnabled={editor}
+              planningEnabled={canPlan}
             />
           )}
         </div>

@@ -3,7 +3,7 @@
 import { and, asc, eq, gte, lte, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
-import { requireEditor } from "@/lib/auth";
+import { requireEditor, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { fmtRange } from "@/lib/dates";
 import { readText } from "@/lib/forms";
@@ -75,7 +75,10 @@ export async function createStay(
   _prev: StayFormState,
   formData: FormData
 ): Promise<StayFormState> {
-  const user = await requireEditor();
+  // Planning a new stay is open to every registered user, not just
+  // household/admin tiers; editing or deleting an existing stay still
+  // requires requireEditor() further down in this file.
+  const user = await requireUser();
   const stay = readStay(formData);
   if (!stay.label) return { error: "Give the stay a name.", values: stay };
   if (!stay.start || !stay.end || stay.end < stay.start)

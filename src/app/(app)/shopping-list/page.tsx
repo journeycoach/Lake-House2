@@ -44,7 +44,7 @@ export default async function ChecklistPage() {
           Check items off when you get them.
         </p>
 
-        <AddItemForm editor={editor} assignees={assignees} />
+        <AddItemForm assignees={assignees} />
 
         <ul className="mt-2 sm:mt-4">
           {openItems.map((item, index) => (

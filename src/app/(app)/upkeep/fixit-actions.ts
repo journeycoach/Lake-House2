@@ -5,12 +5,14 @@ import { redirect } from "next/navigation";
 import { del } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
-import { requireEditor } from "@/lib/auth";
+import { requireEditor, requireUser } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { readText } from "@/lib/forms";
 
 export async function reportIssue(formData: FormData) {
-  const user = await requireEditor();
+  // Reporting an issue is open to every registered user, not just
+  // household/admin tiers.
+  const user = await requireUser();
   const title = readText(formData.get("title"), 200);
   if (!title) return;
   const requestedPriority = String(formData.get("priority") ?? "whenever");

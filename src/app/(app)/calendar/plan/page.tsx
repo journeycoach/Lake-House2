@@ -5,7 +5,6 @@ import { getDb, schema } from "@/lib/db";
 import { parseISO, todayISO, monthName } from "@/lib/dates";
 import { allStays, maintenanceItems } from "@/lib/queries";
 import { requireUser } from "@/lib/auth";
-import { canEdit } from "@/lib/roles";
 import { MiniMonthGrid, MonthGrid, HouseholdLegend } from "@/components/month-grid";
 import { PageHeader } from "@/components/page-header";
 import { StayForm } from "../stay-form";
@@ -18,7 +17,6 @@ export default async function PlanStayPage({
   searchParams: Promise<{ m?: string; start?: string }>;
 }) {
   const user = await requireUser();
-  const editor = canEdit(user.effectiveRole);
   const params = await searchParams;
   const today = todayISO();
   let { y, m } = parseISO(today);
@@ -89,19 +87,15 @@ export default async function PlanStayPage({
             <h2 className="font-display text-xl">Put it on the calendar</h2>
           </div>
         </div>
-        {editor ? (
-          <StayForm
-            key={selectedStart ?? "default"}
-            households={households}
-            defaultDate={selectedStart}
-            defaultHouseholdId={user.householdId}
-            defaultLabel={`Family ${user.name}`}
-            defaultAdults={defaultAdults}
-            existingStays={stays}
-          />
-        ) : (
-          <p className="text-sm text-ink-soft">Only family members can add a stay. You can still use the calendar below to check dates.</p>
-        )}
+        <StayForm
+          key={selectedStart ?? "default"}
+          households={households}
+          defaultDate={selectedStart}
+          defaultHouseholdId={user.householdId}
+          defaultLabel={`Family ${user.name}`}
+          defaultAdults={defaultAdults}
+          existingStays={stays}
+        />
       </section>
 
       <section className="card p-4 md:p-6">
@@ -118,10 +112,10 @@ export default async function PlanStayPage({
         </div>
         <p className="mt-1 text-sm text-ink-soft">Calendar reference · tap an open day to start a stay for that date.</p>
         <div className="mt-4 md:hidden">
-          <MiniMonthGrid year={y} month={m} stays={monthStays} maintenance={monthMaintenance} today={today} planningEnabled={editor} />
+          <MiniMonthGrid year={y} month={m} stays={monthStays} maintenance={monthMaintenance} today={today} planningEnabled />
         </div>
         <div className="mt-4 hidden md:block">
-          <MonthGrid year={y} month={m} stays={monthStays} maintenance={monthMaintenance} today={today} planningEnabled={editor} />
+          <MonthGrid year={y} month={m} stays={monthStays} maintenance={monthMaintenance} today={today} planningEnabled />
         </div>
         <div className="mt-4 border-t border-sand-line pt-3">
           <HouseholdLegend stays={monthStays} showMaintenance={monthMaintenance.length > 0} />

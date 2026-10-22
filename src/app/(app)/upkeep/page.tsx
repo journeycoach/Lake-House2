@@ -84,14 +84,12 @@ export default async function UpkeepPage({
       <PageHeader
         title="Property Care"
         action={
-          editor ? (
-            <Link
-              href="/upkeep/report-issue"
-              className="btn bg-care text-white hover:bg-care/90"
-            >
-              Report an Issue
-            </Link>
-          ) : null
+          <Link
+            href="/upkeep/report-issue"
+            className="btn bg-care text-white hover:bg-care/90"
+          >
+            Report an Issue
+          </Link>
         }
       />
 

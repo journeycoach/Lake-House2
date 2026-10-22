@@ -43,10 +43,8 @@ function Feedback({ state }: { state: AddItemState }) {
 }
 
 export function AddItemForm({
-  editor,
   assignees,
 }: {
-  editor: boolean;
   assignees: string[];
 }) {
   const [state, action] = useActionState(addItem, initial);
@@ -61,11 +59,7 @@ export function AddItemForm({
       id="add-item"
       ref={formRef}
       action={action}
-      className={`mt-2 gap-1.5 rounded-lh border border-water/30 border-l-4 bg-water-tint p-2 sm:mt-2 sm:gap-1.5 sm:p-2 ${
-        editor
-          ? "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto]"
-          : "hidden"
-      }`}
+      className="mt-2 grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-1.5 rounded-lh border border-water/30 border-l-4 bg-water-tint p-2 sm:mt-2 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(8rem,1.5fr)_auto] sm:gap-1.5 sm:p-2"
     >
       <label className="col-span-2 min-w-0 sm:col-span-1">
         <span className="mb-0.5 block text-xs font-semibold text-ink-soft">

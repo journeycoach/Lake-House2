@@ -41,7 +41,10 @@ export async function addItem(
   _prev: AddItemState,
   formData: FormData
 ): Promise<AddItemState> {
-  const user = await requireEditor();
+  // Adding an item is open to every registered user, not just
+  // household/admin tiers; editing or removing an item still requires
+  // requireEditor() below.
+  const user = await requireUser();
   const title = readText(formData.get("title"), 200);
   if (!title) return { error: "Give the item a name." };
   const rows = await groupItems(0);
